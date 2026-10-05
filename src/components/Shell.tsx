@@ -6,9 +6,13 @@ import { Button } from './ui'
 import { TestBanner } from './Testversie'
 import { TEST_MODUS } from '../lib/modus'
 import { APP_VERSIE_KORT } from '../lib/versie'
+import { useCloud } from '../lib/cloud/sync'
+import { STATUS_TEKST } from './SyncStatus'
 import { ga, type Route } from '../lib/router'
 
 export function Shell({ route, children }: { route: Route; children: ReactNode }) {
+  const cloud = useCloud()
+  const syncKleur = !cloud.gebruiker || !cloud.syncAan ? null : cloud.status === 'ok' ? 'bg-sage' : cloud.status === 'bezig' ? 'bg-gold-400' : cloud.status === 'offline' ? 'bg-sand-400' : 'bg-rust'
   const link = (actief: boolean) =>
     `rounded-lg px-1 py-2 text-[0.85rem] font-medium whitespace-nowrap transition sm:px-3 sm:text-sm ${actief ? 'text-ink' : 'text-ink-muted hover:text-ink'}`
   return (
@@ -46,9 +50,14 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
               aria-label="Instellingen"
               title="Instellingen"
               aria-current={route.naam === 'instellingen' ? 'page' : undefined}
-              className={`grid h-10 w-8 place-items-center rounded-lg transition sm:w-10 ${route.naam === 'instellingen' ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
+              className={`relative grid h-10 w-8 place-items-center rounded-lg transition sm:w-10 ${route.naam === 'instellingen' ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
             >
               <Settings className="h-[1.15rem] w-[1.15rem]" />
+              {syncKleur && (
+                <span className={`absolute top-2 right-0.5 h-2 w-2 rounded-full ring-2 ring-sand-100 sm:right-1.5 ${syncKleur}`} title={`Cloud: ${STATUS_TEKST[cloud.status]}`}>
+                  <span className="sr-only">Cloud: {STATUS_TEKST[cloud.status]}</span>
+                </span>
+              )}
             </a>
             <span className="ml-1.5 hidden sm:block">
               <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => ga('/nieuw')}>
@@ -70,12 +79,20 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <main id="inhoud" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
-      <footer className={`no-print border-t border-sand-300/60 ${route.naam === 'home' || route.naam === 'over' || route.naam === 'prijzen' || route.naam === 'instellingen' || route.naam === 'facturen' ? '' : 'pb-20'}`}>
+      <footer className={`no-print border-t border-sand-300/60 ${route.naam === 'home' || route.naam === 'over' || route.naam === 'prijzen' || route.naam === 'instellingen' || route.naam === 'facturen' || route.naam === 'account' || route.naam === 'privacy' ? '' : 'pb-20'}`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
             © {new Date().getFullYear()} Slimmer Wonen · {TEST_MODUS ? 'testversie' : `versie ${APP_VERSIE_KORT}`} ·{' '}
             <a href="#/over" className="underline underline-offset-2 hover:text-ink">
               Over de app
+            </a>{' '}
+            ·{' '}
+            <a href="#/account" className="underline underline-offset-2 hover:text-ink">
+              {cloud.gebruiker ? `Account${cloud.syncAan ? ` (${STATUS_TEKST[cloud.status].toLowerCase()})` : ''}` : 'Inloggen'}
+            </a>{' '}
+            ·{' '}
+            <a href="#/privacy" className="underline underline-offset-2 hover:text-ink">
+              Privacy
             </a>
           </p>
           <p>{TEST_MODUS ? 'Voorbeeldprijzen, tenzij je eigen prijzen invult · gegevens blijven op dit apparaat' : 'Nu gratis · vul je eigen prijzen in · gegevens blijven op dit apparaat'}</p>

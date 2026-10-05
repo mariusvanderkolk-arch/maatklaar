@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Building2, Check, CloudOff, DatabaseBackup, Download, Upload, ExternalLink, Eye, EyeOff, FileText, ImagePlus, KeyRound, Loader2, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
+import { Building2, Check, ChevronRight, Cloud, DatabaseBackup, Download, Upload, ExternalLink, Eye, EyeOff, FileText, ImagePlus, KeyRound, Loader2, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, Dialog, NumberField, PageTitle, TextField } from '../components/ui'
 import { leesBackup, samenvatting, type Backup, type ImportModus } from '../lib/backup'
 import { backupStatus, exporteerAlles, importeerBackup, opslagSchatting } from '../lib/backupActies'
@@ -10,6 +10,7 @@ import { toast } from '../components/Toast'
 import { actieveAi, AiFout, PROVIDERS, providerInfo, testVerbinding, type AiProvider } from '../lib/ai'
 import { aiStore, useAi } from '../lib/aiStore'
 import { bedrijfStore, btwGeldig, emailGeldig, ibanGeldig, kvkGeldig, useBedrijf, verkleinLogo, type Bedrijf } from '../lib/bedrijf'
+import { useCloud } from '../lib/cloud/sync'
 
 const SECTIES = [
   { id: 'bedrijf', label: 'Bedrijf' },
@@ -19,12 +20,23 @@ const SECTIES = [
 ]
 
 export function Instellingen({ sectie }: { sectie?: string }) {
+  const cloud = useCloud()
   useEffect(() => {
     if (sectie) document.getElementById(`sectie-${sectie}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [sectie])
   return (
     <div className="mx-auto max-w-3xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
-      <PageTitle eyebrow="Instellingen" title="Jouw gegevens" sub="Alles wordt alleen op dit apparaat bewaard. Gebruik een back-up om het mee te nemen naar een ander apparaat." />
+      <PageTitle eyebrow="Instellingen" title="Jouw gegevens" sub="Alles wordt op dit apparaat bewaard. Gebruik een back-up, of log in om je gegevens op al je apparaten te hebben." />
+      <a href="#/account" className="mt-5 flex items-center gap-3 rounded-2xl bg-paper px-4 py-3.5 ring-1 ring-sand-300 transition hover:ring-gold-400">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold-100 text-gold-700 ring-1 ring-gold-200">
+          <Cloud className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">Account en synchronisatie</span>
+          <span className="block text-xs text-ink-muted">{cloud.gebruiker ? `Ingelogd als ${cloud.gebruiker.email}` : 'Optioneel: inloggen om je gegevens op al je apparaten te hebben'}</span>
+        </span>
+        <ChevronRight className="h-4 w-4 text-ink-muted" />
+      </a>
       <nav aria-label="Secties" className="sticky top-16 z-20 -mx-4 mt-6 flex gap-2 overflow-x-auto bg-sand-100/90 px-4 py-2.5 backdrop-blur-md sm:top-[4.5rem] sm:mx-0 sm:rounded-2xl sm:px-2">
         {SECTIES.map((s) => (
           <a
@@ -443,11 +455,15 @@ function BackupSectie() {
           )}
 
           <div className="mt-5 flex gap-3 border-t border-sand-200 pt-4 text-[0.82rem] text-ink-soft">
-            <CloudOff className="mt-0.5 h-4.5 w-4.5 shrink-0 text-ink-muted" />
+            <Cloud className="mt-0.5 h-4.5 w-4.5 shrink-0 text-ink-muted" />
             <p>
-              <span className="font-semibold text-ink">Synchroniseren tussen apparaten</span> <Badge tone="gold">Binnenkort</Badge>
+              <span className="font-semibold text-ink">Synchroniseren tussen apparaten</span> <Badge tone="gold">Optioneel</Badge>
               <br />
-              Automatische cloud-sync is nog niet beschikbaar. Tot die tijd neem je je gegevens mee met een back-upbestand (bijv. via e-mail of je eigen cloudopslag).
+              Log in onder{' '}
+              <a href="#/account" className="underline underline-offset-2 hover:text-ink">
+                Account
+              </a>{' '}
+              om projecten, facturen, prijzen en bedrijfsgegevens op al je apparaten te hebben. Foto’s blijven op dit apparaat; neem die mee met een back-up.
             </p>
           </div>
         </div>

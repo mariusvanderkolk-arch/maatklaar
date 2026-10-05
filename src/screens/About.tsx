@@ -51,11 +51,19 @@ const BLOKKEN = [
     titel: 'Jouw gegevens',
     badge: <Badge tone="sage">Lokaal</Badge>,
     tekst:
-      "Projecten, foto's, prijzen en bedrijfsgegevens worden alleen op dit apparaat opgeslagen (in de browser). Er gaat niets naar een server, behalve foto's die jij zelf laat analyseren door de AI-dienst die je kiest. Wis je de browsergegevens, dan is alles weg: maak dus regelmatig een back-up via Instellingen → Back-up. Synchroniseren tussen apparaten via de cloud komt binnenkort; tot die tijd neem je alles mee met dat back-upbestand.",
+      "Projecten, foto's, prijzen en bedrijfsgegevens worden alleen op dit apparaat opgeslagen (in de browser). Zonder account gaat er niets naar een server, behalve foto's die jij zelf laat analyseren door de AI-dienst die je kiest. Wis je de browsergegevens, dan is alles weg: maak dus regelmatig een back-up via Instellingen → Back-up. Wil je je gegevens op al je apparaten? Log dan (optioneel) in onder Account: projecten, facturen, prijzen en bedrijfsgegevens worden dan gesynchroniseerd. Foto’s blijven op het apparaat.",
     actie: (
-      <Button size="sm" variant="secondary" className="mt-3" onClick={() => ga('/instellingen/backup')}>
-        Back-up maken
-      </Button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" onClick={() => ga('/instellingen/backup')}>
+          Back-up maken
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => ga('/account')}>
+          Account en sync
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => ga('/privacy')}>
+          Privacy
+        </Button>
+      </div>
     ),
   },
 ]

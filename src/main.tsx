@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { startCloud } from './lib/cloud/sync'
+
+// Optioneel account: Supabase wordt alleen geladen als er een sessie (of inloglink) is.
+void startCloud()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

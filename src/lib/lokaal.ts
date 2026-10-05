@@ -8,6 +8,8 @@ export interface LokaleStore<T> {
   use(): T
   /** laatste opslagfout (bijv. opslag vol) */
   fout(): string | null
+  /** luisteren naar wijzigingen (voor de cloud-sync) */
+  abonneer(f: () => void): () => void
 }
 
 export function maakLokaleStore<T>(sleutel: string, standaard: () => T, normaliseer: (ruw: unknown) => T = (r) => ({ ...standaard(), ...(r as object) }) as T): LokaleStore<T> {
@@ -46,7 +48,9 @@ export function maakLokaleStore<T>(sleutel: string, standaard: () => T, normalis
   }
   const abonneer = (f: () => void) => {
     luisteraars.add(f)
-    return () => luisteraars.delete(f)
+    return () => {
+      luisteraars.delete(f)
+    }
   }
   return {
     get: () => waarde,
@@ -54,5 +58,6 @@ export function maakLokaleStore<T>(sleutel: string, standaard: () => T, normalis
     update: (f) => set(f(waarde)),
     use: () => useSyncExternalStore(abonneer, () => waarde),
     fout: () => fout,
+    abonneer,
   }
 }

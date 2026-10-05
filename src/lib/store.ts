@@ -84,6 +84,7 @@ export const useProject = (id: string | undefined) =>
 
 export const projectStore = {
   alle: () => projecten,
+  abonneer,
   /** Vervangt alle projecten (bijv. bij het terugzetten van een back-up). */
   vervangAlles(nieuw: Project[]) {
     return bewaar(nieuw.map(normaliseerProject))

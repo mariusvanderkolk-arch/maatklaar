@@ -6,6 +6,7 @@ import { Toaster } from './components/Toast'
 import { Foutgrens } from './components/Foutgrens'
 import { Onboarding } from './components/Onboarding'
 import { laadLater } from './lib/lazy'
+import { CloudToestemming } from './components/CloudToestemming'
 
 const ProjectForm = laadLater(() => import('./screens/ProjectForm').then((m) => m.ProjectForm))
 const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m) => m.ProjectScreen))
@@ -15,6 +16,8 @@ const KlantOfferte = laadLater(() => import('./screens/KlantOfferte').then((m) =
 const Facturen = laadLater(() => import('./screens/Facturen').then((m) => m.Facturen))
 const FactuurScherm = laadLater(() => import('./screens/Facturen').then((m) => m.FactuurScherm))
 const Instellingen = laadLater(() => import('./screens/Instellingen').then((m) => m.Instellingen))
+const Account = laadLater(() => import('./screens/Account').then((m) => m.Account))
+const Privacy = laadLater(() => import('./screens/Privacy').then((m) => m.Privacy))
 
 function Laden() {
   return (
@@ -50,9 +53,12 @@ export default function App() {
           {route.naam === 'instellingen' && <Instellingen sectie={route.sectie} />}
           {route.naam === 'facturen' && <Facturen />}
           {route.naam === 'factuur' && <FactuurScherm id={route.id} />}
+          {route.naam === 'account' && <Account />}
+          {route.naam === 'privacy' && <Privacy />}
         </Suspense>
       </Foutgrens>
       {route.naam === 'home' && <Onboarding />}
+      <CloudToestemming />
       <Toaster />
     </Shell>
   )

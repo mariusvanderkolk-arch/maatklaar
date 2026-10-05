@@ -105,6 +105,17 @@ Stack: Vite, React, TypeScript, Tailwind CSS. Publicatie via GitHub Actions naar
 
 Slimmer Wonen 1.0 is live: opmeten, berekenen, inkooplijst, offerte, factuur, planning en eigen prijzen. De app is **nu gratis**; alle gegevens blijven op het apparaat. Vul onder Prijzen beheren je eigen inkoopprijzen in (geen live bouwmarkt-API).
 
+## Account en cloud-sync (optioneel)
+
+Zonder account werkt alles lokaal. Met een account (Supabase: inloglink of e-mail + wachtwoord) worden projecten
+(incl. planning/uren), facturen, eigen prijzen en bedrijfsgegevens gesynchroniseerd als documenten in één tabel
+`user_data` (laatste wijziging wint, verwijderen via tombstones). Foto's blijven lokaal. Bij de eerste keer inloggen
+vraagt de app of lokale gegevens mogen worden samengevoegd; er wordt nooit lokaal iets verwijderd.
+
+- Database inrichten: plak [`supabase/schema.sql`](supabase/schema.sql) in Supabase → SQL Editor → Run (idempotent, met RLS).
+- Config: `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` (standaard het project van Slimmer Wonen; de publishable key is publiek).
+- De testversie bewaart haar documenten apart (`kind` met voorvoegsel `test-`) en heeft een eigen sessie.
+
 ## Testversie voor aannemers
 
 Een aparte testlink om door te sturen: **https://mariusvanderkolk-arch.github.io/slimmer-wonen-test/**

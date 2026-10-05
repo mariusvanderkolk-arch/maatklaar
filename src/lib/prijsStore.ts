@@ -54,6 +54,7 @@ export const usePrijsBron = () => useSyncExternalStore(abonneer, () => bron)
 
 export const prijsStore = {
   alle: () => eigen,
+  abonneer,
   bron: () => bron,
   zet(product: ProductId, winkel: WinkelId, wijziging: Partial<Omit<EigenPrijs, 'bijgewerkt'>>) {
     bewaar(zetEigenPrijs(eigen, product, winkel, wijziging))
