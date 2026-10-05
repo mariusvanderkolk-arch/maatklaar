@@ -4,16 +4,20 @@ import { berekenMaterialen } from './calc'
 import { voorbeeldProjecten } from './defaults'
 import {
   importeerPrijzen,
+  kopieerWinkelPrijzen,
   laatstBijgewerkt,
   metEigenPrijzen,
   naarCsv,
   naarJson,
   parseCsv,
+  pasPercentageToe,
   telEigenPrijzen,
   vanCsv,
   vanJson,
   verwijderEigenPrijs,
   voegSamen,
+  voorbeeldAlsEigen,
+  vulVoorbeeldenAan,
   zetEigenPrijs,
   type EigenPrijzen,
 } from './eigenPrijzen'
@@ -170,5 +174,48 @@ describe('export en import', () => {
 
   it('CSV zonder verplichte kolommen geeft een fout', () => {
     expect(() => vanCsv('a;b\n1;2', voorbeeldPrijsBron)).toThrow(/Onbekend CSV-formaat/)
+  })
+})
+
+describe('voorbeeldAlsEigen en kopieerWinkelPrijzen', () => {
+  it('neemt alle voorbeeldprijzen over als eigen prijzen', () => {
+    const eigen = voorbeeldAlsEigen(voorbeeldPrijsBron, T1)
+    expect(telEigenPrijzen(eigen)).toBeGreaterThan(50)
+    expect(eigen.tegellijm?.gamma).toMatchObject({ prijs: VOORBEELD_PRIJSTABEL.tegellijm[0], bijgewerkt: T1.toISOString() })
+    // Geen prijs waar het voorbeeld null is
+    expect(eigen.afdichtmanchet?.karwei).toBeUndefined()
+  })
+
+  it('kopieert van Gamma naar Praxis alleen lege cellen', () => {
+    let eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
+    eigen = zetEigenPrijs(eigen, 'kit', 'praxis', { prijs: 9 }, T1)
+    const uit = kopieerWinkelPrijzen(eigen, 'gamma', 'praxis', voorbeeldPrijsBron, 'alleen-leeg', T2)
+    expect(uit.tegellijm?.praxis?.prijs).toBe(17.5)
+    expect(uit.kit?.praxis?.prijs).toBe(9) // bestaand blijft
+    // Artikel zonder eigen Gamma-prijs: voorbeeld van Gamma
+    expect(uit.primer?.praxis?.prijs).toBe(VOORBEELD_PRIJSTABEL.primer[0])
+  })
+
+  it('overschrijven vervangt bestaande doelprijzen', () => {
+    let eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
+    eigen = zetEigenPrijs(eigen, 'tegellijm', 'praxis', { prijs: 99 }, T1)
+    const uit = kopieerWinkelPrijzen(eigen, 'gamma', 'praxis', voorbeeldPrijsBron, 'overschrijven', T2)
+    expect(uit.tegellijm?.praxis?.prijs).toBe(17.5)
+  })
+
+  it('past percentage toe op eigen prijzen van één winkel', () => {
+    let eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 20 }, T1)
+    eigen = zetEigenPrijs(eigen, 'kit', 'praxis', { prijs: 10 }, T1)
+    const uit = pasPercentageToe(eigen, 'gamma', 10, T2)
+    expect(uit.tegellijm?.gamma?.prijs).toBe(22)
+    expect(uit.kit?.praxis?.prijs).toBe(10)
+  })
+
+  it('vulVoorbeeldenAan laat bestaande eigen prijzen staan', () => {
+    const eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
+    const uit = vulVoorbeeldenAan(eigen, voorbeeldPrijsBron, T2)
+    expect(uit.tegellijm?.gamma?.prijs).toBe(17.5)
+    expect(uit.tegellijm?.praxis?.prijs).toBe(VOORBEELD_PRIJSTABEL.tegellijm[1])
+    expect(telEigenPrijzen(uit)).toBeGreaterThan(telEigenPrijzen(eigen))
   })
 })

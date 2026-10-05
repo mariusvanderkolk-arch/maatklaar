@@ -1,6 +1,6 @@
 /** Opslag van eigen prijzen in localStorage + de actieve prijsbron (eigen prijzen over voorbeeldprijzen). */
 import { useSyncExternalStore } from 'react'
-import { metEigenPrijzen, verwijderEigenPrijs, voegSamen, zetEigenPrijs, type EigenPrijs, type EigenPrijzen } from './eigenPrijzen'
+import { kopieerWinkelPrijzen, metEigenPrijzen, pasPercentageToe, verwijderEigenPrijs, voegSamen, voorbeeldAlsEigen, vulVoorbeeldenAan, zetEigenPrijs, type EigenPrijs, type EigenPrijzen, type KopieerModus } from './eigenPrijzen'
 import { voorbeeldPrijsBron, type PrijsBron, type WinkelId } from './prices'
 import type { ProductId } from './calc'
 import { sleutel } from './modus'
@@ -69,5 +69,15 @@ export const prijsStore = {
   },
   allesTerug() {
     bewaar({})
+  },
+  /** Neemt alle voorbeeldprijzen over als eigen prijzen (snelle start / bijvullen zonder overschrijven). */
+  voorbeeldOvernemen() {
+    bewaar(Object.keys(eigen).length ? vulVoorbeeldenAan(eigen, voorbeeldPrijsBron) : voorbeeldAlsEigen(voorbeeldPrijsBron))
+  },
+  kopieerWinkel(van: WinkelId, naar: WinkelId, modus: KopieerModus = 'alleen-leeg') {
+    bewaar(kopieerWinkelPrijzen(eigen, van, naar, voorbeeldPrijsBron, modus))
+  },
+  pasPercentage(winkel: WinkelId, procent: number) {
+    bewaar(pasPercentageToe(eigen, winkel, procent))
   },
 }

@@ -129,6 +129,97 @@ export function voegSamen(eigen: EigenPrijzen, extra: EigenPrijzen): EigenPrijze
   return uit
 }
 
+
+/** Zet alle voorbeeldprijzen om naar eigen prijzen, zodat je kunt bijstellen i.p.v. vanaf nul typen. */
+export function voorbeeldAlsEigen(basis: PrijsBron, nu = new Date()): EigenPrijzen {
+  let uit: EigenPrijzen = {}
+  for (const item of CATALOGUS) {
+    for (const a of basis.aanbiedingen(item.id)) {
+      uit = zetEigenPrijs(uit, item.id, a.winkel, { prijs: a.prijs, inhoud: a.inhoud ?? null }, nu)
+    }
+  }
+  return uit
+}
+
+/** Vult alleen cellen zonder eigen prijs (of niet-leverbaar) met de voorbeeldprijs. Bestaande eigen prijzen blijven. */
+export function vulVoorbeeldenAan(eigen: EigenPrijzen, basis: PrijsBron, nu = new Date()): EigenPrijzen {
+  let uit = eigen
+  for (const item of CATALOGUS) {
+    for (const a of basis.aanbiedingen(item.id)) {
+      const e = eigen[item.id]?.[a.winkel]
+      if (heeftPrijs(e) || e?.nietLeverbaar) continue
+      uit = zetEigenPrijs(uit, item.id, a.winkel, { prijs: a.prijs, inhoud: a.inhoud ?? null }, nu)
+    }
+  }
+  return uit
+}
+
+export type KopieerModus = 'alleen-leeg' | 'overschrijven'
+
+/**
+ * Kopieert prijzen van de ene winkel naar de andere.
+ * - alleen-leeg: vult alleen cellen zonder eigen prijs (of niet-leverbaar) bij de doelwinkel
+ * - overschrijven: zet alle bronprijzen over (bestaande doelprijzen gaan verloren)
+ * Bron = eigen prijs als die er is, anders de voorbeeldprijs van die winkel.
+ */
+export function kopieerWinkelPrijzen(
+  eigen: EigenPrijzen,
+  van: WinkelId,
+  naar: WinkelId,
+  basis: PrijsBron,
+  modus: KopieerModus = 'alleen-leeg',
+  nu = new Date(),
+): EigenPrijzen {
+  if (van === naar) return eigen
+  let uit = eigen
+  for (const item of CATALOGUS) {
+    const bronEigen = eigen[item.id]?.[van]
+    const doel = eigen[item.id]?.[naar]
+    if (modus === 'alleen-leeg' && (heeftPrijs(doel) || doel?.nietLeverbaar)) continue
+    let prijs: number | null = null
+    let inhoud: number | null | undefined
+    let productNaam: string | undefined
+    let link: string | undefined
+    let nietLeverbaar = false
+    if (bronEigen?.nietLeverbaar) {
+      if (modus === 'alleen-leeg') continue
+      nietLeverbaar = true
+    } else if (heeftPrijs(bronEigen)) {
+      prijs = bronEigen.prijs
+      inhoud = bronEigen.inhoud
+      productNaam = bronEigen.productNaam
+      link = bronEigen.link
+    } else {
+      const b = basis.aanbiedingen(item.id).find((a) => a.winkel === van)
+      if (!b) continue
+      prijs = b.prijs
+      inhoud = b.inhoud
+    }
+    uit = zetEigenPrijs(
+      uit,
+      item.id,
+      naar,
+      { prijs: nietLeverbaar ? null : prijs, inhoud: nietLeverbaar ? null : (inhoud ?? null), productNaam, link, nietLeverbaar },
+      nu,
+    )
+  }
+  return uit
+}
+
+/** Past een percentage toe op alle eigen prijzen van één winkel (bijv. +5 of −3). */
+export function pasPercentageToe(eigen: EigenPrijzen, winkel: WinkelId, procent: number, nu = new Date()): EigenPrijzen {
+  if (!Number.isFinite(procent) || procent === 0) return eigen
+  let uit = eigen
+  const factor = 1 + procent / 100
+  for (const [p, rij] of Object.entries(eigen) as [ProductId, Partial<Record<WinkelId, EigenPrijs>>][]) {
+    const e = rij?.[winkel]
+    if (!heeftPrijs(e)) continue
+    const nieuw = Math.round(e.prijs * factor * 100) / 100
+    uit = zetEigenPrijs(uit, p, winkel, { prijs: nieuw }, nu)
+  }
+  return uit
+}
+
 // ——— Export / import ————————————————————————————————————————————————
 
 const WINKEL_IDS = WINKELS.map((w) => w.id)

@@ -1,12 +1,35 @@
 import { useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Download, ExternalLink, FileJson, FileSpreadsheet, RotateCcw, Search, SlidersHorizontal, Upload, X } from 'lucide-react'
-import { Badge, Button, Card, Dialog, PageTitle, Switch } from '../components/ui'
+import {
+  ArrowLeft,
+  ArrowRightLeft,
+  Download,
+  ExternalLink,
+  FileJson,
+  FileSpreadsheet,
+  Percent,
+  RotateCcw,
+  Search,
+  Sparkles,
+  SlidersHorizontal,
+  Upload,
+  X,
+} from 'lucide-react'
+import { Badge, Button, Card, Dialog, LeegStaat, PageTitle, Switch } from '../components/ui'
 import { GROEP_ICONS } from '../components/groepIcons'
 import { toast } from '../components/Toast'
-import { GROEPEN, type ProductId } from '../lib/calc'
+import { GROEPEN, type Groep, type ProductId } from '../lib/calc'
 import { CATALOGUS, eenheidLabel, type CatalogusItem } from '../lib/catalogus'
 import { downloadBestand, vandaagIso } from '../lib/download'
-import { importeerPrijzen, laatstBijgewerkt, naarCsv, naarJson, telEigenPrijzen, type EigenPrijs, type EigenPrijzen } from '../lib/eigenPrijzen'
+import {
+  importeerPrijzen,
+  laatstBijgewerkt,
+  telEigenPrijzen,
+  naarCsv,
+  naarJson,
+  type EigenPrijs,
+  type EigenPrijzen,
+  type KopieerModus,
+} from '../lib/eigenPrijzen'
 import { datum, euro, getal, kortDatum, leesGetal } from '../lib/format'
 import { VOORBEELD_PEILDATUM, WINKELS, voorbeeldPrijsBron, winkelNaam, type WinkelId } from '../lib/prices'
 import { prijsStore, useEigenPrijzen } from '../lib/prijsStore'
@@ -16,6 +39,11 @@ type Filter = 'alle' | 'eigen' | 'voorbeeld' | 'niet'
 const voorbeeldPrijs = (p: ProductId, w: WinkelId) => voorbeeldPrijsBron.aanbiedingen(p).find((a) => a.winkel === w)?.prijs
 const heeftEigen = (e?: EigenPrijs) => e?.prijs != null
 const TOTAAL_CELLEN = CATALOGUS.length * WINKELS.length
+const TOTAAL_VOORBEELD = (() => {
+  let n = 0
+  for (const item of CATALOGUS) n += voorbeeldPrijsBron.aanbiedingen(item.id).length
+  return n
+})()
 
 function celStatus(eigen: EigenPrijzen, p: ProductId, w: WinkelId): 'eigen' | 'voorbeeld' | 'niet' | 'geen' {
   const e = eigen[p]?.[w]
@@ -28,12 +56,16 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
   const eigen = useEigenPrijzen()
   const [zoek, setZoek] = useState('')
   const [filter, setFilter] = useState<Filter>('alle')
+  const [groepFilter, setGroepFilter] = useState<Groep | 'alle'>('alle')
   const [detail, setDetail] = useState<{ item: CatalogusItem; winkel: WinkelId }>()
   const [bevestig, setBevestig] = useState(false)
+  const [kopieerOpen, setKopieerOpen] = useState(false)
+  const [bulkOpen, setBulkOpen] = useState(false)
   const bestand = useRef<HTMLInputElement>(null)
 
   const aantalEigen = telEigenPrijzen(eigen)
   const laatst = laatstBijgewerkt(eigen)
+  const leeg = aantalEigen === 0
 
   const telling = useMemo(() => {
     const t = { alle: CATALOGUS.length, eigen: 0, voorbeeld: 0, niet: 0 }
@@ -52,13 +84,14 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
       ...g,
       items: CATALOGUS.filter((item) => {
         if (item.groep !== g.id) return false
+        if (groepFilter !== 'alle' && item.groep !== groepFilter) return false
         if (filter !== 'alle' && !WINKELS.some((w) => celStatus(eigen, item.id, w.id) === filter)) return false
         if (!q) return true
         const namen = WINKELS.map((w) => eigen[item.id]?.[w.id]?.productNaam ?? '').join(' ')
         return `${item.naam} ${g.naam} ${namen}`.toLowerCase().includes(q)
       }),
     })).filter((g) => g.items.length)
-  }, [zoek, filter, eigen])
+  }, [zoek, filter, groepFilter, eigen])
 
   async function importeer(file?: File) {
     if (!file) return
@@ -72,6 +105,17 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
     } finally {
       if (bestand.current) bestand.current.value = ''
     }
+  }
+
+  function overnemen() {
+    const voor = aantalEigen
+    prijsStore.voorbeeldOvernemen()
+    const erbij = telEigenPrijzen(prijsStore.alle()) - voor
+    toast(
+      erbij > 0
+        ? `${erbij} ${erbij === 1 ? 'voorbeeldprijs' : 'voorbeeldprijzen'} overgenomen – pas ze aan naar jouw inkoop`
+        : 'Alle cellen hadden al een eigen prijs',
+    )
   }
 
   const filters: { id: Filter; label: string }[] = [
@@ -92,11 +136,39 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
         <PageTitle
           eyebrow="Instellingen"
           title="Prijzen beheren"
-          sub="Vul je eigen prijzen in (incl. btw). Ze gaan direct vóór de voorbeeldprijzen in de inkooplijst, de winkeltotalen en de offerte. Leeg laten = voorbeeldprijs."
+          sub="Vul je eigen inkoopprijzen in (incl. btw). Ze gaan direct vóór de voorbeeldprijzen in de inkooplijst, winkeltotalen en offerte. Tik in een cel om snel te wijzigen."
         />
 
+        {/* Snelle start – prominent als er nog geen eigen prijzen zijn */}
+        {leeg && (
+          <Card className="mt-7 overflow-hidden ring-1 ring-gold-300/60">
+            <div className="bg-gradient-to-br from-gold-100/70 via-sand-50 to-paper px-5 py-5 sm:px-6 sm:py-6">
+              <div className="flex items-start gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold-200/80 text-gold-700 ring-1 ring-gold-300">
+                  <Sparkles className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-[1.35rem] font-semibold leading-tight">Snelle start</p>
+                  <p className="mt-1 text-[0.88rem] leading-relaxed text-ink-soft">
+                    Neem de {TOTAAL_VOORBEELD} voorbeeldprijzen over als startpunt en pas daarna alleen aan wat bij jou anders is.
+                    Geen live winkelprijzen — dit zijn jouw eigen cijfers op dit apparaat.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button size="sm" variant="gold" icon={<Sparkles className="h-3.5 w-3.5" />} onClick={overnemen}>
+                      Voorbeeldprijzen overnemen
+                    </Button>
+                    <Button size="sm" variant="secondary" icon={<Upload className="h-3.5 w-3.5" />} onClick={() => bestand.current?.click()}>
+                      Importeren (CSV/JSON)
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Status en acties */}
-        <Card className="mt-7 overflow-hidden">
+        <Card className={`overflow-hidden ${leeg ? 'mt-4' : 'mt-7'}`}>
           <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div className="px-5 py-5 sm:px-6">
               <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
@@ -122,48 +194,94 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-sand-200 bg-sand-50/70 px-5 py-4 sm:px-6 lg:border-t-0 lg:border-l">
+              {!leeg && (
+                <>
+                  <Button size="sm" variant="secondary" icon={<ArrowRightLeft className="h-3.5 w-3.5" />} onClick={() => setKopieerOpen(true)}>
+                    Winkel kopiëren
+                  </Button>
+                  <Button size="sm" variant="secondary" icon={<Percent className="h-3.5 w-3.5" />} onClick={() => setBulkOpen(true)}>
+                    % aanpassen
+                  </Button>
+                </>
+              )}
+              {!leeg && (
+                <Button size="sm" variant="ghost" icon={<Sparkles className="h-3.5 w-3.5" />} onClick={overnemen} title="Vult alleen cellen die nog leeg zijn met voorbeeldprijzen">
+                  Voorbeelden bijvullen
+                </Button>
+              )}
               <ExportKnop eigen={eigen} />
               <Button size="sm" variant="secondary" icon={<Upload className="h-3.5 w-3.5" />} onClick={() => bestand.current?.click()}>
                 Importeren
               </Button>
               <input ref={bestand} type="file" accept=".json,.csv,application/json,text/csv" className="hidden" data-testid="prijzen-import" onChange={(e) => importeer(e.target.files?.[0])} />
               <Button size="sm" variant="danger" icon={<RotateCcw className="h-3.5 w-3.5" />} disabled={!Object.keys(eigen).length} onClick={() => setBevestig(true)}>
-                Terug naar voorbeeldprijzen
+                Terugzetten
               </Button>
             </div>
           </div>
         </Card>
 
-        {/* Zoeken en filteren */}
+        {/* Zoeken, statusfilter, categorie */}
         <div className="sticky top-16 z-20 -mx-4 mt-5 bg-sand-100/85 px-4 py-3 backdrop-blur-md sm:top-[4.5rem] sm:-mx-6 sm:px-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <label className="relative block md:w-80">
-              <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <input
-                value={zoek}
-                onChange={(e) => setZoek(e.target.value)}
-                placeholder="Zoek artikel of productnaam"
-                className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 pr-9 pl-10 text-[0.92rem] placeholder:text-ink-muted/70 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
-              />
-              {zoek && (
-                <button type="button" aria-label="Zoekterm wissen" onClick={() => setZoek('')} className="absolute top-1/2 right-2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-ink-muted hover:bg-sand-100">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </label>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <label className="relative block md:w-80">
+                <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                <input
+                  value={zoek}
+                  onChange={(e) => setZoek(e.target.value)}
+                  placeholder="Zoek artikel, categorie of productnaam"
+                  className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 pr-9 pl-10 text-[0.92rem] placeholder:text-ink-muted/70 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+                />
+                {zoek && (
+                  <button type="button" aria-label="Zoekterm wissen" onClick={() => setZoek('')} className="absolute top-1/2 right-2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-ink-muted hover:bg-sand-100">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </label>
+              <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+                <div className="flex min-w-max gap-1.5">
+                  {filters.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setFilter(f.id)}
+                      className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[0.8rem] font-medium ring-1 ring-inset transition ${
+                        filter === f.id ? 'bg-ink text-sand-50 ring-ink' : 'bg-white/70 text-ink-soft ring-sand-300 hover:ring-gold-400'
+                      }`}
+                    >
+                      {f.label}
+                      <span className={`tabnum rounded-full px-1.5 text-[0.7rem] ${filter === f.id ? 'bg-white/15' : 'bg-sand-200/80'}`}>{telling[f.id]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
             <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-              <div className="flex min-w-max gap-1.5">
-                {filters.map((f) => (
+              <div className="flex min-w-max gap-1.5" role="tablist" aria-label="Categorie">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={groepFilter === 'alle'}
+                  onClick={() => setGroepFilter('alle')}
+                  className={`inline-flex h-8 items-center rounded-full px-3 text-[0.78rem] font-medium ring-1 ring-inset transition ${
+                    groepFilter === 'alle' ? 'bg-gold-200/80 text-ink ring-gold-400' : 'bg-white/50 text-ink-muted ring-sand-300 hover:ring-gold-400'
+                  }`}
+                >
+                  Alle categorieën
+                </button>
+                {GROEPEN.map((g) => (
                   <button
-                    key={f.id}
+                    key={g.id}
                     type="button"
-                    onClick={() => setFilter(f.id)}
-                    className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[0.8rem] font-medium ring-1 ring-inset transition ${
-                      filter === f.id ? 'bg-ink text-sand-50 ring-ink' : 'bg-white/70 text-ink-soft ring-sand-300 hover:ring-gold-400'
+                    role="tab"
+                    aria-selected={groepFilter === g.id}
+                    onClick={() => setGroepFilter(g.id)}
+                    className={`inline-flex h-8 items-center rounded-full px-3 text-[0.78rem] font-medium ring-1 ring-inset transition ${
+                      groepFilter === g.id ? 'bg-gold-200/80 text-ink ring-gold-400' : 'bg-white/50 text-ink-muted ring-sand-300 hover:ring-gold-400'
                     }`}
                   >
-                    {f.label}
-                    <span className={`tabnum rounded-full px-1.5 text-[0.7rem] ${filter === f.id ? 'bg-white/15' : 'bg-sand-200/80'}`}>{telling[f.id]}</span>
+                    {g.naam}
                   </button>
                 ))}
               </div>
@@ -180,15 +298,25 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
         </div>
 
         {groepen.length === 0 ? (
-          <Card className="mt-3 flex flex-col items-center px-6 py-14 text-center">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gold-100 text-gold-600 ring-1 ring-gold-200">
-              <Search className="h-6 w-6" />
-            </span>
-            <p className="mt-4 text-[1.5rem] font-display font-semibold">Niets gevonden</p>
-            <p className="mt-1 text-sm text-ink-muted">Pas je zoekterm of filter aan.</p>
-            <Button className="mt-5" variant="secondary" size="sm" onClick={() => { setZoek(''); setFilter('alle') }}>
-              Alles tonen
-            </Button>
+          <Card className="mt-3">
+            <LeegStaat
+              icon={<Search className="h-5 w-5" />}
+              titel="Niets gevonden"
+              tekst="Pas je zoekterm, statusfilter of categorie aan."
+              actie={
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setZoek('')
+                    setFilter('alle')
+                    setGroepFilter('alle')
+                  }}
+                >
+                  Alles tonen
+                </Button>
+              }
+            />
           </Card>
         ) : (
           <div className="mt-3 space-y-4 lg:mt-0">
@@ -214,11 +342,14 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
         )}
 
         <p className="mt-6 text-center text-xs text-ink-muted">
-          Prijzen worden alleen op dit apparaat bewaard. Gebruik Exporteren om een back-up te maken of ze naar een ander apparaat te verhuizen.
+          Prijzen blijven alleen op dit apparaat. Gebruik Exporteren voor een back-up of om ze naar een ander apparaat te verhuizen. Importeer een CSV/JSON om snel te starten.
         </p>
       </div>
 
       {detail && <PrijsDetails item={detail.item} winkel={detail.winkel} eigen={eigen} onClose={() => setDetail(undefined)} />}
+
+      <KopieerDialoog open={kopieerOpen} onClose={() => setKopieerOpen(false)} />
+      <BulkDialoog open={bulkOpen} onClose={() => setBulkOpen(false)} eigen={eigen} />
 
       <Dialog
         open={bevestig}
@@ -254,6 +385,163 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
         </div>
       </Dialog>
     </div>
+  )
+}
+
+function KopieerDialoog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [van, setVan] = useState<WinkelId>('gamma')
+  const [naar, setNaar] = useState<WinkelId>('praxis')
+  const [modus, setModus] = useState<KopieerModus>('alleen-leeg')
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Prijzen van winkel kopiëren"
+      sub="Gebruik één winkel als startpunt voor een andere (bijv. Gamma → Praxis)."
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Annuleren
+          </Button>
+          <Button
+            variant="gold"
+            icon={<ArrowRightLeft className="h-4 w-4" />}
+            disabled={van === naar}
+            onClick={() => {
+              const voor = telEigenPrijzen(prijsStore.alle())
+              prijsStore.kopieerWinkel(van, naar, modus)
+              const na = telEigenPrijzen(prijsStore.alle())
+              toast(`${winkelNaam(van)} → ${winkelNaam(naar)}: ${Math.max(0, na - voor)} ${na - voor === 1 ? 'prijs' : 'prijzen'} gezet`)
+              onClose()
+            }}
+          >
+            Kopiëren
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1.5 block text-[0.8rem] font-medium text-ink-soft">Van</span>
+            <select className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-[0.92rem] focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none" value={van} onChange={(e) => setVan(e.target.value as WinkelId)}>
+              {WINKELS.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.naam}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[0.8rem] font-medium text-ink-soft">Naar</span>
+            <select className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-[0.92rem] focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none" value={naar} onChange={(e) => setNaar(e.target.value as WinkelId)}>
+              {WINKELS.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.naam}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="space-y-2">
+          <p className="text-[0.8rem] font-medium text-ink-soft">Wat kopiëren?</p>
+          {(
+            [
+              { id: 'alleen-leeg' as const, titel: 'Alleen lege cellen vullen', tekst: 'Bestaande eigen prijzen bij de doelwinkel blijven staan.' },
+              { id: 'overschrijven' as const, titel: 'Alles overschrijven', tekst: 'Alle prijzen van de bronwinkel gaan over; bestaande doelprijzen verdwijnen.' },
+            ] as const
+          ).map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => setModus(o.id)}
+              className={`flex w-full flex-col rounded-xl px-4 py-3 text-left ring-1 ring-inset transition ${modus === o.id ? 'bg-gold-100/60 ring-gold-400' : 'bg-sand-50 ring-sand-200 hover:ring-gold-300'}`}
+            >
+              <span className="text-sm font-medium">{o.titel}</span>
+              <span className="mt-0.5 text-xs text-ink-muted">{o.tekst}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-ink-muted">
+          Bron = jouw eigen prijs bij die winkel, anders de voorbeeldprijs. Geen live prijzen van de bouwmarkt.
+        </p>
+      </div>
+    </Dialog>
+  )
+}
+
+function BulkDialoog({ open, onClose, eigen }: { open: boolean; onClose: () => void; eigen: EigenPrijzen }) {
+  const [winkel, setWinkel] = useState<WinkelId>('gamma')
+  const [procent, setProcent] = useState('5')
+  const n = useMemo(() => {
+    let c = 0
+    for (const rij of Object.values(eigen)) if (rij?.[winkel]?.prijs != null) c++
+    return c
+  }, [eigen, winkel])
+  const p = Number(procent.replace(',', '.'))
+  const ok = Number.isFinite(p) && p !== 0 && n > 0
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Percentage aanpassen"
+      sub="Pas al je eigen prijzen bij één winkel in één keer aan (bijv. +5% of −3%)."
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Annuleren
+          </Button>
+          <Button
+            variant="gold"
+            icon={<Percent className="h-4 w-4" />}
+            disabled={!ok}
+            onClick={() => {
+              prijsStore.pasPercentage(winkel, p)
+              toast(`${n} ${n === 1 ? 'prijs' : 'prijzen'} bij ${winkelNaam(winkel)} ${p > 0 ? '+' : ''}${p}%`)
+              onClose()
+            }}
+          >
+            Toepassen
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <label className="block">
+          <span className="mb-1.5 block text-[0.8rem] font-medium text-ink-soft">Winkel</span>
+          <select className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-[0.92rem] focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none" value={winkel} onChange={(e) => setWinkel(e.target.value as WinkelId)}>
+            {WINKELS.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.naam}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[0.8rem] font-medium text-ink-soft">Percentage</span>
+          <div className="relative">
+            <input
+              inputMode="decimal"
+              className="tabnum h-11 w-full rounded-xl border border-sand-300 bg-white/90 pr-10 pl-3.5 text-[0.92rem] focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+              value={procent}
+              onChange={(e) => setProcent(e.target.value.replace(/[^\d.,\-]/g, ''))}
+              placeholder="5"
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-ink-muted">%</span>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {['-5', '-3', '3', '5', '10'].map((v) => (
+              <button key={v} type="button" onClick={() => setProcent(v)} className="h-8 rounded-lg bg-sand-100 px-2.5 text-[0.78rem] font-medium text-ink-soft hover:bg-sand-200">
+                {Number(v) > 0 ? `+${v}` : v}%
+              </button>
+            ))}
+          </div>
+        </label>
+        <p className="text-xs text-ink-muted">
+          {n === 0 ? `Nog geen eigen prijzen bij ${winkelNaam(winkel)}.` : `Past ${n} ${n === 1 ? 'eigen prijs' : 'eigen prijzen'} aan. Voorbeeldprijzen blijven onaangeroerd.`}
+        </p>
+      </div>
+    </Dialog>
   )
 }
 
@@ -340,7 +628,6 @@ function PrijsInvoer({
 }) {
   const [tekst, setTekst] = useState(waarde != null ? prijsTekst(waarde) : '')
   const [focus, setFocus] = useState(false)
-  // waarde van buitenaf gewijzigd (import, herstel) → tekst bijwerken als het veld geen focus heeft
   const extern = waarde != null ? prijsTekst(waarde) : ''
   if (!focus && tekst !== extern && leesOfNull(tekst) !== (waarde ?? null)) setTekst(extern)
   return (
