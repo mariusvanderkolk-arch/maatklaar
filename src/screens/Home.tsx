@@ -1,6 +1,7 @@
-import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FolderOpen, MapPin, Plus, ShoppingCart } from 'lucide-react'
+import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FolderOpen, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
 import { Plattegrond } from '../components/Plattegrond'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
+import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
 import { backupStatus } from '../lib/backupActies'
 import { euro, getal, kortDatum } from '../lib/format'
@@ -35,24 +36,30 @@ export function Home() {
         <section className="card relative overflow-hidden">
           <div className="grid lg:grid-cols-[1.15fr_1fr]">
             <div className="relative z-10 self-center px-6 pt-8 pb-8 sm:px-10 sm:pt-12 lg:pb-12">
-              <Eyebrow>Badkamer · toilet · keuken · vloer</Eyebrow>
+              <div className="flex flex-wrap items-center gap-2">
+                <Eyebrow>Badkamer · toilet · keuken · vloer</Eyebrow>
+                <Badge tone="gold">Versie {APP_VERSIE_KORT} · nu gratis</Badge>
+              </div>
               <h1 className="mt-3 text-[2.5rem] leading-[1.02] font-semibold text-ink sm:text-[3.4rem]">
-                Van opmeten tot inkooplijst, <span className="text-gold-600 italic">helder</span> in één overzicht.
+                Van opmeten tot offerte, <span className="text-gold-600 italic">helder</span> op de bouw.
               </h1>
               <p className="mt-4 max-w-md text-[0.98rem] leading-relaxed text-ink-soft">
-                Voor aannemers en klussers. Leg de ruimte vast, laat materialen uitrekenen en neem een nette inkooplijst en
-                offerte mee naar de klant.
+                Voor aannemers: meet de ruimte in, reken materialen en uren uit, vul je eigen inkoopprijzen in en stuur
+                de klant een nette offerte — alles op je telefoon, zonder abonnement.
               </p>
               <div className="mt-7 flex flex-wrap gap-2.5">
                 <Button size="lg" className="w-full sm:w-auto" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>
                   Nieuw project
                 </Button>
-                {gesorteerd[0] && (
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto" onClick={() => ga(`/project/${gesorteerd[0].id}/berekening`)}>
-                    Bekijk voorbeeld
-                  </Button>
-                )}
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<Tags className="h-4.5 w-4.5" />} onClick={() => ga('/prijzen')}>
+                  Prijzen beheren
+                </Button>
               </div>
+              {gesorteerd[0] && (
+                <button type="button" onClick={() => ga(`/project/${gesorteerd[0].id}/berekening`)} className="mt-3 text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink">
+                  Of bekijk eerst een voorbeeldproject
+                </button>
+              )}
             </div>
             <div className="relative hidden h-full min-h-[360px] items-center justify-center border-l border-sand-200 bg-sand-50/80 px-8 py-8 lg:flex">
               <div className="absolute top-5 left-6 flex items-center gap-2">
@@ -78,6 +85,27 @@ export function Home() {
               </li>
             ))}
           </ol>
+        </section>
+
+        {/* Nieuw in 1.0 */}
+        <section className="mt-10">
+          <div className="card overflow-hidden">
+            <div className="flex flex-col gap-4 bg-gradient-to-br from-gold-100/50 via-sand-50 to-paper px-5 py-5 sm:flex-row sm:items-center sm:gap-6 sm:px-8 sm:py-6">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold-200/80 text-gold-700 ring-1 ring-gold-300">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Nieuw in versie {APP_VERSIE_KORT}</p>
+                <p className="mt-1 text-[0.95rem] leading-relaxed text-ink-soft">
+                  Facturen vanuit een offerte, sneller je eigen prijzen beheren (zoeken, winkel kopiëren, voorbeeldprijzen overnemen),
+                  AI-fotoanalyse en een volledige back-up. Nog steeds gratis; gegevens blijven op dit apparaat.
+                </p>
+              </div>
+              <Button size="sm" variant="secondary" className="shrink-0 self-start sm:self-center" onClick={() => ga('/over')}>
+                Meer over de app
+              </Button>
+            </div>
+          </div>
         </section>
 
         {/* Projecten */}

@@ -5,6 +5,7 @@ import { OpslagWaarschuwing } from './Opslag'
 import { Button } from './ui'
 import { TestBanner } from './Testversie'
 import { TEST_MODUS } from '../lib/modus'
+import { APP_VERSIE_KORT } from '../lib/versie'
 import { ga, type Route } from '../lib/router'
 
 export function Shell({ route, children }: { route: Route; children: ReactNode }) {
@@ -72,12 +73,12 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <footer className={`no-print border-t border-sand-300/60 ${route.naam === 'home' || route.naam === 'over' || route.naam === 'prijzen' || route.naam === 'instellingen' || route.naam === 'facturen' ? '' : 'pb-20'}`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
-            © {new Date().getFullYear()} Slimmer Wonen · {TEST_MODUS ? 'testversie' : 'demo-versie'} ·{' '}
+            © {new Date().getFullYear()} Slimmer Wonen · {TEST_MODUS ? 'testversie' : `versie ${APP_VERSIE_KORT}`} ·{' '}
             <a href="#/over" className="underline underline-offset-2 hover:text-ink">
               Over de app
             </a>
           </p>
-          <p>Voorbeeldprijzen, tenzij je eigen prijzen invult · gegevens blijven op dit apparaat</p>
+          <p>{TEST_MODUS ? 'Voorbeeldprijzen, tenzij je eigen prijzen invult · gegevens blijven op dit apparaat' : 'Nu gratis · vul je eigen prijzen in · gegevens blijven op dit apparaat'}</p>
         </div>
       </footer>
     </div>

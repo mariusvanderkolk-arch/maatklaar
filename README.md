@@ -2,7 +2,7 @@
 
 **Opmeten, materialen berekenen, inkooplijst, offerte en planning voor badkamers, toiletten, keukens en vloeren** — voor aannemers en klussers.
 
-🔗 Live demo: https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+🔗 Live (versie 1.0, nu gratis): https://mariusvanderkolk-arch.github.io/slimmer-wonen/
 
 ![Slimmer Wonen](public/logo.png)
 
@@ -26,7 +26,7 @@
    (de gegevens zitten gecomprimeerd in de link, er is geen server) en stuurt zijn akkoord via WhatsApp of e-mail.
 6. **Planning & uren** — dagplanning met droogtijden en weekenden, urenregistratie, extra kosten en
    budgetbewaking ten opzichte van de offerte.
-7. **Prijzen beheren** — eigen prijzen per artikel en winkel, export/import als JSON of CSV.
+7. **Prijzen beheren** — snelle start met voorbeeldprijzen, zoeken/filteren, inline bewerken, winkel kopiëren, % bulk, export/import CSV/JSON.
 8. **Instellingen** — bedrijfsgegevens, offerte-instellingen, AI-sleutel en **volledige back-up**
    (alle projecten, foto's als data-URL, prijzen en bedrijfsgegevens; API-sleutels gaan niet mee) met samenvoegen of
    vervangen bij terugzetten, plus een back-upherinnering.
@@ -100,6 +100,10 @@ npm run icons    # PWA-iconen opnieuw genereren uit public/logo-mark.svg
 ```
 
 Stack: Vite, React, TypeScript, Tailwind CSS. Publicatie via GitHub Actions naar GitHub Pages.
+
+## Versie 1.0
+
+Slimmer Wonen 1.0 is live: opmeten, berekenen, inkooplijst, offerte, factuur, planning en eigen prijzen. De app is **nu gratis**; alle gegevens blijven op het apparaat. Vul onder Prijzen beheren je eigen inkoopprijzen in (geen live bouwmarkt-API).
 
 ## Testversie voor aannemers
 

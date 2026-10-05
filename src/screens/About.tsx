@@ -5,6 +5,7 @@ import { Badge, Button, Card, PageTitle } from '../components/ui'
 import { toast } from '../components/Toast'
 import { projectStore } from '../lib/store'
 import { ga } from '../lib/router'
+import { APP_VERSIE } from '../lib/versie'
 
 const BLOKKEN = [
   {
@@ -65,7 +66,7 @@ export function About() {
       <PageTitle
         eyebrow="Over de app"
         title="Slimmer Wonen"
-        sub="Een rekenhulp voor aannemers en klussers bij het renoveren van badkamers, toiletten, keukens en vloeren: van opmeten tot een nette inkooplijst en offerte."
+        sub={`Versie ${APP_VERSIE} · nu gratis. Een rekenhulp voor aannemers en klussers bij het renoveren van badkamers, toiletten, keukens en vloeren: van opmeten tot een nette inkooplijst, offerte en factuur.`}
       />
       <div className="mt-8 grid gap-4">
         {BLOKKEN.map((b) => (
@@ -112,6 +113,7 @@ export function About() {
         >
           Korte rondleiding opnieuw bekijken
         </button>
+        <p className="mt-3 text-xs text-ink-muted">Slimmer Wonen versie {APP_VERSIE} · gegevens blijven op dit apparaat</p>
       </div>
     </div>
   )
