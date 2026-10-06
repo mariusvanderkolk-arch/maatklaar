@@ -4,12 +4,13 @@ import { kopieerWinkelPrijzen, metEigenPrijzen, pasPercentageToe, verwijderEigen
 import { voorbeeldPrijsBron, type PrijsBron, type WinkelId } from './prices'
 import type { ProductId } from './calc'
 import { sleutel } from './modus'
+import { opslag } from './veiligeOpslag'
 
 const SLEUTEL = sleutel('prijzen:v1')
 
 function laad(): EigenPrijzen {
   try {
-    const ruw = localStorage.getItem(SLEUTEL)
+    const ruw = opslag.getItem(SLEUTEL)
     const data = ruw ? JSON.parse(ruw) : {}
     return data && typeof data === 'object' && !Array.isArray(data) ? data : {}
   } catch {
@@ -25,7 +26,7 @@ function bewaar(nieuw: EigenPrijzen) {
   eigen = nieuw
   bron = metEigenPrijzen(voorbeeldPrijsBron, eigen)
   try {
-    localStorage.setItem(SLEUTEL, JSON.stringify(nieuw))
+    opslag.setItem(SLEUTEL, JSON.stringify(nieuw))
   } catch {
     /* opslag vol: wijziging blijft in deze sessie actief */
   }

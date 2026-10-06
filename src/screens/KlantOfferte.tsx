@@ -8,6 +8,7 @@ import { akkoordBericht, datumNl, decodeerOfferte, mailtoLink, whatsappLink, typ
 import { vandaag } from '../lib/planning'
 import { kopieer } from '../lib/share'
 import { sleutel as opslagSleutel } from '../lib/modus'
+import { opslag } from '../lib/veiligeOpslag'
 
 interface Akkoord {
   naam: string
@@ -61,7 +62,7 @@ function Kader({ children, bedrijf }: { children: React.ReactNode; bedrijf?: str
 function Weergave({ d }: { d: OfferteData }) {
   const [akkoord, setAkkoord] = useState<Akkoord | null>(() => {
     try {
-      return JSON.parse(localStorage.getItem(sleutel(d.nr)) ?? 'null')
+      return JSON.parse(opslag.getItem(sleutel(d.nr)) ?? 'null')
     } catch {
       return null
     }
@@ -102,7 +103,7 @@ function Weergave({ d }: { d: OfferteData }) {
                 setAkkoord(a)
                 setBevestigen(true)
                 try {
-                  localStorage.setItem(sleutel(d.nr), JSON.stringify(a))
+                  opslag.setItem(sleutel(d.nr), JSON.stringify(a))
                 } catch {
                   /* niet erg: alleen geheugensteun */
                 }

@@ -1,5 +1,6 @@
 /** Kleine reactieve store bovenop localStorage (voor instellingen). */
 import { useSyncExternalStore } from 'react'
+import { opslag } from './veiligeOpslag'
 
 export interface LokaleStore<T> {
   get(): T
@@ -16,7 +17,7 @@ export function maakLokaleStore<T>(sleutel: string, standaard: () => T, normalis
   let fout: string | null = null
   const laad = (): T => {
     try {
-      const ruw = localStorage.getItem(sleutel)
+      const ruw = opslag.getItem(sleutel)
       return ruw == null ? standaard() : normaliseer(JSON.parse(ruw))
     } catch {
       return standaard()
@@ -37,7 +38,7 @@ export function maakLokaleStore<T>(sleutel: string, standaard: () => T, normalis
     waarde = nieuw
     let ok = true
     try {
-      localStorage.setItem(sleutel, JSON.stringify(nieuw))
+      opslag.setItem(sleutel, JSON.stringify(nieuw))
       fout = null
     } catch {
       fout = 'Opslaan is niet gelukt: de opslag van je browser is vol.'

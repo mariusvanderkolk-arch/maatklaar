@@ -6,6 +6,7 @@ import { ga } from '../lib/router'
 import { projectStore } from '../lib/store'
 import { sleutel } from '../lib/modus'
 import { APP_VERSIE_KORT } from '../lib/versie'
+import { opslag } from '../lib/veiligeOpslag'
 
 export const ONBOARDING_SLEUTEL = sleutel('onboarding')
 
@@ -33,7 +34,7 @@ const SCHERMEN = [
 export function Onboarding() {
   const [open, setOpen] = useState(() => {
     try {
-      return !localStorage.getItem(ONBOARDING_SLEUTEL)
+      return !opslag.getItem(ONBOARDING_SLEUTEL)
     } catch {
       return false
     }
@@ -45,7 +46,7 @@ export function Onboarding() {
 
   const sluit = () => {
     try {
-      localStorage.setItem(ONBOARDING_SLEUTEL, 'klaar')
+      opslag.setItem(ONBOARDING_SLEUTEL, 'klaar')
     } catch {
       /* opslag vol of geblokkeerd: dan alleen deze sessie */
     }

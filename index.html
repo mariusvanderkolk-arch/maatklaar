@@ -18,6 +18,72 @@
     <meta property="og:description" content="Opmeten, materialen berekenen en een inkooplijst met richtprijzen voor je badkamerrenovatie." />
     <meta property="og:image" content="https://mariusvanderkolk-arch.github.io/slimmer-wonen/logo.png" />
     <meta property="og:type" content="website" />
+    <script>
+      /* Noodscherm (ES5, zonder afhankelijkheden): als de app in een oude of beperkte browser
+         (bijv. de in-app browser van WhatsApp) niet start, krijgt de gebruiker uitleg in plaats van een wit scherm. */
+      (function () {
+        var w = window, d = document
+        // ?_h=… (van "Openen in Chrome") terugzetten naar de #-route
+        try {
+          var m = /[?&]_h=([^&]*)/.exec(location.search)
+          if (m && w.history && history.replaceState) {
+            var rest = location.search.replace(/([?&])_h=[^&]*&?/, '$1').replace(/[?&]$/, '')
+            history.replaceState(null, '', location.pathname + rest + '#' + decodeURIComponent(m[1].replace(/\+/g, ' ')))
+          }
+        } catch (e) {}
+        var fouten = []
+        function intentUrl() {
+          var h = location.hash && location.hash.length > 1 ? location.hash.slice(1) : ''
+          var zoek = location.search
+          if (h) zoek += (zoek ? '&' : '?') + '_h=' + encodeURIComponent(h)
+          var basis = location.host + location.pathname + zoek
+          return 'intent://' + basis + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent('https://' + basis) + ';end'
+        }
+        function toon(reden) {
+          if (w.__swGestart || d.getElementById('sw-noodscherm')) return
+          var android = /Android/i.test(navigator.userAgent)
+          var div = d.createElement('div')
+          div.id = 'sw-noodscherm'
+          div.setAttribute('role', 'alert')
+          div.style.cssText = 'position:fixed;inset:0;top:0;left:0;right:0;bottom:0;z-index:99999;overflow:auto;background:#F5EFE6;color:#2B2623;font-family:system-ui,-apple-system,Roboto,sans-serif;padding:48px 20px;text-align:center'
+          var knop = 'display:block;width:100%;max-width:320px;margin:10px auto 0;padding:14px 16px;border-radius:12px;font-size:16px;font-weight:600;text-decoration:none;border:1px solid #2B2623;box-sizing:border-box;cursor:pointer;'
+          div.innerHTML =
+            '<div style="max-width:420px;margin:0 auto">' +
+            '<h1 style="font-size:26px;margin:0 0 10px">Er ging iets mis</h1>' +
+            '<p style="font-size:16px;line-height:1.5;margin:0 0 20px">Open de link in Chrome. Sommige apps (zoals WhatsApp) openen links in een eigen, beperkte browser waarin Slimmer Wonen niet goed werkt.</p>' +
+            (android ? '<a id="sw-nood-chrome" style="' + knop + 'background:#2B2623;color:#F5EFE6" href="#">Openen in Chrome</a>' : '<p style="font-size:14px;line-height:1.5">Tik op ⋯ of het deel-icoon en kies ‘Openen in browser’.</p>') +
+            '<button id="sw-nood-herlaad" type="button" style="' + knop + 'background:transparent;color:#2B2623">Opnieuw laden</button>' +
+            '<p id="sw-nood-fout" style="margin-top:28px;font-size:11px;line-height:1.4;color:#7A6F66;word-break:break-word"></p>' +
+            '</div>'
+          ;(d.body || d.documentElement).appendChild(div)
+          var a = d.getElementById('sw-nood-chrome')
+          if (a) a.setAttribute('href', intentUrl())
+          d.getElementById('sw-nood-herlaad').onclick = function () { location.reload() }
+          d.getElementById('sw-nood-fout').textContent = 'Foutmelding: ' + (reden || fouten.join(' | ') || 'onbekend') + ' · ' + navigator.userAgent
+        }
+        w.__swToonNoodscherm = toon
+        function bijFout(tekst) {
+          if (w.__swGestart) return
+          fouten.push(String(tekst).slice(0, 300))
+          setTimeout(function () { if (!w.__swGestart) toon() }, 1500)
+        }
+        w.addEventListener('error', function (e) {
+          // ook mislukte scripts (e.target is dan het script-element)
+          var t = e && e.target
+          if (t && t !== w && t.tagName === 'SCRIPT') return bijFout('Script kon niet laden: ' + (t.src || ''))
+          bijFout((e && e.message) || 'fout')
+        }, true)
+        w.addEventListener('unhandledrejection', function (e) {
+          var r = e && e.reason
+          bijFout((r && (r.message || r)) || 'onbekende fout')
+        })
+        // Start de app helemaal niet (bijv. te oude browser zonder foutmelding), dan na 15 s alsnog uitleg.
+        setTimeout(function () { if (!w.__swGestart) toon('De app is na 15 seconden nog niet gestart.') }, 15000)
+      })()
+    </script>
+    <script nomodule>
+      window.__swToonNoodscherm && window.__swToonNoodscherm('Deze browser is te oud (geen ondersteuning voor JavaScript-modules).')
+    </script>
   </head>
   <body>
     <div id="root"></div>

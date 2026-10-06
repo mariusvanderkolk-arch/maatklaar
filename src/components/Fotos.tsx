@@ -28,8 +28,8 @@ export function Fotos({ p }: { p: Project }) {
         nieuw.push(ref)
       }
       projectStore.werkBij(p.id, (x) => ({ ...x, fotos: [...x.fotos, ...nieuw] }))
-    } catch {
-      setFout('De foto kon niet worden opgeslagen. Controleer of er genoeg opslagruimte is.')
+    } catch (e) {
+      setFout(e instanceof Error && e.message.startsWith('Foto-opslag') ? e.message : 'De foto kon niet worden opgeslagen. Controleer of er genoeg opslagruimte is.')
     } finally {
       setBezig(false)
       if (camera.current) camera.current.value = ''

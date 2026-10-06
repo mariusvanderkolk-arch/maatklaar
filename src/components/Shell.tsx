@@ -4,6 +4,7 @@ import { Logo } from './Logo'
 import { OpslagWaarschuwing } from './Opslag'
 import { Button } from './ui'
 import { TestBanner } from './Testversie'
+import { InAppBanner } from './InAppBanner'
 import { TEST_MODUS } from '../lib/modus'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { useCloud } from '../lib/cloud/sync'
@@ -20,6 +21,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <a href="#inhoud" onClick={(e) => { e.preventDefault(); document.getElementById('inhoud')?.focus() }} className="sr-only z-50 rounded-lg bg-ink px-4 py-2 text-sand-50 focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
         Naar de inhoud
       </a>
+      <InAppBanner />
       {TEST_MODUS && <TestBanner />}
       <header className="no-print sticky top-0 z-40 border-b border-sand-300/60 bg-sand-100/85 backdrop-blur-md supports-[backdrop-filter]:bg-sand-100/70">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:h-[4.5rem] sm:gap-3 sm:px-6">

@@ -3,6 +3,7 @@
  * de beveiliging zit in Row Level Security (zie supabase/schema.sql).
  */
 import { sleutel, TEST_MODUS } from '../modus'
+import { opslag } from '../veiligeOpslag'
 
 export const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL || 'https://cdhrbfawrhburztuzdha.supabase.co'
 export const SUPABASE_KEY: string = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_GxcILb6LAbuiuF7L7Tktew_7pPbHwvD'
@@ -21,7 +22,7 @@ export const redirectUrl = () => `${location.origin}${location.pathname}`
 export function sessieHint(): boolean {
   try {
     if (/access_token=|error_description=|[?&]code=/.test(location.hash + location.search)) return true
-    return localStorage.getItem(AUTH_SLEUTEL) != null
+    return opslag.getItem(AUTH_SLEUTEL) != null
   } catch {
     return false
   }

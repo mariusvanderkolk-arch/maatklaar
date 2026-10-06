@@ -65,7 +65,7 @@ const naarDate = (iso: string) => {
   const [j, m, d] = iso.split('-').map(Number)
   return new Date(Date.UTC(j, (m || 1) - 1, d || 1))
 }
-const naarIso = (d: Date) => d.toISOString().slice(0, 10)
+const naarIso = (d: Date) => (isNaN(d.getTime()) ? vandaag() : d.toISOString().slice(0, 10))
 export const plusDagen = (iso: string, n: number) => {
   const d = naarDate(iso)
   d.setUTCDate(d.getUTCDate() + n)

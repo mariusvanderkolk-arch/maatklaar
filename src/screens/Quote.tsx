@@ -4,7 +4,7 @@ import { OfferteDocument } from '../components/OfferteDocument'
 import { Badge, Button, Card, Notice, NumberField, Switch, TextField } from '../components/ui'
 import { toast } from '../components/Toast'
 import { nieuwOffertenummer, useBedrijf } from '../lib/bedrijf'
-import { datum, kortDatum } from '../lib/format'
+import { formatDatum, isoDatum, kortDatum } from '../lib/format'
 import { offerteLink } from '../lib/offerte'
 import { maakOfferteData } from '../lib/offerteMaken'
 import { vandaag } from '../lib/planning'
@@ -17,7 +17,7 @@ import type { OfferteData } from '../lib/offerte'
 import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
 import { btwOverzicht, effectieveStatus, STATUS_LABEL } from '../lib/factuur'
 
-const datumIso = (iso: string) => datum(Date.parse(`${iso}T12:00:00`))
+const datumIso = (iso: string) => formatDatum({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }, isoDatum(iso))
 
 export function Quote({ p }: { p: Project }) {
   const berekening = useBerekening(p)

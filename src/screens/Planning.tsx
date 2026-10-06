@@ -4,13 +4,13 @@ import { Badge, Button, Card, CardHeader, DateField, NumberField, SelectField, S
 import { ga } from '../lib/router'
 import { toast } from '../components/Toast'
 import { uid } from '../lib/defaults'
-import { euro, getal } from '../lib/format'
+import { euro, formatDatum, getal, isoDatum } from '../lib/format'
 import { maakBudget, maakDagplanning, planTaken, plusDagen, standaardPlanning, vandaag, type BudgetRegel } from '../lib/planning'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
 import type { KostSoort, Planning, Project } from '../lib/types'
 
-const dagLabel = (iso: string, opties: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('nl-NL', { ...opties, timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`))
+const dagLabel = (iso: string, opties: Intl.DateTimeFormatOptions) => formatDatum({ ...opties, timeZone: 'UTC' }, isoDatum(iso))
 const KOST_SOORTEN: { value: KostSoort; label: string }[] = [
   { value: 'materiaal', label: 'Materiaal (bon)' },
   { value: 'meerwerk', label: 'Meerwerk' },
@@ -27,7 +27,7 @@ export function PlanningScherm({ p }: { p: Project }) {
   const dagen = useMemo(() => maakDagplanning(taken, start, pl.weekend), [taken, start, pl.weekend])
   const budget = maakBudget({ materialen: inkoop.goedkoopsteMix, arbeid, uurtarief: p.uurtarief }, pl)
   const werkdagen = taken.reduce((s, t) => s + t.dagen, 0)
-  const eind = dagen.at(-1)?.datum
+  const eind = dagen[dagen.length - 1]?.datum
 
   return (
     <div className="space-y-5">

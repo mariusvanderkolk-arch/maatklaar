@@ -7,6 +7,7 @@ import { Foutgrens } from './components/Foutgrens'
 import { Onboarding } from './components/Onboarding'
 import { laadLater } from './lib/lazy'
 import { CloudToestemming } from './components/CloudToestemming'
+import { InAppBanner } from './components/InAppBanner'
 
 const ProjectForm = laadLater(() => import('./screens/ProjectForm').then((m) => m.ProjectForm))
 const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m) => m.ProjectScreen))
@@ -33,6 +34,7 @@ export default function App() {
   if (route.naam === 'offerte-bekijken')
     return (
       <Foutgrens>
+        <InAppBanner />
         <Suspense fallback={<Laden />}>
           <KlantOfferte code={route.data} />
         </Suspense>

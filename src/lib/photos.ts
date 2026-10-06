@@ -5,21 +5,41 @@ import { OPSLAG_PREFIX } from './modus'
 const DB = OPSLAG_PREFIX
 const STORE = 'fotos'
 
+const GEEN_IDB = 'Foto-opslag is niet beschikbaar in deze browser. Open de app in Chrome om foto’s te bewaren.'
+
+let dbBelofte: Promise<IDBDatabase> | null = null
+
 function open(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 1)
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE)
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
+  dbBelofte ??= new Promise<IDBDatabase>((resolve, reject) => {
+    try {
+      const idb = typeof indexedDB !== 'undefined' ? indexedDB : undefined
+      if (!idb) return reject(new Error(GEEN_IDB))
+      const req = idb.open(DB, 1)
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE)
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(req.error ?? new Error(GEEN_IDB))
+      req.onblocked = () => reject(new Error(GEEN_IDB))
+    } catch {
+      reject(new Error(GEEN_IDB))
+    }
+  }).catch((e) => {
+    dbBelofte = null
+    throw e
   })
+  return dbBelofte
 }
 
 async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> {
   const db = await open()
   return new Promise((resolve, reject) => {
-    const req = fn(db.transaction(STORE, mode).objectStore(STORE))
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
+    try {
+      const req = fn(db.transaction(STORE, mode).objectStore(STORE))
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => reject(req.error)
+    } catch (e) {
+      dbBelofte = null // verbinding kan gesloten zijn; volgende keer opnieuw openen
+      reject(e)
+    }
   })
 }
 

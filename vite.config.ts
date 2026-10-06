@@ -35,5 +35,7 @@ function testversie(): Plugin {
 export default defineConfig({
   base,
   plugins: [react(), tailwindcss(), ...(test ? [testversie()] : [])],
+  // Ook oudere Android WebViews (in-app browser van WhatsApp e.d.) moeten de code kunnen lezen.
+  build: { target: ['es2019', 'chrome80', 'safari13', 'firefox78', 'edge88'], cssTarget: ['chrome80', 'safari13', 'firefox78', 'edge88'] },
   test: { environment: 'node' },
 } as never)

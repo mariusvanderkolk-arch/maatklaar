@@ -8,6 +8,7 @@
  */
 import type { OfferteData } from './offerte'
 import { plusDagen } from './planning'
+import { formatDatum, isoDatum } from './format'
 
 export type BtwTarief = 21 | 9
 export type FactuurStatus = 'concept' | 'verzonden' | 'betaald'
@@ -180,7 +181,7 @@ export function normaliseerFactuur(x: unknown): Factuur | null {
 }
 
 const eur = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n)
-const datumNl = (iso: string) => new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`))
+const datumNl = (iso: string) => formatDatum({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }, isoDatum(iso))
 
 /** Korte tekst voor delen (Web Share / kopiëren). */
 export function factuurTekst(f: Factuur): string {

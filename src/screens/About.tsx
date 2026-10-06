@@ -6,6 +6,7 @@ import { toast } from '../components/Toast'
 import { projectStore } from '../lib/store'
 import { ga } from '../lib/router'
 import { APP_VERSIE } from '../lib/versie'
+import { opslag } from '../lib/veiligeOpslag'
 
 const BLOKKEN = [
   {
@@ -114,7 +115,7 @@ export function About() {
         <button
           type="button"
           onClick={() => {
-            localStorage.removeItem(ONBOARDING_SLEUTEL)
+            opslag.removeItem(ONBOARDING_SLEUTEL)
             ga('/')
           }}
           className="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"

@@ -4,6 +4,7 @@
  * weergave en kan akkoord geven via een vooraf ingevuld bericht (WhatsApp, e-mail of kopiëren).
  */
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
+import { formatDatum, isoDatum } from './format'
 import type { Bedrijf } from './bedrijf'
 
 export interface OfferteData {
@@ -109,7 +110,7 @@ export function waNummer(tel: string): string {
 
 const eur = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n)
 const datumNl = (iso: string) =>
-  iso ? new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`)) : ''
+  iso ? formatDatum({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }, isoDatum(iso)) : ''
 
 /** Bericht van de klant terug naar de aannemer. */
 export function akkoordBericht(d: OfferteData, naam: string, opmerking: string, vandaagIso: string): string {
