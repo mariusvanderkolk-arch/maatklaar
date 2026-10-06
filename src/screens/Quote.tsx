@@ -15,6 +15,8 @@ import { useBerekening } from '../lib/useCalc'
 import type { OfferteStatus, Project } from '../lib/types'
 import type { OfferteData } from '../lib/offerte'
 import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
+import { useOntwerp } from '../lib/ontwerp/store'
+import { use3dBeeld } from '../lib/ontwerp/beeld'
 import { btwOverzicht, effectieveStatus, STATUS_LABEL } from '../lib/factuur'
 
 const datumIso = (iso: string) => formatDatum({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }, isoDatum(iso))
@@ -33,7 +35,9 @@ export function Quote({ p }: { p: Project }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.id])
 
-  const data = useMemo(() => maakOfferteData(p, berekening, bedrijf, datumIso), [p, berekening, bedrijf])
+  const ontwerp = useOntwerp(p)
+  const beeld3d = use3dBeeld(p.id)
+  const data = useMemo(() => maakOfferteData(p, berekening, bedrijf, datumIso, ontwerp), [p, berekening, bedrijf, ontwerp])
 
   const deel = async () => {
     const url = offerteLink(data)
@@ -55,7 +59,7 @@ export function Quote({ p }: { p: Project }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
       <div className="order-2 lg:order-1">
-        <OfferteDocument d={data} logo={bedrijf.logo} />
+        <OfferteDocument d={data} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} />
       </div>
 
       <aside className="no-print order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
@@ -157,6 +161,18 @@ export function Quote({ p }: { p: Project }) {
             </Button>
           </div>
         </Card>
+        {!data.ow && (
+          <Notice
+            title="Laat de klant het ontwerp zien"
+            action={
+              <Button size="sm" variant="secondary" onClick={() => ga(`/project/${p.id}/ontwerp`)}>
+                Naar ontwerp
+              </Button>
+            }
+          >
+            Maak een plattegrond met 3D-weergave; die komt dan op de offerte en in de klantlink.
+          </Notice>
+        )}
         <FactuurKaart p={p} data={data} />
       </aside>
     </div>

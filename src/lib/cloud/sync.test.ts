@@ -112,6 +112,30 @@ describe('cloud-sync met twee apparaten', () => {
     expect(c).toEqual(['pB'])
   })
 
+  it('ontwerp synct als kind design; nieuwste bijgewerkt wint', async () => {
+    nieuwApparaat()
+    const a = await laad()
+    const { ontwerpStore, bewaarOntwerp } = await import('../ontwerp/store')
+    const basis = a.voorbeeldProjecten()[0]
+    a.projectStore.voegToe({ ...basis, ...eigenProject('pD', 'Badkamer D', 1000) })
+    const leeg = { v: 1 as const, items: [], vloer: { kleur: 'kalk', formaat: '60x60', verband: 'recht' as const }, wand: { kleur: 'marmer', formaat: '30x60', verband: 'recht' as const }, inOfferte: true, bijgewerkt: 0 }
+    bewaarOntwerp('pD', { ...leeg, items: [{ id: 'x1', type: 'toilet-hangend', x: 50, y: 30, w: 38, d: 55, rot: 0 }] })
+    await a.sync.startCloud(true)
+    a.sync.geefToestemming(true)
+    await a.sync.syncNu()
+    const rij = server.rijen.find((r) => r.kind === 'design' && r.id === 'pD')
+    expect(rij).toBeTruthy()
+    expect(ontwerpStore.get().pD.items).toHaveLength(1)
+
+    nieuwApparaat()
+    const b = await laad()
+    const sb = await import('../ontwerp/store')
+    await b.sync.startCloud(true)
+    await b.sync.syncNu()
+    expect(sb.ontwerpStore.get().pD?.items[0]?.type).toBe('toilet-hangend')
+    expect(sb.ontwerpStore.get().pD?.wand.kleur).toBe('marmer')
+  })
+
   it('zonder tabel: status geen-tabel en lokaal blijft alles werken', async () => {
     server.tabel = false
     nieuwApparaat()

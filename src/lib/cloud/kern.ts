@@ -7,7 +7,7 @@
  */
 import type { EigenPrijs, EigenPrijzen } from '../eigenPrijzen'
 
-export type Soort = 'project' | 'factuur' | 'prijzen' | 'bedrijf'
+export type Soort = 'project' | 'factuur' | 'prijzen' | 'bedrijf' | 'design'
 
 export interface Doc {
   soort: Soort
@@ -79,7 +79,7 @@ export type Actie =
   | { soort: Soort; id: string; type: 'verwijder' }
   | { soort: Soort; id: string; type: 'samenvoegen'; data: unknown }
 
-const SOORTEN: Soort[] = ['project', 'factuur', 'prijzen', 'bedrijf']
+const SOORTEN: Soort[] = ['project', 'factuur', 'prijzen', 'bedrijf', 'design']
 
 /**
  * Verwerkt de rijen uit de cloud.

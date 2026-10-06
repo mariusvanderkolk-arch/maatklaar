@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Calculator, CalendarDays, Camera, FileText, MapPin, Pencil, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Calculator, CalendarDays, Camera, FileText, MapPin, Pencil, ShoppingCart, SquareDashedMousePointer } from 'lucide-react'
 import { Badge, Button } from '../components/ui'
 import { OpslagIndicator } from '../components/Opslag'
 import { ga, type Stap } from '../lib/router'
@@ -12,10 +12,12 @@ import { laadLater } from '../lib/lazy'
 const Calculation = laadLater(() => import('./Calculation').then((m) => m.Calculation))
 const Shopping = laadLater(() => import('./Shopping').then((m) => m.Shopping))
 const Quote = laadLater(() => import('./Quote').then((m) => m.Quote))
+const OntwerpScherm = laadLater(() => import('./Ontwerp').then((m) => m.OntwerpScherm))
 const PlanningScherm = laadLater(() => import('./Planning').then((m) => m.PlanningScherm))
 
 export const STAPPEN: { id: Stap; label: string; kort: string; icon: typeof Camera }[] = [
   { id: 'opmeten', label: 'Opmeten', kort: 'Opmeten', icon: Camera },
+  { id: 'ontwerp', label: 'Ontwerp', kort: 'Ontwerp', icon: SquareDashedMousePointer },
   { id: 'berekening', label: 'Berekening', kort: 'Bereken', icon: Calculator },
   { id: 'inkoop', label: 'Inkooplijst', kort: 'Inkoop', icon: ShoppingCart },
   { id: 'offerte', label: 'Offerte', kort: 'Offerte', icon: FileText },
@@ -62,7 +64,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
             )}
           </p>
           <nav className="-mx-2 mt-6 sm:mx-0" aria-label="Stappen">
-            <ol className="grid grid-cols-5 sm:flex sm:gap-2">
+            <ol className="grid grid-cols-6 sm:flex sm:gap-2">
               {STAPPEN.map((s, i) => {
                 const actief = s.id === stap
                 const klaar = i < index
@@ -101,6 +103,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
         <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-sand-200/70" aria-busy="true" aria-label="Laden" />}>
         {stap === 'opmeten' && <Measure p={p} />}
+        {stap === 'ontwerp' && <OntwerpScherm p={p} />}
         {stap === 'berekening' && <Calculation p={p} />}
         {stap === 'inkoop' && <Shopping p={p} />}
         {stap === 'offerte' && <Quote p={p} />}
@@ -116,7 +119,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
               <span className="sm:hidden">Terug</span>
             </Button>
           ) : (
-            <span className="hidden text-sm text-ink-muted sm:block">Stap 1 van 5 · wijzigingen worden automatisch bewaard</span>
+            <span className="hidden text-sm text-ink-muted sm:block">Stap 1 van {STAPPEN.length} · wijzigingen worden automatisch bewaard</span>
           )}
           {volgende ? (
             <Button className={vorige ? '' : 'w-full sm:w-auto'} onClick={() => ga(`/project/${p.id}/${volgende.id}`)}>

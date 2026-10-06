@@ -87,7 +87,7 @@ export function Home() {
           </ol>
         </section>
 
-        {/* Nieuw in 1.0 */}
+        {/* Nieuw in deze versie */}
         <section className="mt-10">
           <div className="card overflow-hidden">
             <div className="flex flex-col gap-4 bg-gradient-to-br from-gold-100/50 via-sand-50 to-paper px-5 py-5 sm:flex-row sm:items-center sm:gap-6 sm:px-8 sm:py-6">
@@ -97,12 +97,20 @@ export function Home() {
               <div className="min-w-0 flex-1">
                 <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Nieuw in versie {APP_VERSIE_KORT}</p>
                 <p className="mt-1 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Facturen vanuit een offerte, sneller je eigen prijzen beheren (zoeken, winkel kopiëren, voorbeeldprijzen overnemen),
-                  AI-fotoanalyse en een volledige back-up. Nog steeds gratis; gegevens blijven op dit apparaat.
+                  Ontwerp: teken de ruimte als plattegrond met douche, toilet, meubel en tegels, bekijk hem in 3D en zet het ontwerp op de
+                  offerte en in de klantlink. Werkt met je vinger op de telefoon. Nog steeds gratis; gegevens blijven op dit apparaat.
                 </p>
               </div>
-              <Button size="sm" variant="secondary" className="shrink-0 self-start sm:self-center" onClick={() => ga('/over')}>
-                Meer over de app
+              <Button
+                size="sm"
+                variant="secondary"
+                className="shrink-0 self-start sm:self-center"
+                onClick={() => {
+                  const vb = projecten.find((x) => x.voorbeeld && x.type === 'badkamer')
+                  ga(vb ? `/project/${vb.id}/ontwerp` : '/over')
+                }}
+              >
+                Bekijk het voorbeeld
               </Button>
             </div>
           </div>

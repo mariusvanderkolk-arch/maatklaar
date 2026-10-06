@@ -98,5 +98,6 @@
   .card { box-shadow: none !important; border-color: #e2d5bf !important; }
   .print-plain { box-shadow: none !important; border: 0 !important; padding: 0 !important; background: #fff !important; }
   .avoid-break { break-inside: avoid; }
+  h2, h3 { break-after: avoid; page-break-after: avoid; }
   a { text-decoration: none; color: inherit; }
 }

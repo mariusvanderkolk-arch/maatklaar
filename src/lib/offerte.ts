@@ -6,6 +6,7 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import { formatDatum, isoDatum } from './format'
 import type { Bedrijf } from './bedrijf'
+import { uitCompact, type CompactOntwerp } from './ontwerp/model'
 
 export interface OfferteData {
   v: 1
@@ -34,6 +35,8 @@ export interface OfferteData {
   notities: string
   betaaltermijn: string
   prijsTekst: string
+  /** ruimte-ontwerp (compact), optioneel */
+  ow?: CompactOntwerp
 }
 
 const MAX_LINK = 12_000
@@ -91,6 +94,7 @@ export function decodeerOfferte(code: string): OfferteData {
     notities: str(o.notities, 2000),
     betaaltermijn: str(o.betaaltermijn, 400),
     prijsTekst: str(o.prijsTekst, 400),
+    ...(uitCompact(o.ow) ? { ow: o.ow as CompactOntwerp } : {}),
   }
 }
 

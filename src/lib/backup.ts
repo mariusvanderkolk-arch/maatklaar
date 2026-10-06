@@ -28,14 +28,16 @@ export interface Backup {
   facturen: Factuur[]
   /** AI-voorkeuren zonder sleutels */
   ai?: Omit<AiInstellingen, 'sleutels'>
+  /** ruimte-ontwerpen per project-id (sinds 1.1) */
+  ontwerpen?: Record<string, unknown>
 }
 
 export function maakBackup(
-  d: { projecten: Project[]; fotos: BackupFoto[]; prijzen: EigenPrijzen; bedrijf?: Bedrijf; ai?: AiInstellingen; facturen?: Factuur[] },
+  d: { projecten: Project[]; fotos: BackupFoto[]; prijzen: EigenPrijzen; bedrijf?: Bedrijf; ai?: AiInstellingen; facturen?: Factuur[]; ontwerpen?: Record<string, unknown> },
   nu = new Date(),
 ): Backup {
   const ai = d.ai ? { provider: d.ai.provider, modellen: d.ai.modellen, baseUrl: d.ai.baseUrl } : undefined
-  return { app: 'slimmer-wonen', type: 'backup', versie: BACKUP_VERSIE, gemaakt: nu.toISOString(), projecten: d.projecten, fotos: d.fotos, prijzen: d.prijzen, bedrijf: d.bedrijf, facturen: d.facturen ?? [], ai }
+  return { app: 'slimmer-wonen', type: 'backup', versie: BACKUP_VERSIE, gemaakt: nu.toISOString(), projecten: d.projecten, fotos: d.fotos, prijzen: d.prijzen, bedrijf: d.bedrijf, facturen: d.facturen ?? [], ai, ...(d.ontwerpen && Object.keys(d.ontwerpen).length ? { ontwerpen: d.ontwerpen } : {}) }
 }
 
 const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x)
@@ -78,6 +80,7 @@ export function leesBackup(tekst: string): Backup {
     bedrijf,
     facturen: (Array.isArray(j.facturen) ? j.facturen : []).map(normaliseerFactuur).filter((f): f is Factuur => f != null),
     ai,
+    ...(isObj(j.ontwerpen) ? { ontwerpen: j.ontwerpen as Record<string, unknown> } : {}),
   }
 }
 

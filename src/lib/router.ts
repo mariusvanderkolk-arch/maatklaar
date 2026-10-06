@@ -1,7 +1,7 @@
 /** Eenvoudige hash-router (werkt zonder serverconfiguratie, ook op GitHub Pages). */
 import { useEffect, useState } from 'react'
 
-export type Stap = 'opmeten' | 'berekening' | 'inkoop' | 'offerte' | 'planning'
+export type Stap = 'opmeten' | 'ontwerp' | 'berekening' | 'inkoop' | 'offerte' | 'planning'
 
 export type Route =
   | { naam: 'home' }
@@ -17,7 +17,7 @@ export type Route =
   | { naam: 'account' }
   | { naam: 'privacy' }
 
-const STAPPEN: Stap[] = ['opmeten', 'berekening', 'inkoop', 'offerte', 'planning']
+const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning']
 
 export function parse(hash: string): Route {
   const delen = hash.replace(/^#\/?/, '').split('/').filter(Boolean)

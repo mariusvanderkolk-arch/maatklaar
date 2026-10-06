@@ -1,9 +1,10 @@
 import { LogoMark } from './Logo'
 import { euro, getal } from '../lib/format'
 import { datumNl, type OfferteData } from '../lib/offerte'
+import { OntwerpSectie } from './ontwerp/OntwerpSectie'
 
 /** Professionele offerteweergave; gebruikt in de app én in de alleen-lezen klantweergave. */
-export function OfferteDocument({ d, logo, className = '' }: { d: OfferteData; logo?: string; className?: string }) {
+export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3d }: { d: OfferteData; logo?: string; className?: string; beeld3d?: string | null; interactief3d?: boolean }) {
   const b = d.bedrijf
   const heeftBedrijf = Boolean(b.naam)
   const gemengd = d.mat.some((m) => m[3])
@@ -92,6 +93,8 @@ export function OfferteDocument({ d, logo, className = '' }: { d: OfferteData; l
             ))}
           </div>
         </section>
+
+        {d.ow && <OntwerpSectie ow={d.ow} beeld3d={beeld3d} interactief3d={interactief3d} />}
 
         <section className="mt-8">
           <h2 className="font-display text-[1.35rem] font-semibold">Materialen</h2>

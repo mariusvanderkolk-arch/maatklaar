@@ -81,7 +81,7 @@ function Weergave({ d }: { d: OfferteData }) {
               De offerte was geldig tot {datumNl(d.geldigTot)}. Neem contact op met {d.bedrijf.naam || 'de aannemer'} voor een actuele offerte.
             </Notice>
           )}
-          <OfferteDocument d={d} />
+          <OfferteDocument d={d} interactief3d />
         </div>
         <aside id="akkoord" className="no-print scroll-mt-6 space-y-4 lg:sticky lg:top-6">
           {akkoord ? (

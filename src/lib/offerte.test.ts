@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { compressToEncodedURIComponent } from 'lz-string'
+import { voorbeeldProjecten } from './defaults'
+import { compact, kamerVan, standaardAfwerking, voorstelIndeling, type Ontwerp } from './ontwerp/model'
 import { akkoordBericht, codeerOfferte, decodeerOfferte, mailtoLink, waNummer, whatsappLink, type OfferteData } from './offerte'
 
 const data = (): OfferteData => ({
@@ -42,6 +44,20 @@ describe('offerte-link', () => {
     expect(() => decodeerOfferte('')).toThrow(/onvolledig/)
     expect(() => decodeerOfferte('abc')).toThrow(/niet worden gelezen|geen geldige/)
     expect(() => decodeerOfferte(compressToEncodedURIComponent(JSON.stringify({ v: 2 })))).toThrow(/geen geldige offerte/)
+  })
+
+  it('neemt een compact ontwerp mee en blijft binnen WhatsApp-lengte', () => {
+    const p = voorbeeldProjecten()[0]
+    let n = 0
+    const o: Ontwerp = { v: 1, items: voorstelIndeling(p, () => `i${n++}`), ...standaardAfwerking(p.type), inOfferte: true, bijgewerkt: 1 }
+    const d = { ...data(), ow: compact(o, kamerVan(p)) }
+    const code = codeerOfferte(d)
+    expect(code.length).toBeLessThan(3600)
+    expect(decodeerOfferte(code).ow).toEqual(d.ow)
+    // kapot ontwerp wordt weggelaten, de offerte blijft leesbaar
+    const kapot = decodeerOfferte(compressToEncodedURIComponent(JSON.stringify({ ...data(), ow: { k: 'x' } })))
+    expect(kapot.ow).toBeUndefined()
+    expect(kapot.nr).toBe('OF-2026-007')
   })
 
   it('schoont onverwachte velden en typen op', () => {

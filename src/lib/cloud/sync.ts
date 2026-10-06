@@ -1,6 +1,6 @@
 /**
  * Cloud-sync (optioneel). Lokaal blijft leidend: zonder account werkt alles zoals altijd.
- * Met account worden projecten, facturen, eigen prijzen en het bedrijfsprofiel als documenten
+ * Met account worden projecten, ontwerpen, facturen, eigen prijzen en het bedrijfsprofiel als documenten
  * in de tabel user_data bewaard (laatste wijziging wint). Foto's blijven alleen op het apparaat.
  */
 import { useSyncExternalStore } from 'react'
@@ -14,6 +14,8 @@ import { laatstBijgewerkt, telEigenPrijzen, type EigenPrijzen } from '../eigenPr
 import { maakLokaleStore } from '../lokaal'
 import { sleutel } from '../modus'
 import type { Project } from '../types'
+import { ontwerpStore } from '../ontwerp/store'
+import { normaliseerOntwerp, type Ontwerp } from '../ontwerp/model'
 import { CLOUD_AAN, KIND_PREFIX, TABEL, redirectUrl, sessieHint } from './config'
 import { haalClient } from './client'
 import {
@@ -83,6 +85,8 @@ const PRIJZEN_ID = 'eigen'
 function lokaleDocs(): Doc[] {
   const docs: Doc[] = []
   for (const p of projectStore.alle()) if (!p.voorbeeld) docs.push({ soort: 'project', id: p.id, data: p, tijd: p.updatedAt })
+  const echt = new Map(projectStore.alle().filter((p) => !p.voorbeeld).map((p) => [p.id, p]))
+  for (const [id, o] of Object.entries(ontwerpStore.get())) if (echt.has(id)) docs.push({ soort: 'design', id, data: o, tijd: o.bijgewerkt || undefined })
   for (const f of factuurStore.get()) docs.push({ soort: 'factuur', id: f.id, data: f })
   const prijzen = prijsStore.alle()
   const pt = laatstBijgewerkt(prijzen)
@@ -111,6 +115,7 @@ function samenvoegen(soort: Soort, lokaal: unknown, remote: unknown): unknown {
     return { ...basis, factuurVolgnummer: Math.max(l?.factuurVolgnummer ?? 1, r?.factuurVolgnummer ?? 1) }
   }
   if (soort === 'project') return ((lokaal as Project).updatedAt ?? 0) >= ((remote as Project)?.updatedAt ?? 0) ? lokaal : remote
+  if (soort === 'design') return ((lokaal as Ontwerp)?.bijgewerkt ?? 0) >= ((remote as Ontwerp)?.bijgewerkt ?? 0) ? lokaal : remote
   const lf = lokaal as Factuur
   const rf = remote as Factuur
   return (VOORTGANG[lf.status] ?? 0) > (VOORTGANG[rf?.status] ?? 0) ? lf : rf
@@ -155,6 +160,21 @@ function pasToe(acties: Actie[], samengevoegd: Set<string>) {
       }
       lijst.sort((x, y) => (y.aangemaakt ?? 0) - (x.aangemaakt ?? 0))
       factuurStore.set(lijst)
+    }
+    const da = per('design')
+    if (da.length) {
+      const alle = { ...ontwerpStore.get() }
+      for (const a of da) {
+        if (a.type === 'verwijder') delete alle[a.id]
+        else {
+          const o = waarde(a)
+          if (o && typeof o === 'object') {
+            const type = projectStore.alle().find((p) => p.id === a.id)?.type ?? 'badkamer'
+            alle[a.id] = normaliseerOntwerp(o, type)
+          }
+        }
+      }
+      ontwerpStore.set(alle)
     }
     for (const a of per('prijzen')) if (a.type !== 'verwijder') prijsStore.vervang((waarde(a) ?? {}) as EigenPrijzen)
     for (const a of per('bedrijf')) {
@@ -282,6 +302,7 @@ function koppelLuisteraars() {
   prijsStore.abonneer(opWijziging)
   bedrijfStore.abonneer(opWijziging)
   factuurStore.abonneer(opWijziging)
+  ontwerpStore.abonneer(opWijziging)
   window.addEventListener('online', () => plan(500))
   window.addEventListener('offline', () => staat.gebruiker && zet({ status: 'offline', melding: 'Geen verbinding. Wijzigingen worden verstuurd zodra je weer online bent.' }))
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && plan(300))

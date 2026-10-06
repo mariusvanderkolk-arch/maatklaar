@@ -7,6 +7,7 @@ import { plusDagen, vandaag } from './planning'
 import { ruimteLabel, scopeItems } from './ruimtes'
 import type { berekenAlles } from './useCalc'
 import type { Project } from './types'
+import { compact, kamerVan, type Ontwerp } from './ontwerp/model'
 
 type Berekening = ReturnType<typeof berekenAlles>
 
@@ -32,7 +33,7 @@ export function oppervlakRegels(p: Project, o: Berekening['oppervlakken']): [str
   return r.slice(0, 4)
 }
 
-export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, datumTekst: (iso: string) => string): OfferteData {
+export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, datumTekst: (iso: string) => string, ontwerp?: Ontwerp): OfferteData {
   const sc = effectieveScope(p)
   const metArbeid = p.offerte?.metArbeid ?? true
   const st = b.inkoop.prijsStatus
@@ -68,5 +69,6 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     notities: p.notities,
     betaaltermijn: bedrijf.betaaltermijn.trim(),
     prijsTekst: prijsTekstVoor(st, datumTekst),
+    ...(ontwerp && ontwerp.inOfferte && ontwerp.items.length ? { ow: compact(ontwerp, kamerVan(p)) } : {}),
   }
 }

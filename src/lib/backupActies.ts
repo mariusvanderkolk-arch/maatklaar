@@ -10,6 +10,8 @@ import { voegSamen } from './eigenPrijzen'
 import { downloadBestand } from './download'
 import { factuurStore } from './factuurStore'
 import { sleutel } from './modus'
+import { ontwerpStore } from './ontwerp/store'
+import { normaliseerOntwerp, type Ontwerp } from './ontwerp/model'
 
 export const backupStatus = maakLokaleStore<{ laatste: number | null; later: number | null }>(sleutel('backup:v1'), () => ({ laatste: null, later: null }))
 
@@ -38,7 +40,7 @@ export async function exporteerAlles(): Promise<{ bytes: number; ontbrekend: num
     if (blob) fotos.push({ id, dataUrl: await naarDataUrl(blob) })
     else ontbrekend++
   }
-  const backup = maakBackup({ projecten, fotos, prijzen: prijsStore.alle(), bedrijf: bedrijfStore.get(), ai: aiStore.get(), facturen: factuurStore.get() })
+  const backup = maakBackup({ projecten, fotos, prijzen: prijsStore.alle(), bedrijf: bedrijfStore.get(), ai: aiStore.get(), facturen: factuurStore.get(), ontwerpen: ontwerpStore.get() })
   const tekst = JSON.stringify(backup)
   downloadBestand(backupBestandsnaam(), tekst, 'application/json')
   backupStatus.set({ laatste: Date.now(), later: null })
@@ -53,11 +55,17 @@ export async function importeerBackup(b: Backup, modus: ImportModus): Promise<vo
   prijsStore.vervang(modus === 'vervangen' ? b.prijzen : voegSamen(prijsStore.alle(), b.prijzen))
   if (b.bedrijf) bedrijfStore.set(combineerBedrijf(bedrijfStore.get(), b.bedrijf))
   if (!factuurStore.set(combineerFacturen(factuurStore.get(), b.facturen, modus))) throw new Error('De facturen konden niet worden opgeslagen: de opslag van je browser is vol.')
+  if (b.ontwerpen) {
+    const typeVan = new Map(projecten.map((p) => [p.id, p.type]))
+    const uit: Record<string, Ontwerp> = modus === 'vervangen' ? {} : { ...ontwerpStore.get() }
+    for (const [id, o] of Object.entries(b.ontwerpen)) if (typeVan.has(id)) uit[id] = normaliseerOntwerp(o, typeVan.get(id)!)
+    ontwerpStore.set(uit)
+  }
   if (b.ai) aiStore.update((i) => ({ ...i, provider: b.ai!.provider ?? i.provider, modellen: { ...i.modellen, ...b.ai!.modellen }, baseUrl: b.ai!.baseUrl ?? i.baseUrl }))
   if (modus === 'vervangen') {
     // foto's die nergens meer bij horen opruimen
     const nodig = new Set(projecten.flatMap((p) => p.fotos.map((f) => f.id)))
-    for (const id of await alleFotoIds().catch(() => [] as string[])) if (!nodig.has(id)) await verwijderFoto(id).catch(() => {})
+    for (const id of await alleFotoIds().catch(() => [] as string[])) if (!nodig.has(id) && !id.startsWith('ontwerp3d:')) await verwijderFoto(id).catch(() => {})
   }
 }
 
