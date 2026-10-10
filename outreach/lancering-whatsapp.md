@@ -18,7 +18,7 @@ Voor aannemers die badkamers, toiletten, keukens of vloeren doen:
 • alles blijft op je telefoon, geen account nodig
 
 Probeer ’m hier:
-👉 https://mariusvanderkolk-arch.github.io/maatklaar/
+👉 https://maatklaar.nl/
 
 Tip: open **Prijzen** en tik op *Voorbeeldprijzen overnemen*, pas daarna alleen aan wat bij jou anders is.
 
@@ -29,4 +29,4 @@ Ben benieuwd wat je ervan vindt — een kort berichtje is al top 🙏
 ## Korte variant
 
 Hoi! Maatklaar 1.0 is live (nu gratis): opmeten → inkooplijst → offerte/factuur, met je eigen prijzen. Alles op je telefoon.
-👉 https://mariusvanderkolk-arch.github.io/maatklaar/
+👉 https://maatklaar.nl/

@@ -11,7 +11,7 @@ const test = process.env.VITE_TEST_MODE === 'true'
 // Losse overzetpagina (github.io/maatklaar-overzetten/) voor de verhuizing naar maatklaar.nl. Zie src/lib/verhuizing.ts.
 const overzetten = process.env.VITE_OVERZETTEN === 'true'
 // Publieke URL van de app (voor og:image e.d.).
-const siteUrl = (process.env.VITE_SITE_URL || 'https://mariusvanderkolk-arch.github.io/maatklaar/').replace(/\/?$/, '/')
+const siteUrl = (process.env.VITE_SITE_URL || 'https://maatklaar.nl/').replace(/\/?$/, '/')
 
 function siteUrlPlugin(): Plugin {
   return { name: 'maatklaar-site-url', transformIndexHtml: (html) => html.replaceAll('https://mariusvanderkolk-arch.github.io/maatklaar/', siteUrl) }

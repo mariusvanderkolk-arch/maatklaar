@@ -4,7 +4,7 @@
 
 **Opmeten, materialen berekenen, inkooplijst, offerte en planning voor badkamers, toiletten, keukens en vloeren** — voor aannemers en klussers.
 
-🔗 Live (versie 1.2, nu gratis): https://mariusvanderkolk-arch.github.io/maatklaar/
+🔗 Live (versie 1.2, nu gratis): https://maatklaar.nl/
 
 ![Maatklaar](public/logo.png)
 
@@ -132,3 +132,16 @@ Een aparte testlink om door te sturen: **https://mariusvanderkolk-arch.github.io
 De app heette eerder Slimmer Wonen. Opslagsleutels (`slimmer-wonen:*`, `slimmer-wonen-test:*`), IndexedDB-namen,
 de interne back-up-id en de Supabase-`kind`-namen zijn bewust ongewijzigd, zodat bestaande gegevens en cloud-sync blijven werken.
 De oude URL's (`/slimmer-wonen/`, `/slimmer-wonen-test/`) zijn kleine redirect-repo's naar `/maatklaar/` en `/maatklaar-test/`.
+
+## Eigen domein: maatklaar.nl
+
+De hoofdapp draait op **https://maatklaar.nl/** (GitHub Pages custom domain, HTTPS afgedwongen). In de repo staan de
+variabelen `VITE_BASE=/` en `VITE_SITE_URL=https://maatklaar.nl/`; zonder die variabelen bouwt de workflow weer voor
+`/<reponaam>/`. Oude links (`…github.io/maatklaar/…`) stuurt GitHub automatisch door, inclusief `#/…`.
+
+**Verhuizing van lokale gegevens.** Opslag in de browser is per adres (origin). Wie de app op het oude adres gebruikte,
+ziet op maatklaar.nl een kaart *Gegevens overzetten* (ook onder Instellingen → Back-up). Die opent
+`https://mariusvanderkolk-arch.github.io/maatklaar-overzetten/` (zelfde origin als de oude app, repo
+`maatklaar-overzetten`, bijwerken met `npm run publiceer:overzetten`). Die pagina leest de oude gegevens (alleen lezen) en
+stuurt ze na een tik via `postMessage` terug; beide kanten controleren de origin strikt. Terugval: back-up-bestand
+downloaden en op maatklaar.nl terugzetten. Zie `src/lib/verhuizing.ts`.

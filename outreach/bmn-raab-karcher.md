@@ -13,7 +13,7 @@ Geachte heer/mevrouw,
 
 Mijn naam is Marius van der Kolk. Ik ontwikkel **Maatklaar**, een gratis app waarmee aannemers en vakmensen een ruimte inmeten, automatisch een materiaallijst krijgen en daar direct een offerte van maken.
 
-👉 https://mariusvanderkolk-arch.github.io/maatklaar/
+👉 https://maatklaar.nl/
 
 De app gebruikt nu nog voorbeeldprijzen. Ik wil graag samenwerken met een groothandel die bouwprofessionals in heel Nederland bedient, en BMN is daar als marktleider een logische partner voor.
 
@@ -34,4 +34,4 @@ Met vriendelijke groet,
 Marius van der Kolk
 Maatklaar
 [e-mailadres] | [telefoonnummer]
-https://mariusvanderkolk-arch.github.io/maatklaar/
+https://maatklaar.nl/
