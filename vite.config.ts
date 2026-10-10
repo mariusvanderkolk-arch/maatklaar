@@ -8,6 +8,14 @@ import tailwindcss from '@tailwindcss/vite'
 const base = process.env.VITE_BASE ?? '/maatklaar/'
 // Testversie voor aannemers: banner, feedback, eigen opslag, noindex. Zie src/lib/modus.ts.
 const test = process.env.VITE_TEST_MODE === 'true'
+// Losse overzetpagina (github.io/maatklaar-overzetten/) voor de verhuizing naar maatklaar.nl. Zie src/lib/verhuizing.ts.
+const overzetten = process.env.VITE_OVERZETTEN === 'true'
+// Publieke URL van de app (voor og:image e.d.).
+const siteUrl = (process.env.VITE_SITE_URL || 'https://mariusvanderkolk-arch.github.io/maatklaar/').replace(/\/?$/, '/')
+
+function siteUrlPlugin(): Plugin {
+  return { name: 'maatklaar-site-url', transformIndexHtml: (html) => html.replaceAll('https://mariusvanderkolk-arch.github.io/maatklaar/', siteUrl) }
+}
 
 /** Past in de testbouw de titel, robots-meta en het manifest aan. */
 function testversie(): Plugin {
@@ -34,8 +42,8 @@ function testversie(): Plugin {
 
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss(), ...(test ? [testversie()] : [])],
+  plugins: [react(), tailwindcss(), siteUrlPlugin(), ...(test ? [testversie()] : [])],
   // Ook oudere Android WebViews (in-app browser van WhatsApp e.d.) moeten de code kunnen lezen.
-  build: { target: ['es2019', 'chrome80', 'safari13', 'firefox78', 'edge88'], cssTarget: ['chrome80', 'safari13', 'firefox78', 'edge88'] },
+  build: { ...(overzetten ? { outDir: 'dist-overzetten', rollupOptions: { input: resolve(__dirname, 'overzetten.html') } } : {}), target: ['es2019', 'chrome80', 'safari13', 'firefox78', 'edge88'], cssTarget: ['chrome80', 'safari13', 'firefox78', 'edge88'] },
   test: { environment: 'node' },
 } as never)

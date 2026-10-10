@@ -1,3 +1,4 @@
+import { Verhuiskaart } from '../components/Verhuiskaart'
 import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FolderOpen, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
 import { Plattegrond } from '../components/Plattegrond'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
@@ -32,6 +33,7 @@ export function Home() {
   return (
     <div className="bg-grain">
       <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
+        <Verhuiskaart />
         {/* Hero */}
         <section className="card relative overflow-hidden">
           <div className="grid lg:grid-cols-[1.15fr_1fr]">

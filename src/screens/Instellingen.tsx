@@ -1,3 +1,4 @@
+import { Verhuiskaart } from '../components/Verhuiskaart'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Building2, Check, ChevronRight, Cloud, DatabaseBackup, Download, Upload, ExternalLink, Eye, EyeOff, FileText, ImagePlus, KeyRound, Loader2, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, Dialog, NumberField, PageTitle, TextField } from '../components/ui'
@@ -410,6 +411,7 @@ function BackupSectie() {
   const s = kandidaat ? samenvatting(kandidaat) : null
   return (
     <Sectie id="backup">
+      <Verhuiskaart altijd />
       <Card>
         <CardHeader
           icon={<DatabaseBackup className="h-5 w-5" />}

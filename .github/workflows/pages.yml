@@ -36,7 +36,9 @@ jobs:
 
       - name: Bouwen
         env:
-          VITE_BASE: /${{ github.event.repository.name }}/
+          # Eigen domein (maatklaar.nl): repo-variabelen VITE_BASE=/ en VITE_SITE_URL=https://maatklaar.nl/.
+          VITE_BASE: ${{ vars.VITE_BASE || format('/{0}/', github.event.repository.name) }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL || '' }}
           # In de repo maatklaar-test (of elke repo die op -test eindigt) wordt automatisch de testversie gebouwd.
           VITE_TEST_MODE: ${{ endsWith(github.event.repository.name, '-test') }}
           # Betalen (Maatklaar Pro) staat uit tenzij de repo-variabele VITE_BILLING_ENABLED=true bestaat. Zie docs/BETALINGEN.md.

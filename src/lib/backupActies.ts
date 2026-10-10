@@ -30,8 +30,8 @@ async function naarBlob(dataUrl: string): Promise<Blob> {
   return new Blob([bytes], { type: mime })
 }
 
-/** Maakt de volledige back-up en laat hem downloaden. Geeft het aantal bytes terug. */
-export async function exporteerAlles(): Promise<{ bytes: number; ontbrekend: number }> {
+/** Verzamelt alle lokale gegevens (incl. foto's) als back-upobject, zonder te downloaden. */
+export async function verzamelBackup(): Promise<{ backup: Backup; ontbrekend: number }> {
   const projecten = projectStore.alle()
   const fotos: BackupFoto[] = []
   let ontbrekend = 0
@@ -41,6 +41,12 @@ export async function exporteerAlles(): Promise<{ bytes: number; ontbrekend: num
     else ontbrekend++
   }
   const backup = maakBackup({ projecten, fotos, prijzen: prijsStore.alle(), bedrijf: bedrijfStore.get(), ai: aiStore.get(), facturen: factuurStore.get(), ontwerpen: ontwerpStore.get() })
+  return { backup, ontbrekend }
+}
+
+/** Maakt de volledige back-up en laat hem downloaden. Geeft het aantal bytes terug. */
+export async function exporteerAlles(): Promise<{ bytes: number; ontbrekend: number }> {
+  const { backup, ontbrekend } = await verzamelBackup()
   const tekst = JSON.stringify(backup)
   downloadBestand(backupBestandsnaam(), tekst, 'application/json')
   backupStatus.set({ laatste: Date.now(), later: null })
