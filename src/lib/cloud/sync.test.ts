@@ -52,7 +52,7 @@ function nieuwApparaat() {
   g.localStorage = ls
   g.window = { addEventListener() {}, removeEventListener() {} }
   g.document = { addEventListener() {}, visibilityState: 'hidden' }
-  g.location = { hash: '', search: '', origin: 'https://x', pathname: '/slimmer-wonen/' }
+  g.location = { hash: '', search: '', origin: 'https://x', pathname: '/maatklaar/' }
   vi.resetModules()
 }
 

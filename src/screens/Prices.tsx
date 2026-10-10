@@ -548,8 +548,8 @@ function BulkDialoog({ open, onClose, eigen }: { open: boolean; onClose: () => v
 function ExportKnop({ eigen, compact = false }: { eigen: EigenPrijzen; compact?: boolean }) {
   const [open, setOpen] = useState(false)
   const exporteer = (soort: 'json' | 'csv') => {
-    if (soort === 'json') downloadBestand(`slimmer-wonen-prijzen-${vandaagIso()}.json`, naarJson(eigen), 'application/json')
-    else downloadBestand(`slimmer-wonen-prijzen-${vandaagIso()}.csv`, naarCsv(eigen, voorbeeldPrijsBron), 'text/csv;charset=utf-8')
+    if (soort === 'json') downloadBestand(`maatklaar-prijzen-${vandaagIso()}.json`, naarJson(eigen), 'application/json')
+    else downloadBestand(`maatklaar-prijzen-${vandaagIso()}.csv`, naarCsv(eigen, voorbeeldPrijsBron), 'text/csv;charset=utf-8')
     setOpen(false)
     toast(soort === 'json' ? 'Back-up (JSON) gedownload' : 'Prijslijst (CSV) gedownload')
   }

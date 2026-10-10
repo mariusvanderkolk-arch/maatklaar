@@ -74,7 +74,7 @@ export function About() {
     <div className="mx-auto max-w-3xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
       <PageTitle
         eyebrow="Over de app"
-        title="Slimmer Wonen"
+        title="Maatklaar"
         sub={`Versie ${APP_VERSIE} · nu gratis. Een rekenhulp voor aannemers en klussers bij het renoveren van badkamers, toiletten, keukens en vloeren: van opmeten tot een nette inkooplijst, offerte en factuur.`}
       />
       <div className="mt-8 grid gap-4">
@@ -122,7 +122,7 @@ export function About() {
         >
           Korte rondleiding opnieuw bekijken
         </button>
-        <p className="mt-3 text-xs text-ink-muted">Slimmer Wonen versie {APP_VERSIE} · gegevens blijven op dit apparaat</p>
+        <p className="mt-3 text-xs text-ink-muted">Maatklaar versie {APP_VERSIE} · gegevens blijven op dit apparaat</p>
       </div>
     </div>
   )

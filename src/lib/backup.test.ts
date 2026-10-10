@@ -36,7 +36,7 @@ describe('back-up maken en lezen', () => {
   })
   it('weigert verkeerde bestanden met duidelijke melding', () => {
     expect(() => leesBackup('hallo')).toThrow(/geen JSON/)
-    expect(() => leesBackup('{"app":"iets"}')).toThrow(/geen back-up van Slimmer Wonen/)
+    expect(() => leesBackup('{"app":"iets"}')).toThrow(/geen back-up van Maatklaar/)
     expect(() => leesBackup('{"app":"slimmer-wonen","type":"prijzen","prijzen":{}}')).toThrow(/prijzenbestand/)
     expect(() => leesBackup('{"app":"slimmer-wonen","type":"backup","versie":99,"projecten":[]}')).toThrow(/nieuwere versie/)
   })

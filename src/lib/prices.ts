@@ -1,5 +1,5 @@
 /**
- * Prijslaag van Slimmer Wonen.
+ * Prijslaag van Maatklaar.
  *
  * LET OP: er zijn géén live prijzen gekoppeld. De tabel hieronder bevat
  * richtprijzen als VOORBEELD, zodat de werking van de app te zien is.

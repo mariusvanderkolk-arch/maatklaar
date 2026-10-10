@@ -30,9 +30,9 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
               ) : (
                 <>
                   <p className="font-display text-[1.7rem] leading-none font-semibold">
-                    Slimmer <span className="text-gold-600">Wonen</span>
+                    Maat<span className="text-gold-600">klaar</span>
                   </p>
-                  <p className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.22em] text-ink-muted">Renovatie · Calculatie</p>
+                  <p className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.22em] text-ink-muted">Opgemeten · ontworpen · offerte klaar</p>
                 </>
               )}
             </div>

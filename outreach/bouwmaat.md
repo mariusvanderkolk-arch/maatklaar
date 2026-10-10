@@ -7,13 +7,13 @@
 
 ---
 
-**Onderwerp:** Samenwerking: Bouwmaat-prijzen in een gratis app voor vakmensen (Slimmer Wonen)
+**Onderwerp:** Samenwerking: Bouwmaat-prijzen in een gratis app voor vakmensen (Maatklaar)
 
 Geachte heer/mevrouw,
 
-Mijn naam is Marius van der Kolk. Ik heb **Slimmer Wonen** gebouwd, een gratis app voor aannemers en zzp-vakmensen in herstel, renovatie en onderhoud. Dat is precies uw doelgroep. In de app meten vakmensen een ruimte in en krijgen ze direct een materiaallijst en een offerte voor hun klant.
+Mijn naam is Marius van der Kolk. Ik heb **Maatklaar** gebouwd, een gratis app voor aannemers en zzp-vakmensen in herstel, renovatie en onderhoud. Dat is precies uw doelgroep. In de app meten vakmensen een ruimte in en krijgen ze direct een materiaallijst en een offerte voor hun klant.
 
-👉 https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+👉 https://mariusvanderkolk-arch.github.io/maatklaar/
 
 Op dit moment rekent de app nog met voorbeeldprijzen. De grote bouwmarkten hebben geen openbare API, en eerlijk gezegd past een groothandel voor vakmensen zoals Bouwmaat ook veel beter bij mijn gebruikers. Daarom wil ik graag met u verkennen of we kunnen samenwerken.
 
@@ -32,6 +32,6 @@ Kunt u mij in contact brengen met de juiste persoon binnen uw organisatie, bijvo
 Met vriendelijke groet,
 
 Marius van der Kolk
-Slimmer Wonen
+Maatklaar
 [e-mailadres] | [telefoonnummer]
-https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+https://mariusvanderkolk-arch.github.io/maatklaar/

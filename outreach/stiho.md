@@ -11,9 +11,9 @@
 
 Geachte heer/mevrouw,
 
-Mijn naam is Marius van der Kolk. Ik ontwikkel **Slimmer Wonen**, een gratis app waarmee aannemers en vakmensen een ruimte inmeten, automatisch een materiaallijst krijgen en daar een offerte van maken.
+Mijn naam is Marius van der Kolk. Ik ontwikkel **Maatklaar**, een gratis app waarmee aannemers en vakmensen een ruimte inmeten, automatisch een materiaallijst krijgen en daar een offerte van maken.
 
-👉 https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+👉 https://mariusvanderkolk-arch.github.io/maatklaar/
 
 Op dit moment werkt de app nog met voorbeeldprijzen. Ik wil graag echte, actuele prijzen tonen van een groothandel die mijn gebruikers ook echt gebruiken. Met uw brede assortiment hout, plaatmateriaal en afbouwproducten past Stiho daar heel goed bij.
 
@@ -32,6 +32,6 @@ Kunt u dit doorsturen naar de verantwoordelijke voor e-commerce, data of partner
 Met vriendelijke groet,
 
 Marius van der Kolk
-Slimmer Wonen
+Maatklaar
 [e-mailadres] | [telefoonnummer]
-https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+https://mariusvanderkolk-arch.github.io/maatklaar/

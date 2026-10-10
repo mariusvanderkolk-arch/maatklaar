@@ -1,10 +1,12 @@
-# Slimmer Wonen
+# Maatklaar
+
+*Opgemeten, ontworpen, offerte klaar.* (voorheen Slimmer Wonen; de oude links sturen automatisch door)
 
 **Opmeten, materialen berekenen, inkooplijst, offerte en planning voor badkamers, toiletten, keukens en vloeren** — voor aannemers en klussers.
 
-🔗 Live (versie 1.0, nu gratis): https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+🔗 Live (versie 1.2, nu gratis): https://mariusvanderkolk-arch.github.io/maatklaar/
 
-![Slimmer Wonen](public/logo.png)
+![Maatklaar](public/logo.png)
 
 ## Wat kan de app?
 
@@ -103,7 +105,7 @@ Stack: Vite, React, TypeScript, Tailwind CSS. Publicatie via GitHub Actions naar
 
 ## Versie 1.0
 
-Slimmer Wonen 1.0 is live: opmeten, berekenen, inkooplijst, offerte, factuur, planning en eigen prijzen. De app is **nu gratis**; alle gegevens blijven op het apparaat. Vul onder Prijzen beheren je eigen inkoopprijzen in (geen live bouwmarkt-API).
+Maatklaar 1.0 is live: opmeten, berekenen, inkooplijst, offerte, factuur, planning en eigen prijzen. De app is **nu gratis**; alle gegevens blijven op het apparaat. Vul onder Prijzen beheren je eigen inkoopprijzen in (geen live bouwmarkt-API).
 
 ## Account en cloud-sync (optioneel)
 
@@ -113,14 +115,20 @@ Zonder account werkt alles lokaal. Met een account (Supabase: inloglink of e-mai
 vraagt de app of lokale gegevens mogen worden samengevoegd; er wordt nooit lokaal iets verwijderd.
 
 - Database inrichten: plak [`supabase/schema.sql`](supabase/schema.sql) in Supabase → SQL Editor → Run (idempotent, met RLS).
-- Config: `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` (standaard het project van Slimmer Wonen; de publishable key is publiek).
+- Config: `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` (standaard het project van Maatklaar; de publishable key is publiek).
 - De testversie bewaart haar documenten apart (`kind` met voorvoegsel `test-`) en heeft een eigen sessie.
 
 ## Testversie voor aannemers
 
-Een aparte testlink om door te sturen: **https://mariusvanderkolk-arch.github.io/slimmer-wonen-test/**
+Een aparte testlink om door te sturen: **https://mariusvanderkolk-arch.github.io/maatklaar-test/**
 
-- Zelfde code, gebouwd met `VITE_TEST_MODE=true` (gebeurt automatisch in de repo `slimmer-wonen-test`, omdat de reponaam op `-test` eindigt).
-- Toont een banner "Testversie", een knop **Feedback geven** (formulier, versturen via WhatsApp of e-mail, geen server), titel "Slimmer Wonen (test)" en `noindex`.
+- Zelfde code, gebouwd met `VITE_TEST_MODE=true` (gebeurt automatisch in de repo `maatklaar-test`, omdat de reponaam op `-test` eindigt).
+- Toont een banner "Testversie", een knop **Feedback geven** (formulier, versturen via WhatsApp of e-mail, geen server), titel "Maatklaar (test)" en `noindex`.
 - Gebruikt een eigen opslag (`slimmer-wonen-test:*`), dus botst niet met de gewone app op hetzelfde apparaat. Voorbeeldprojecten en rondleiding verschijnen bij het eerste bezoek.
 - Bijwerken: `npm run publiceer:test` zet de huidige `origin/main` op de testlink (of `npm run publiceer:test -- <branch>`). Lokaal bouwen: `npm run build:test` (map `dist-test`).
+
+## Merknaam en opslag
+
+De app heette eerder Slimmer Wonen. Opslagsleutels (`slimmer-wonen:*`, `slimmer-wonen-test:*`), IndexedDB-namen,
+de interne back-up-id en de Supabase-`kind`-namen zijn bewust ongewijzigd, zodat bestaande gegevens en cloud-sync blijven werken.
+De oude URL's (`/slimmer-wonen/`, `/slimmer-wonen-test/`) zijn kleine redirect-repo's naar `/maatklaar/` en `/maatklaar-test/`.

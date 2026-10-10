@@ -445,7 +445,7 @@ function BackupSectie() {
             <Button variant="secondary" icon={<Upload className="h-4 w-4" />} onClick={() => bestand.current?.click()}>
               Back-up terugzetten…
             </Button>
-            <p className="text-[0.78rem] leading-snug text-ink-muted">Een .json-bestand van Slimmer Wonen. Je ziet eerst wat erin zit. API-sleutels gaan nooit mee in een back-up.</p>
+            <p className="text-[0.78rem] leading-snug text-ink-muted">Een .json-bestand van Maatklaar. Je ziet eerst wat erin zit. API-sleutels gaan nooit mee in een back-up.</p>
             <input ref={bestand} type="file" accept="application/json,.json" className="hidden" onChange={(e) => kies(e.target.files)} aria-label="Back-upbestand kiezen" />
           </div>
           {fout && (

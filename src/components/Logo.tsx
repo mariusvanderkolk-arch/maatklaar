@@ -16,6 +16,8 @@ export function LogoMark({ className = 'h-9 w-9' }: { className?: string }) {
       <path d="M9 31 32 11l23 20" stroke={`url(#${g})`} strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="32" cy="28" r="3" stroke={`url(#${g})`} strokeWidth="2.4" />
       <path d="M27.5 54v-9.5a4.5 4.5 0 0 1 9 0V54Z" fill={`url(#${g})`} />
+      {/* duimstok-hint: maatlat onder het huis */}
+      <path d="M13 61.4h38M13 61.4v-3.2M17.75 61.4v-1.9M22.5 61.4v-3.2M27.25 61.4v-1.9M32 61.4v-3.2M36.75 61.4v-1.9M41.5 61.4v-3.2M46.25 61.4v-1.9M51 61.4v-3.2" stroke={`url(#${g})`} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -26,10 +28,10 @@ export function Logo({ compact = false, className = '' }: { compact?: boolean; c
       <LogoMark className={compact ? 'h-8 w-8' : 'h-10 w-10'} />
       <span className={`flex flex-col leading-none ${compact ? 'max-[379px]:sr-only' : ''}`}>
         <span className={`font-display font-semibold tracking-tight whitespace-nowrap text-ink ${compact ? 'text-[1.15rem] min-[400px]:text-[1.3rem]' : 'text-[1.6rem]'}`}>
-          Slimmer <span className="text-gold-600">Wonen</span>
+          Maat<span className="text-gold-600">klaar</span>
         </span>
         {!compact && (
-          <span className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.22em] text-ink-muted">Renovatie · Calculatie</span>
+          <span className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.22em] text-ink-muted">Opgemeten · ontworpen · offerte klaar</span>
         )}
       </span>
     </span>

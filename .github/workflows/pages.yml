@@ -37,7 +37,7 @@ jobs:
       - name: Bouwen
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
-          # In de repo slimmer-wonen-test wordt automatisch de testversie gebouwd.
+          # In de repo maatklaar-test (of elke repo die op -test eindigt) wordt automatisch de testversie gebouwd.
           VITE_TEST_MODE: ${{ endsWith(github.event.repository.name, '-test') }}
         run: npm run build
 

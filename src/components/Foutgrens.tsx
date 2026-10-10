@@ -89,7 +89,7 @@ export class AppFoutgrens extends Component<{ children: ReactNode }, Staat> {
         <div style={{ maxWidth: 420, margin: '0 auto' }}>
           <h1 style={{ fontSize: 26, margin: '0 0 10px' }}>Er ging iets mis</h1>
           <p style={{ fontSize: 16, lineHeight: 1.5, margin: '0 0 20px' }}>
-            Open de link in Chrome. Sommige apps (zoals WhatsApp) openen links in een eigen, beperkte browser waarin Slimmer Wonen niet goed werkt. Je gegevens op dit apparaat blijven bewaard.
+            Open de link in Chrome. Sommige apps (zoals WhatsApp) openen links in een eigen, beperkte browser waarin Maatklaar niet goed werkt. Je gegevens op dit apparaat blijven bewaard.
           </p>
           {android && intent && (
             <a href={intent} style={{ ...knop, background: '#2B2623', color: '#F5EFE6' }}>

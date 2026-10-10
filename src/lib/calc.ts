@@ -1,5 +1,5 @@
 /**
- * Rekenmodule van Slimmer Wonen.
+ * Rekenmodule van Maatklaar.
  *
  * Alle formules zijn bewust eenvoudige, gangbare vuistregels uit de praktijk
  * (verbruiksopgaven van fabrikanten van tegellijm, voegmiddel, kit en

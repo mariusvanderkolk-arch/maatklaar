@@ -19,7 +19,7 @@ export const GEBRUIKEN_LABEL: Record<Exclude<Gebruiken, ''>, string> = { ja: 'Ja
 export const feedbackIngevuld = (f: Feedback) => Boolean(f.indruk.trim() || f.mist.trim() || f.gebruiken || f.cijfer != null)
 
 export function feedbackTekst(f: Feedback, nu = new Date()): string {
-  const r = ['Feedback Slimmer Wonen (testversie)', '']
+  const r = ['Feedback Maatklaar (testversie)', '']
   if (f.cijfer != null) r.push(`Cijfer: ${f.cijfer}/10`)
   if (f.gebruiken) r.push(`Zou je het gebruiken? ${GEBRUIKEN_LABEL[f.gebruiken]}`)
   if (f.indruk.trim()) r.push('', 'Wat vind je ervan?', f.indruk.trim())
@@ -32,4 +32,4 @@ export function feedbackTekst(f: Feedback, nu = new Date()): string {
 export const whatsappLink = (tekst: string) => `https://wa.me/?text=${encodeURIComponent(tekst)}`
 
 export const mailtoLink = (tekst: string) =>
-  `mailto:?subject=${encodeURIComponent('Feedback Slimmer Wonen (testversie)')}&body=${encodeURIComponent(tekst)}`
+  `mailto:?subject=${encodeURIComponent('Feedback Maatklaar (testversie)')}&body=${encodeURIComponent(tekst)}`

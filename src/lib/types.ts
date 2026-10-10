@@ -1,4 +1,4 @@
-/** Kern-datatypes van Slimmer Wonen. Alle maten in meters, tenzij anders vermeld. */
+/** Kern-datatypes van Maatklaar. Alle maten in meters, tenzij anders vermeld. */
 
 export type ScopeKey =
   | 'sloopwerk'

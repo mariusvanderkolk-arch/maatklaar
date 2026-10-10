@@ -1,7 +1,7 @@
 {
-  "name": "slimmer-wonen",
+  "name": "maatklaar",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "icons": "node scripts/icons.mjs",
-    "build:test": "VITE_TEST_MODE=true VITE_BASE=/slimmer-wonen-test/ vite build --outDir dist-test",
+    "build:test": "VITE_TEST_MODE=true VITE_BASE=/maatklaar-test/ vite build --outDir dist-test",
     "publiceer:test": "bash scripts/publiceer-test.sh"
   },
   "dependencies": {
@@ -38,5 +38,5 @@
     "vite": "^8.3.0",
     "vitest": "^5.0.3"
   },
-  "description": "Slimmer Wonen: opmeten, materialen berekenen en inkooplijsten voor badkamerrenovaties."
+  "description": "Maatklaar (opgemeten, ontworpen, offerte klaar): opmeten, materialen berekenen en inkooplijsten voor badkamerrenovaties."
 }

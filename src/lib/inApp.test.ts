@@ -13,10 +13,10 @@ describe('in-app browser', () => {
     expect(isAndroid(WHATSAPP)).toBe(true)
   })
   it('maakt een Chrome-intent met de route als _h-parameter', () => {
-    const url = chromeIntentUrl('https://mariusvanderkolk-arch.github.io/slimmer-wonen-test/#/prijzen')
+    const url = chromeIntentUrl('https://mariusvanderkolk-arch.github.io/maatklaar-test/#/prijzen')
     expect(url).toBe(
-      'intent://mariusvanderkolk-arch.github.io/slimmer-wonen-test/?_h=%2Fprijzen#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' +
-        encodeURIComponent('https://mariusvanderkolk-arch.github.io/slimmer-wonen-test/?_h=%2Fprijzen') +
+      'intent://mariusvanderkolk-arch.github.io/maatklaar-test/?_h=%2Fprijzen#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' +
+        encodeURIComponent('https://mariusvanderkolk-arch.github.io/maatklaar-test/?_h=%2Fprijzen') +
         ';end',
     )
     expect(chromeIntentUrl('https://x.nl/a/')).toBe('intent://x.nl/a/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent('https://x.nl/a/') + ';end')

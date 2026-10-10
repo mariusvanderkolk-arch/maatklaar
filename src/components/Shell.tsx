@@ -84,7 +84,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <footer className={`no-print border-t border-sand-300/60 ${route.naam === 'home' || route.naam === 'over' || route.naam === 'prijzen' || route.naam === 'instellingen' || route.naam === 'facturen' || route.naam === 'account' || route.naam === 'privacy' ? '' : 'pb-20'}`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
-            © {new Date().getFullYear()} Slimmer Wonen · {TEST_MODUS ? 'testversie' : `versie ${APP_VERSIE_KORT}`} ·{' '}
+            © {new Date().getFullYear()} Maatklaar · {TEST_MODUS ? 'testversie' : `versie ${APP_VERSIE_KORT}`} ·{' '}
             <a href="#/over" className="underline underline-offset-2 hover:text-ink">
               Over de app
             </a>{' '}

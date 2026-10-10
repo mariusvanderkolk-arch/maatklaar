@@ -1,4 +1,4 @@
--- Slimmer Wonen cloud-sync. Plak in Supabase > SQL Editor > Run. Veilig om opnieuw te draaien.
+-- Maatklaar cloud-sync. Plak in Supabase > SQL Editor > Run. Veilig om opnieuw te draaien.
 create table if not exists public.user_data (
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   kind text not null,

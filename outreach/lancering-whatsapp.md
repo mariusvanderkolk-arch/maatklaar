@@ -1,4 +1,4 @@
-# WhatsApp-bericht: lancering Slimmer Wonen 1.0
+# WhatsApp-bericht: lancering Maatklaar 1.0
 
 Kopieer en plak. Pas de aanhef aan. Stuur naar aannemers/klussers die je kent.
 
@@ -6,17 +6,19 @@ Kopieer en plak. Pas de aanhef aan. Stuur naar aannemers/klussers die je kent.
 
 Hoi! 👋
 
-Slimmer Wonen is live als **versie 1.0** — en voorlopig **gratis**.
+Maatklaar is live — *opgemeten, ontworpen, offerte klaar* — en voorlopig **gratis**.
+(Voorheen heette de app Slimmer Wonen; oude links werken nog.)
 
 Voor aannemers die badkamers, toiletten, keukens of vloeren doen:
 • ruimte opmeten (met plattegrond)
+• ontwerp in 2D en 3D om aan de klant te laten zien
 • materialen en uren uitrekenen
 • eigen inkoopprijzen invullen (snel, met zoeken en kopiëren tussen winkels)
 • nette offerte + factuur naar de klant
 • alles blijft op je telefoon, geen account nodig
 
 Probeer ’m hier:
-👉 https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+👉 https://mariusvanderkolk-arch.github.io/maatklaar/
 
 Tip: open **Prijzen** en tik op *Voorbeeldprijzen overnemen*, pas daarna alleen aan wat bij jou anders is.
 
@@ -26,5 +28,5 @@ Ben benieuwd wat je ervan vindt — een kort berichtje is al top 🙏
 
 ## Korte variant
 
-Hoi! Slimmer Wonen 1.0 is live (nu gratis): opmeten → inkooplijst → offerte/factuur, met je eigen prijzen. Alles op je telefoon.
-👉 https://mariusvanderkolk-arch.github.io/slimmer-wonen/
+Hoi! Maatklaar 1.0 is live (nu gratis): opmeten → inkooplijst → offerte/factuur, met je eigen prijzen. Alles op je telefoon.
+👉 https://mariusvanderkolk-arch.github.io/maatklaar/

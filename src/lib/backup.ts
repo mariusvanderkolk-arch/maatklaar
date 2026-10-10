@@ -17,6 +17,7 @@ export interface BackupFoto {
 }
 
 export interface Backup {
+  /** Interne app-id; blijft 'slimmer-wonen' (oude naam) voor compatibele back-ups. */
   app: 'slimmer-wonen'
   type: 'backup'
   versie: number
@@ -50,7 +51,7 @@ export function leesBackup(tekst: string): Backup {
   } catch {
     throw new Error('Dit bestand is geen geldige back-up (geen JSON).')
   }
-  if (!isObj(j) || j.app !== 'slimmer-wonen') throw new Error('Dit is geen back-up van Slimmer Wonen.')
+  if (!isObj(j) || (j.app !== 'slimmer-wonen' && j.app !== 'maatklaar')) throw new Error('Dit is geen back-up van Maatklaar.')
   if (j.type === 'prijzen') throw new Error('Dit is een prijzenbestand. Importeer het via Prijzen beheren.')
   if (j.type !== 'backup' || !Array.isArray(j.projecten)) throw new Error('Dit bestand bevat geen projecten.')
   if (typeof j.versie !== 'number' || j.versie > BACKUP_VERSIE) throw new Error('Deze back-up is gemaakt met een nieuwere versie van de app. Ververs de pagina en probeer opnieuw.')
@@ -116,7 +117,7 @@ export function samenvatting(b: Backup) {
   return { projecten: b.projecten.length, eigen, fotos: b.fotos.length, prijzen, bedrijf: !!b.bedrijf?.naam, facturen: b.facturen.length }
 }
 
-export const backupBestandsnaam = (nu = new Date()) => `slimmer-wonen-backup-${nu.toISOString().slice(0, 10)}.json`
+export const backupBestandsnaam = (nu = new Date()) => `maatklaar-backup-${nu.toISOString().slice(0, 10)}.json`
 
 /** Moet de gebruiker herinnerd worden aan een back-up? */
 export function backupHerinnering(

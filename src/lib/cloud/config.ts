@@ -15,7 +15,7 @@ export const AUTH_SLEUTEL = sleutel('auth')
 export const KIND_PREFIX = TEST_MODUS ? 'test-' : ''
 export const TABEL = 'user_data'
 
-/** Redirect na de inloglink: dezelfde pagina (werkt voor /slimmer-wonen/ én /slimmer-wonen-test/). */
+/** Redirect na de inloglink: dezelfde pagina (werkt voor /maatklaar/ én /maatklaar-test/). */
 export const redirectUrl = () => `${location.origin}${location.pathname}`
 
 /** Is er (mogelijk) een sessie? Dan pas de Supabase-bibliotheek laden (houdt de app licht). */

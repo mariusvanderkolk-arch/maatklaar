@@ -4,7 +4,7 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
   {
     titel: 'Zonder account',
     tekst:
-      'Gebruik je de app zonder account, dan blijft alles op je eigen apparaat (in de browser): projecten, foto’s, prijzen, facturen en bedrijfsgegevens. Er gaat niets naar een server van Slimmer Wonen.',
+      'Gebruik je de app zonder account, dan blijft alles op je eigen apparaat (in de browser): projecten, foto’s, prijzen, facturen en bedrijfsgegevens. Er gaat niets naar een server van Maatklaar.',
   },
   {
     titel: 'Met een account (optioneel)',

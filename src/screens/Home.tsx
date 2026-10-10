@@ -97,7 +97,8 @@ export function Home() {
               <div className="min-w-0 flex-1">
                 <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Nieuw in versie {APP_VERSIE_KORT}</p>
                 <p className="mt-1 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Ontwerp: teken de ruimte als plattegrond met douche, toilet, meubel en tegels, bekijk hem in 3D en zet het ontwerp op de
+                  Slimmer Wonen heet nu <strong className="font-semibold text-ink">Maatklaar</strong>: je projecten, prijzen en account blijven gewoon staan.
+                  Plus Ontwerp: teken de ruimte als plattegrond met douche, toilet, meubel en tegels, bekijk hem in 3D en zet het ontwerp op de
                   offerte en in de klantlink. Werkt met je vinger op de telefoon. Nog steeds gratis; gegevens blijven op dit apparaat.
                 </p>
               </div>

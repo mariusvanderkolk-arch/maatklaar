@@ -12,5 +12,6 @@
     <path d="M9 31 32 11l23 20" stroke="url(#sw-goud)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
     <circle cx="32" cy="28" r="3" stroke="url(#sw-goud)" stroke-width="2.4"/>
     <path d="M27.5 54v-9.5a4.5 4.5 0 0 1 9 0V54Z" fill="url(#sw-goud)"/>
+    <path d="M13 61.4h38M13 61.4v-3.2M17.75 61.4v-1.9M22.5 61.4v-3.2M27.25 61.4v-1.9M32 61.4v-3.2M36.75 61.4v-1.9M41.5 61.4v-3.2M46.25 61.4v-1.9M51 61.4v-3.2" stroke="url(#sw-goud)" stroke-width="1.5" stroke-linecap="round"/>
   </g>
 </svg>

@@ -1,8 +1,8 @@
 // Eenvoudige service worker: app-shell offline beschikbaar.
-// De testversie (/slimmer-wonen-test/) draait op hetzelfde domein en krijgt een eigen cache.
-const TEST = self.location.pathname.includes('/slimmer-wonen-test/')
-const CACHE = TEST ? 'slimmer-wonen-test-v1' : 'slimmer-wonen-v1'
-const VAN_MIJ = (k) => (TEST ? k.startsWith('slimmer-wonen-test') : !k.startsWith('slimmer-wonen-test'))
+// De testversie (/maatklaar-test/) draait op hetzelfde domein en krijgt een eigen cache.
+const TEST = self.location.pathname.includes('/maatklaar-test/')
+const CACHE = TEST ? 'maatklaar-test-v1' : 'maatklaar-v1'
+const VAN_MIJ = (k) => (TEST ? k.startsWith('maatklaar-test') || k.startsWith('slimmer-wonen-test') : !k.startsWith('maatklaar-test') && !k.startsWith('slimmer-wonen-test'))
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html', './manifest.webmanifest'])).then(() => self.skipWaiting()))
