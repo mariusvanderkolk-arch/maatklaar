@@ -14,6 +14,7 @@ import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
 import type { OfferteStatus, Project } from '../lib/types'
 import type { OfferteData } from '../lib/offerte'
+import { track } from '../lib/analytics'
 import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
 import { useOntwerp } from '../lib/ontwerp/store'
 import { use3dBeeld } from '../lib/ontwerp/beeld'
@@ -42,6 +43,7 @@ export function Quote({ p }: { p: Project }) {
   const deel = async () => {
     const url = offerteLink(data)
     setOfferte({ gedeeldOp: Date.now() })
+    track('offerte_shared')
     const titel = `Offerte ${data.nr}${data.bedrijf.naam ? ` – ${data.bedrijf.naam}` : ''}`
     const tekst = `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en akkoord geven via deze link:`
     if (navigator.share) {
@@ -149,7 +151,7 @@ export function Quote({ p }: { p: Project }) {
             .
           </p>
           <div className="mt-4 grid gap-2">
-            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => window.print()}>
+            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => { track('offerte_printed'); window.print() }}>
               Afdrukken / PDF
             </Button>
             <Button

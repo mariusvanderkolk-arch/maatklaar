@@ -3,6 +3,7 @@ import { Suspense, useState } from 'react'
 import { MessageCircleQuestion, X } from 'lucide-react'
 import type { Route } from '../../lib/router'
 import { laadLater } from '../../lib/lazy'
+import { track } from '../../lib/analytics'
 
 const HulpPaneel = laadLater(() => import('./HulpPaneel').then((m) => m.HulpPaneel))
 
@@ -20,6 +21,7 @@ export function HulpKnop({ route }: { route: Route }) {
         type="button"
         onClick={() => {
           setGeladen(true)
+          if (!open) track('chat_opened')
           setOpen((o) => !o)
         }}
         onPointerEnter={() => setGeladen(true)}

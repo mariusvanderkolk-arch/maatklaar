@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'
 import { Button, Card, CardHeader, PageTitle, TextField } from '../components/ui'
 import { SCOPE_ICONS } from '../components/scopeIcons'
 import { RUIMTE_ICONS } from '../components/ruimteIcons'
+import { track } from '../lib/analytics'
 import { nieuwProject, standaardAfmetingen } from '../lib/defaults'
 import { RUIMTES, ruimte, scopeItems, scopeVoor } from '../lib/ruimtes'
 import { ga } from '../lib/router'
@@ -51,6 +52,7 @@ export function ProjectForm({ id }: { id?: string }) {
       const basis = nieuwProject({ type })
       const p = { ...concept, ...velden, afmetingen: basis.afmetingen, snijverlies: basis.snijverlies, createdAt: Date.now(), updatedAt: Date.now() }
       projectStore.voegToe(p)
+      track('project_created')
       ga(`/project/${p.id}/opmeten`)
     }
   }

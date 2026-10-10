@@ -1,4 +1,5 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
+import { padVoor, track } from './lib/analytics'
 import { Shell } from './components/Shell'
 import { useRoute } from './lib/router'
 import { Home } from './screens/Home'
@@ -33,6 +34,8 @@ function Laden() {
 
 export default function App() {
   const route = useRoute()
+  const pad = padVoor(route as { naam: string; stap?: string; sectie?: string })
+  useEffect(() => track('page_view', { path: pad }), [pad])
   if (route.naam === 'offerte-bekijken')
     return (
       <Foutgrens>

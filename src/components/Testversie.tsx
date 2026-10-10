@@ -1,3 +1,4 @@
+import { track } from '../lib/analytics'
 import { useState } from 'react'
 import { Copy, FlaskConical, Mail, MessageCircle, MessageSquareHeart } from 'lucide-react'
 import { Button, Dialog } from './ui'
@@ -21,7 +22,7 @@ export function TestBanner() {
           </p>
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={() => { track('feedback_opened'); setOpen(true) }}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-paper/90 px-2.5 py-1.5 text-[0.8rem] font-medium text-ink ring-1 ring-gold-400/50 transition hover:bg-paper hover:ring-gold-500"
           >
             <MessageSquareHeart aria-hidden className="h-4 w-4 text-gold-600" />

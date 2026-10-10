@@ -27,8 +27,9 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
       'Onder Account kun je je cloudgegevens of je hele account verwijderen. Met Back-up exporteer je al je gegevens als bestand. Lokale gegevens wis je via de instellingen van je browser.',
   },
   {
-    titel: 'Geen tracking',
-    tekst: 'De app gebruikt geen advertentie- of trackingcookies en geen analysediensten.',
+    titel: 'Anonieme gebruikscijfers, geen cookies',
+    tekst:
+      'Om de app te verbeteren tellen we anoniem welke schermen en functies worden gebruikt (bijv. "offerte gedeeld"), met alleen het scherm, mobiel of desktop, de website waar je vandaan kwam en of je in een app-browser zit. Geen cookies, geen naam, e-mail of IP-adres en geen projectgegevens; alleen een willekeurige code die per dag en per browsertabblad verandert. Vragen die de hulpchat niet kon beantwoorden worden ingekort en zonder e-mailadressen of telefoonnummers bewaard om de hulp te verbeteren. Er zijn geen trackers of analysediensten van derden. Staat "Do Not Track" of "Global Privacy Control" aan in je browser, dan tellen we niets.',
   },
 ]
 

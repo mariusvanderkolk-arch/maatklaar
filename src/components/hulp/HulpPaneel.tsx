@@ -12,6 +12,7 @@ import { sessieOpslag } from '../../lib/veiligeOpslag'
 import { sleutel } from '../../lib/modus'
 import { mailtoLink, whatsappLink } from '../../lib/feedback'
 import { LogoMark } from '../Logo'
+import { track } from '../../lib/analytics'
 
 interface Bericht {
   van: 'ik' | 'hulp'
@@ -55,6 +56,7 @@ function laad(): Bericht[] {
 
 function antwoordBericht(vraag: string): Bericht {
   const a = beantwoord(vraag)
+  if (a.soort !== 'zeker') track('chat_question_unanswered', { detail: vraag })
   if (a.soort === 'zeker') return { van: 'hulp', tekst: a.item.antwoord, links: a.item.links, opties: a.anders.map((x) => x.id), vraag, contact: a.item.id === 'contact' || a.item.id === 'fout' }
   if (a.opties.length)
     return { van: 'hulp', tekst: 'Weet ik niet zeker. Bedoel je een van deze?', opties: a.opties.map((x) => x.id), vraag, contact: true }

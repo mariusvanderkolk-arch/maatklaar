@@ -1,3 +1,4 @@
+import { track } from './analytics'
 /** Opslag van facturen (lokaal) en het aanmaken van een factuur met een nieuw nummer. */
 import { maakLokaleStore } from './lokaal'
 import { bedrijfStore } from './bedrijf'
@@ -20,6 +21,7 @@ export function factuurVanOfferte(d: OfferteData, projectId: string): Factuur | 
   const f = maakFactuur(d, { id: uid(), nummer, projectId, datum, betaalDagen: b.betaalDagen || 14, nu: Date.now(), uid })
   if (!factuurStore.set([f, ...factuurStore.get()])) return null
   bedrijfStore.set({ ...bedrijfStore.get(), factuurVolgnummer: volgendeTeller })
+  track('factuur_created')
   return f
 }
 

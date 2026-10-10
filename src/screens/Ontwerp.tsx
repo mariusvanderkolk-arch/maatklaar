@@ -7,6 +7,7 @@ import { OntwerpPlan, PLAN_MARGE, planNaarPng } from '../components/ontwerp/Ontw
 import { SymboolIcoon } from '../components/ontwerp/symbolen'
 import type { Api3D } from '../components/ontwerp/Ontwerp3D'
 import { laadLater } from '../lib/lazy'
+import { track } from '../lib/analytics'
 import { uid } from '../lib/defaults'
 import { projectStore } from '../lib/store'
 import type { Project } from '../lib/types'
@@ -64,6 +65,7 @@ function downloadDataUrl(naam: string, url: string) {
 const bestandsnaam = (p: Project, wat: string) => `${(p.naam || 'ontwerp').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').toLowerCase()}-${wat}.png`
 
 export function OntwerpScherm({ p }: { p: Project }) {
+  useEffect(() => track('design_opened'), [])
   const kamer = useMemo(() => kamerVan(p), [p])
   const opgeslagen = useOntwerp(p)
   const [concept, setConcept] = useState<Ontwerp | null>(null)

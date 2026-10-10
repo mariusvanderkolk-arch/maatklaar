@@ -1,3 +1,4 @@
+import { track } from '../lib/analytics'
 import { useEffect, useState, type FormEvent } from 'react'
 import { CloudUpload, Download, KeyRound, LogOut, Mail, RefreshCw, ShieldCheck, Trash2, UserRound } from 'lucide-react'
 import { Button, Card, CardHeader, Dialog, Notice, PageTitle, TextField } from '../components/ui'
@@ -110,6 +111,7 @@ function Inloggen() {
         setKlaar(`We hebben een inloglink gestuurd naar ${email.trim()}. Open de mail op dit apparaat en tik op de link.`)
       } else if (nieuw) {
         const bevestigen = await maakAccount(email.trim(), ww)
+        track('signup')
         setKlaar(bevestigen ? `Account aangemaakt. Bevestig je e-mailadres via de link die we naar ${email.trim()} hebben gestuurd.` : 'Account aangemaakt en ingelogd.')
       } else {
         await loginMetWachtwoord(email.trim(), ww)
