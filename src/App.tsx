@@ -18,6 +18,7 @@ const Facturen = laadLater(() => import('./screens/Facturen').then((m) => m.Fact
 const FactuurScherm = laadLater(() => import('./screens/Facturen').then((m) => m.FactuurScherm))
 const Instellingen = laadLater(() => import('./screens/Instellingen').then((m) => m.Instellingen))
 const Account = laadLater(() => import('./screens/Account').then((m) => m.Account))
+const AbonnementScherm = laadLater(() => import('./screens/Abonnement').then((m) => m.AbonnementScherm))
 const Privacy = laadLater(() => import('./screens/Privacy').then((m) => m.Privacy))
 
 function Laden() {
@@ -57,6 +58,7 @@ export default function App() {
           {route.naam === 'factuur' && <FactuurScherm id={route.id} />}
           {route.naam === 'account' && <Account />}
           {route.naam === 'privacy' && <Privacy />}
+          {route.naam === 'abonnement' && <AbonnementScherm preview={route.preview} terug={route.terug} />}
         </Suspense>
       </Foutgrens>
       {route.naam === 'home' && <Onboarding />}

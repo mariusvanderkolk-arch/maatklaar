@@ -4,6 +4,8 @@ import { Button, Card, CardHeader, Dialog, Notice, PageTitle, TextField } from '
 import { SyncStatus } from '../components/SyncStatus'
 import { toast } from '../components/Toast'
 import { datum } from '../lib/format'
+import { BILLING_AAN } from '../lib/billing/config'
+import { ga } from '../lib/router'
 import {
   NL_FOUT,
   controleerDatabase,
@@ -58,6 +60,11 @@ export function Account() {
 
         {c.herstel && c.gebruiker && <NieuwWachtwoord />}
         {c.gebruiker ? <Ingelogd db={db} /> : <Inloggen />}
+        {BILLING_AAN && (
+          <Notice title="Maatklaar Pro" action={<Button size="sm" variant="secondary" onClick={() => ga('/abonnement')}>Abonnement</Button>}>
+            Proefperiode, abonnement en facturen beheer je op de abonnementspagina.
+          </Notice>
+        )}
 
         <Card className="p-5 sm:p-6">
           <p className="font-semibold">Wat wordt gesynchroniseerd?</p>

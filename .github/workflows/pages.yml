@@ -39,6 +39,9 @@ jobs:
           VITE_BASE: /${{ github.event.repository.name }}/
           # In de repo maatklaar-test (of elke repo die op -test eindigt) wordt automatisch de testversie gebouwd.
           VITE_TEST_MODE: ${{ endsWith(github.event.repository.name, '-test') }}
+          # Betalen (Maatklaar Pro) staat uit tenzij de repo-variabele VITE_BILLING_ENABLED=true bestaat. Zie docs/BETALINGEN.md.
+          VITE_BILLING_ENABLED: ${{ vars.VITE_BILLING_ENABLED || 'false' }}
+          VITE_PRICES_INCL_VAT: ${{ vars.VITE_PRICES_INCL_VAT || 'false' }}
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3

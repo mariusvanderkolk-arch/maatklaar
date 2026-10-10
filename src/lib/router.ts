@@ -16,11 +16,18 @@ export type Route =
   | { naam: 'factuur'; id: string }
   | { naam: 'account' }
   | { naam: 'privacy' }
+  | { naam: 'abonnement'; preview?: string; terug?: boolean }
 
 const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning']
 
 export function parse(hash: string): Route {
-  const delen = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
+  const [pad, query = ''] = hash.replace(/^#\/?/, '').split('?')
+  const delen = pad.split('/').filter(Boolean)
+  if (delen[0] === 'abonnement') {
+    const q = new URLSearchParams(query)
+    const pv = q.get('preview')
+    return { naam: 'abonnement', preview: pv ? (pv === '1' ? 'gratis' : pv) : undefined, terug: q.has('terug') }
+  }
   if (delen[0] === 'nieuw') return { naam: 'nieuw' }
   if (delen[0] === 'over') return { naam: 'over' }
   if (delen[0] === 'facturen') return { naam: 'facturen' }

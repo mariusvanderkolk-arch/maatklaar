@@ -7,6 +7,8 @@ import { nieuwProject, standaardAfmetingen } from '../lib/defaults'
 import { RUIMTES, ruimte, scopeItems, scopeVoor } from '../lib/ruimtes'
 import { ga } from '../lib/router'
 import { projectStore, useProject } from '../lib/store'
+import { useProjectToegang } from '../lib/billing/store'
+import { Betaalmuur } from '../components/Betaalmuur'
 import type { ProjectType, Scope, ScopeKey } from '../lib/types'
 
 export function ProjectForm({ id }: { id?: string }) {
@@ -18,7 +20,10 @@ export function ProjectForm({ id }: { id?: string }) {
   const [scope, setScope] = useState<Scope>(concept.scope)
   const [type, setType] = useState<ProjectType>(concept.type)
 
+  const toegang = useProjectToegang()
   if (id && !bestaand) return <NietGevonden />
+  // Alleen bij een NIEUW project en alleen als betalen aan staat; bestaande projecten blijven altijd bewerkbaar.
+  if (!id && !toegang.mag) return <Betaalmuur aantal={toegang.aantal} />
 
   const items = scopeItems(type)
   const wissel = (k: ScopeKey) => setScope((s) => ({ ...s, [k]: !s[k] }))
