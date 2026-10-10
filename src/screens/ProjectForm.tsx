@@ -1,3 +1,5 @@
+import { AFVAL_SOORTEN, CONTAINER_MATEN, MAX_ZWAAR_M3 } from '../lib/calc'
+import type { AfvalSoort, ContainerKeuze, ContainerMaat } from '../lib/types'
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'
 import { Button, Card, CardHeader, PageTitle, TextField } from '../components/ui'
@@ -20,6 +22,7 @@ export function ProjectForm({ id }: { id?: string }) {
   const [adres, setAdres] = useState(concept.adres)
   const [scope, setScope] = useState<Scope>(concept.scope)
   const [type, setType] = useState<ProjectType>(concept.type)
+  const [container, setContainer] = useState<ContainerKeuze>(concept.container ?? {})
 
   const toegang = useProjectToegang()
   if (id && !bestaand) return <NietGevonden />
@@ -37,7 +40,7 @@ export function ProjectForm({ id }: { id?: string }) {
   }
 
   const opslaan = () => {
-    const velden = { naam: naam.trim() || `Nieuwe ${ruimte(type).label.toLowerCase()}`, klant: klant.trim(), adres: adres.trim(), scope, type }
+    const velden = { naam: naam.trim() || `Nieuwe ${ruimte(type).label.toLowerCase()}`, klant: klant.trim(), adres: adres.trim(), scope, type, container }
     if (bestaand) {
       const anderType = bestaand.type !== type
       projectStore.werkBij(bestaand.id, (p) => ({
@@ -187,6 +190,42 @@ export function ProjectForm({ id }: { id?: string }) {
               )
             })}
             </div>
+            {g.fase === 'sloop' && scope.container && g.items.some((i) => i.key === 'container') && (
+              <div className="mt-2.5 grid gap-2.5 rounded-xl bg-sand-50 p-3.5 ring-1 ring-sand-200 sm:grid-cols-2" data-testid="container-keuze">
+                <label className="block">
+                  <span className="mb-1 block text-[0.78rem] font-medium text-ink-soft">Containermaat</span>
+                  <select
+                    className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-[0.9rem] focus:border-gold-400 focus:outline-none"
+                    value={container.maat ?? ''}
+                    onChange={(e) => setContainer((c) => ({ ...c, maat: e.target.value ? (Number(e.target.value) as ContainerMaat) : undefined }))}
+                  >
+                    <option value="">Automatisch (op afvalvolume)</option>
+                    {CONTAINER_MATEN.map((m) => (
+                      <option key={m} value={m} disabled={AFVAL_SOORTEN[container.soort ?? 'gemengd'].zwaar && m > MAX_ZWAAR_M3}>
+                        {m} m³
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[0.78rem] font-medium text-ink-soft">Soort afval</span>
+                  <select
+                    className="h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-[0.9rem] focus:border-gold-400 focus:outline-none"
+                    value={container.soort ?? 'gemengd'}
+                    onChange={(e) => setContainer((c) => ({ ...c, soort: e.target.value as AfvalSoort }))}
+                  >
+                    {(Object.keys(AFVAL_SOORTEN) as AfvalSoort[]).map((k) => (
+                      <option key={k} value={k}>
+                        {AFVAL_SOORTEN[k].naam}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="text-[0.72rem] leading-snug text-ink-muted sm:col-span-2">
+                  Huur en stortkosten staan als aparte regels in de inkooplijst. Puin en grond zijn zwaar: maximaal {MAX_ZWAAR_M3} m³ per container. Staat “Huur container” uit, dan rekent de app met big bags.
+                </p>
+              </div>
+            )}
             </div>
             ))}
           </div>

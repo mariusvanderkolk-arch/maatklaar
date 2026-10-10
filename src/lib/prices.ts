@@ -34,8 +34,14 @@ export const VOORBEELD_PRIJZEN: Record<ProductId, number> = {
   // sloop & afvoer
   bigbag: 11.99,
   afdekset: 24.99,
+  'container-3': 225,
   container: 275,
+  'container-10': 335,
+  'container-15': 395,
   afvalverwerking: 85,
+  'stort-puin': 30,
+  'stort-hout': 45,
+  'stort-grond': 35,
   // ondergrond
   primer: 18.99,
   egaliseer: 23.99,
@@ -117,7 +123,7 @@ export const voorbeeldPrijsBron: PrijsBron = {
 
 /** Producten die per m² geprijsd worden (overige per verpakking/stuk/m). */
 const PER_M2: ProductId[] = ['wandtegel', 'vloertegel', 'vv-mat', 'laminaat', 'pvc', 'pvc-plafond']
-export const prijsEenheid = (id: ProductId) => (PER_M2.includes(id) ? 'm²' : id === 'waterleiding' ? 'm' : id === 'afvalverwerking' ? 'm³' : 'st.')
+export const prijsEenheid = (id: ProductId) => (PER_M2.includes(id) ? 'm²' : id === 'waterleiding' ? 'm' : id === 'afvalverwerking' || id.startsWith('stort-') ? 'm³' : 'st.')
 
 /**
  * Winkels uit het oude prijsmodel (tot versie 1.2 kon je per winkel prijzen invullen).

@@ -156,6 +156,8 @@ export interface Project {
   uurtarief: number
   /** opslag voor onvoorziene kosten in procenten (over materiaal + arbeid); ontbreekt = 0 */
   onvoorzien?: number
+  /** keuze bij 'Huur container': maat (m³, of auto) en afvalsoort */
+  container?: ContainerKeuze
   fotos: PhotoRef[]
   /** afgevinkte regels op de inkooplijst */
   afgevinkt: Record<string, boolean>
@@ -178,4 +180,13 @@ export interface AiResultaat {
   analyse: import('./ai').AiAnalyse
   /** welke suggesties al zijn overgenomen (bijv. 'werk:wandtegels', 'maat:lengte') */
   overgenomen: string[]
+}
+
+export type ContainerMaat = 3 | 6 | 10 | 15
+export type AfvalSoort = 'gemengd' | 'puin' | 'hout' | 'grond'
+export interface ContainerKeuze {
+  /** ontbreekt = automatisch op basis van het afvalvolume */
+  maat?: ContainerMaat
+  /** ontbreekt = gemengd bouw- en sloopafval */
+  soort?: AfvalSoort
 }

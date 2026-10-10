@@ -16,7 +16,7 @@
  *   met 5% overlap, plinten langs de omtrek minus deuren (+10% zaagverlies).
  */
 import { ruimte } from './ruimtes'
-import type { Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
+import type { AfvalSoort, ContainerKeuze, ContainerMaat, Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
 
 /** Vuistregels en verpakkingsgroottes. Eén plek, zodat ze makkelijk bij te stellen zijn. */
 export const REGELS = {
@@ -405,8 +405,14 @@ export type ProductId =
   | 'ondervloer'
   | 'plint'
   | 'montagekit'
+  | 'container-3'
   | 'container'
+  | 'container-10'
+  | 'container-15'
   | 'afvalverwerking'
+  | 'stort-puin'
+  | 'stort-hout'
+  | 'stort-grond'
   | 'dekvloer'
   | 'waterleiding'
   | 'afvoerbuis'
@@ -471,9 +477,24 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   }
 
   // — Sloop & afvoer
-  if (s.container && !s.sloopwerk) {
-    add({ id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer (plaatsen, huurperiode, ophalen)', spec: `${REGELS.containerM3} m³`, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Container zonder sloopwerk: 1 stuk' })
+  const keuze = p.container ?? {}
+  const soort: AfvalSoort = keuze.soort ?? 'gemengd'
+  const stort = (m3: number, uitleg: string) => {
+    const st = Math.max(1, omhoog(m3))
+    add({
+      id: STORT_ID[soort], groep: 'sloop', naam: `Stortkosten ${AFVAL_SOORTEN[soort].naam.toLowerCase()}`, spec: 'per m³',
+      nodig: m3, nodigEenheid: 'm³', aantal: st, verpakking: 'm³', prijsAantal: st, toelichting: uitleg,
+    })
   }
+  const containers = (m3: number, uitleg: string) => {
+    const { maat, aantal, reden } = kiesContainer(m3, keuze)
+    add({
+      id: CONTAINER_ID[maat], groep: 'sloop', naam: `Huur container ${maat} m³ – ${AFVAL_SOORTEN[soort].naam.toLowerCase()}`, spec: `${maat} m³`,
+      nodig: m3, nodigEenheid: 'm³', aantal, verpakking: 'stuk', prijsAantal: aantal,
+      toelichting: `${uitleg} → ${aantal}× ${maat} m³ (${reden})`,
+    })
+  }
+  if (s.container && !s.sloopwerk) containers(0, 'Container zonder sloopwerk')
   if (s.sloopwerk) {
     const vloerDikte = type === 'vloer' ? REGELS.sloopLegvloerM : type === 'keuken' ? REGELS.sloopVloerDunM : REGELS.sloopVloerM
     const m3 = (o.wandNetto * REGELS.sloopWandM + o.vloer * vloerDikte) * REGELS.sloopOpbulk
@@ -482,29 +503,15 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     // Container: zelf aan te zetten ('Huur container'); bij oude projecten zonder keuze automatisch boven 3 m³.
     const metContainer = p.scope.container ?? m3 > REGELS.containerVanafM3
     if (metContainer && ruimte(type).werk.includes('container')) {
-      const n = Math.max(1, omhoog(m3 / REGELS.containerM3))
-      add({
-        id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer (plaatsen, huurperiode, ophalen)', spec: `${REGELS.containerM3} m³`,
-        nodig: m3, nodigEenheid: 'm³', aantal: n, verpakking: 'stuk', prijsAantal: n,
-        toelichting: `${uitleg} → ${n} container${n === 1 ? '' : 's'} à ${REGELS.containerM3} m³`,
-      })
-      const st = Math.max(1, omhoog(m3))
-      add({
-        id: 'afvalverwerking', groep: 'sloop', naam: 'Afvalverwerking (stortkosten)', spec: 'per m³',
-        nodig: m3, nodigEenheid: 'm³', aantal: st, verpakking: 'm³', prijsAantal: st,
-        toelichting: `${nl(m3)} m³ bouw- en sloopafval storten`,
-      })
+      containers(m3, uitleg)
+      stort(m3, `${nl(m3)} m³ ${AFVAL_SOORTEN[soort].naam.toLowerCase()} storten`)
     } else {
       const n = Math.max(1, omhoog(m3 / REGELS.bigBagM3))
       add({
         id: 'bigbag', groep: 'sloop', naam: 'Big bag voor puin', spec: 'inhoud 1 m³',
         nodig: m3, nodigEenheid: 'm³', aantal: n, verpakking: 'stuk', prijsAantal: n, toelichting: uitleg,
       })
-      add({
-        id: 'afvalverwerking', groep: 'sloop', naam: 'Afvalverwerking (ophalen en storten)', spec: 'per m³',
-        nodig: n, nodigEenheid: 'm³', aantal: n, verpakking: 'm³', prijsAantal: n,
-        toelichting: `${n} big bag${n === 1 ? '' : 's'} à 1 m³ laten ophalen en storten`,
-      })
+      stort(n, `${n} big bag${n === 1 ? '' : 's'} à 1 m³ laten ophalen en storten`)
     }
     add({
       id: 'afdekset', groep: 'sloop', naam: 'Afdekfolie, stucloper & stofmaskers',
@@ -822,6 +829,32 @@ export function tappunten(s: Scope, type: ProjectType) {
 }
 
 /** Indicatieve arbeidsuren per onderdeel. */
+export const CONTAINER_MATEN: ContainerMaat[] = [3, 6, 10, 15]
+export const CONTAINER_ID: Record<ContainerMaat, ProductId> = { 3: 'container-3', 6: 'container', 10: 'container-10', 15: 'container-15' }
+export const STORT_ID: Record<AfvalSoort, ProductId> = { gemengd: 'afvalverwerking', puin: 'stort-puin', hout: 'stort-hout', grond: 'stort-grond' }
+export const AFVAL_SOORTEN: Record<AfvalSoort, { naam: string; zwaar: boolean }> = {
+  gemengd: { naam: 'Bouw- en sloopafval (gemengd)', zwaar: false },
+  puin: { naam: 'Puin (steen, tegels, beton)', zwaar: true },
+  hout: { naam: 'Hout', zwaar: false },
+  grond: { naam: 'Grond / zand', zwaar: true },
+}
+/** Zware afvalsoorten (puin, grond) mogen i.v.m. gewicht niet in grote containers. */
+export const MAX_ZWAAR_M3: ContainerMaat = 6
+
+/** Kiest maat en aantal containers. Auto: kleinste maat waar alles in past (zwaar afval max 6 m³). */
+export function kiesContainer(m3: number, k: ContainerKeuze = {}): { maat: ContainerMaat; aantal: number; reden: string } {
+  const zwaar = AFVAL_SOORTEN[k.soort ?? 'gemengd'].zwaar
+  const toegestaan = CONTAINER_MATEN.filter((m) => !zwaar || m <= MAX_ZWAAR_M3)
+  const grootste = toegestaan[toegestaan.length - 1]
+  if (k.maat) {
+    const maat = zwaar && k.maat > MAX_ZWAAR_M3 ? MAX_ZWAAR_M3 : k.maat
+    return { maat, aantal: Math.max(1, omhoog(m3 / maat)), reden: maat !== k.maat ? `zwaar afval max ${MAX_ZWAAR_M3} m³` : 'gekozen maat' }
+  }
+  const past = toegestaan.find((m) => m >= m3 - 1e-9)
+  if (past) return { maat: past, aantal: 1, reden: 'automatisch gekozen' }
+  return { maat: grootste, aantal: Math.max(1, omhoog(m3 / grootste)), reden: zwaar ? `zwaar afval max ${MAX_ZWAAR_M3} m³` : 'automatisch gekozen' }
+}
+
 export function berekenArbeid(p: Project): ArbeidRegel[] {
   const s = effectieveScope(p)
   const type = p.type ?? 'badkamer'
