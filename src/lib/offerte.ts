@@ -62,6 +62,11 @@ export function decodeerOfferte(code: string): OfferteData {
   } catch {
     throw new Error('Deze offerte-link kon niet worden gelezen. Controleer of je de volledige link hebt gekopieerd.')
   }
+  return leesOfferte(ruw)
+}
+
+/** Controleert en normaliseert ruwe offertegegevens (uit een link of van de server). */
+export function leesOfferte(ruw: unknown): OfferteData {
   const o = ruw as Record<string, unknown>
   if (!o || typeof o !== 'object' || o.v !== 1 || !isStr(o.nr) || !isNum(o.totaal) || !Array.isArray(o.mat)) {
     throw new Error('Deze offerte-link bevat geen geldige offerte.')

@@ -132,6 +132,8 @@ export interface OfferteStatus {
   gedeeldOp?: number
   /** handmatig vastgelegd akkoord van de klant */
   akkoord?: { naam: string; datum: string }
+  /** digitale ondertekening: deellink-token en (na tekenen) de handtekening */
+  teken?: { token: string; hash: string; nr: string; code: string; gedeeldOp: number; getekend?: { naam: string; op: string; handtekening: string } }
 }
 
 export interface Project {

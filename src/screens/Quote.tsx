@@ -1,3 +1,4 @@
+import { TekenKaart, zelfdeVersie } from '../components/TekenKaart'
 import { reviewStatus } from '../lib/reviews'
 import { useEffect, useMemo } from 'react'
 import { BadgeCheck, ReceiptText, Building2, Copy, ExternalLink, Printer, Send } from 'lucide-react'
@@ -63,7 +64,7 @@ export function Quote({ p }: { p: Project }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
       <div className="order-2 lg:order-1">
-        <OfferteDocument d={data} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} />
+        <OfferteDocument d={data} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} ondertekening={of.teken?.getekend && zelfdeVersie(of.teken, data) ? { ...of.teken.getekend, hash: of.teken.hash } : null} />
       </div>
 
       <aside className="no-print order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
@@ -118,6 +119,8 @@ export function Quote({ p }: { p: Project }) {
             </p>
           </div>
         </Card>
+
+        <TekenKaart p={p} d={data} />
 
         <Card className="p-5">
           <p className="text-[0.98rem] font-semibold">Offerte-instellingen</p>

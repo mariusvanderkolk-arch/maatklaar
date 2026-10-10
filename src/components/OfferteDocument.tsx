@@ -4,7 +4,15 @@ import { datumNl, type OfferteData } from '../lib/offerte'
 import { OntwerpSectie } from './ontwerp/OntwerpSectie'
 
 /** Professionele offerteweergave; gebruikt in de app én in de alleen-lezen klantweergave. */
-export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3d }: { d: OfferteData; logo?: string; className?: string; beeld3d?: string | null; interactief3d?: boolean }) {
+export interface Ondertekening {
+  naam: string
+  /** ISO-tijdstip */
+  op: string
+  handtekening: string
+  hash?: string
+}
+
+export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3d, ondertekening }: { d: OfferteData; logo?: string; className?: string; beeld3d?: string | null; interactief3d?: boolean; ondertekening?: Ondertekening | null }) {
   const b = d.bedrijf
   const heeftBedrijf = Boolean(b.naam)
   const gemengd = d.mat.some((m) => m[3])
@@ -200,6 +208,22 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
             </div>
           )}
         </div>
+
+        {ondertekening && (
+          <div className="avoid-break mt-6 rounded-xl border border-sage/40 bg-[#f3f6f1] px-4 py-3 text-[0.8rem]">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-sage">Voor akkoord getekend</p>
+            <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="font-semibold text-ink">{ondertekening.naam}</p>
+                <p className="text-ink-soft">
+                  {new Date(ondertekening.op).toLocaleString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' })}
+                </p>
+                {ondertekening.hash && <p className="mt-1 font-mono text-[0.62rem] break-all text-ink-muted">Controlecode {ondertekening.hash.slice(0, 16)}</p>}
+              </div>
+              <img src={ondertekening.handtekening} alt={`Handtekening van ${ondertekening.naam}`} className="h-20 max-w-[260px] object-contain" />
+            </div>
+          </div>
+        )}
 
         <p className="mt-5 text-[0.72rem] leading-relaxed text-ink-muted">
           Deze raming is indicatief en gebaseerd op opgegeven maten en vuistregels. {d.prijsTekst} Arbeidsuren zijn een schatting. Aan deze raming

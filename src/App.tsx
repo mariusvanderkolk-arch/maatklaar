@@ -16,6 +16,8 @@ const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m)
 const About = laadLater(() => import('./screens/About').then((m) => m.About))
 const Prices = laadLater(() => import('./screens/Prices').then((m) => m.Prices))
 const KlantOfferte = laadLater(() => import('./screens/KlantOfferte').then((m) => m.KlantOfferte))
+const KlantTekenen = laadLater(() => import('./screens/KlantOfferte').then((m) => m.KlantTekenen))
+const Voorwaarden = laadLater(() => import('./screens/Voorwaarden').then((m) => m.Voorwaarden))
 const Facturen = laadLater(() => import('./screens/Facturen').then((m) => m.Facturen))
 const FactuurScherm = laadLater(() => import('./screens/Facturen').then((m) => m.FactuurScherm))
 const Instellingen = laadLater(() => import('./screens/Instellingen').then((m) => m.Instellingen))
@@ -36,12 +38,12 @@ export default function App() {
   const route = useRoute()
   const pad = padVoor(route as { naam: string; stap?: string; sectie?: string })
   useEffect(() => track('page_view', { path: pad }), [pad])
-  if (route.naam === 'offerte-bekijken')
+  if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen')
     return (
       <Foutgrens>
         <InAppBanner />
         <Suspense fallback={<Laden />}>
-          <KlantOfferte code={route.data} />
+          {route.naam === 'offerte-bekijken' ? <KlantOfferte code={route.data} /> : <KlantTekenen token={route.token} />}
         </Suspense>
         <Toaster />
       </Foutgrens>
@@ -62,6 +64,7 @@ export default function App() {
           {route.naam === 'factuur' && <FactuurScherm id={route.id} />}
           {route.naam === 'account' && <Account />}
           {route.naam === 'privacy' && <Privacy />}
+          {route.naam === 'voorwaarden' && <Voorwaarden />}
           {route.naam === 'abonnement' && <AbonnementScherm preview={route.preview} terug={route.terug} />}
         </Suspense>
       </Foutgrens>
