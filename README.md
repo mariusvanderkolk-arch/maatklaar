@@ -22,7 +22,7 @@
      Alleen op toestellen met AR in de browser (Android + Chrome + ARCore); elders een nette melding.
 3. **Berekening** — oppervlakken en alle materialen met onderbouwing (tegels, lijm, voeg, primer, waterdichting,
    egaliseren, kit, profielen, laminaat/PVC per pak, ondervloer, plinten, sanitair, stucwerk).
-4. **Inkooplijst** — gegroepeerd, af te vinken, met richtprijs, goedkoopste winkel per artikel en totaal per winkel.
+4. **Inkooplijst** — per categorie gegroepeerd, af te vinken, met je eigen prijslijst (optioneel leverancier), subtotalen en totaal.
 5. **Offerte** — printvriendelijk met bedrijfsprofiel (naam, logo, KvK, btw, IBAN, contact), offertenummer,
    geldigheidsdatum en betaaltermijn. **Offerte-link voor de klant**: de klant opent de offerte op de telefoon
    (de gegevens zitten gecomprimeerd in de link, er is geen server) en stuurt zijn akkoord via WhatsApp of e-mail.
@@ -68,7 +68,7 @@ Alle formules staan in [`src/lib/calc.ts`](src/lib/calc.ts) (object `REGELS`) en
 
 ## Eigen prijzen
 
-Eigen prijzen worden per apparaat in `localStorage` bewaard (sleutel `slimmer-wonen:prijzen:v1`). Gebruik
+Eigen prijzen (één prijslijst: per artikel één prijs incl. btw, optioneel leverancier) worden per apparaat in `localStorage` bewaard (sleutel `slimmer-wonen:prijslijst:v2`). Oude prijzen per winkel (`slimmer-wonen:prijzen:v1`) worden bij de eerste start eenmalig omgezet (meest ingevulde winkel als basis, lege artikelen aangevuld uit de andere winkels, winkelnaam als leverancier) en blijven als reservekopie bewaard. Oude export-bestanden per winkel kun je nog steeds importeren. Gebruik
 *Exporteren* (JSON of CSV) om een back-up te maken of ze naar een ander apparaat te verhuizen, en *Importeren* om
 ze terug te zetten (ingelezen prijzen winnen van wat er al stond). Het CSV-bestand (`;`, decimale komma) opent
 direct in Excel; je kunt het daar ook invullen en weer importeren.
@@ -81,14 +81,13 @@ export interface PrijsBron {
   naam: string
   isVoorbeeld: boolean
   peildatum: string
-  aanbiedingen(product: ProductId): PrijsAanbod[] // { winkel, prijs, bron, inhoud?, productNaam?, link?, bijgewerkt? }
+  aanbod(product: ProductId): PrijsAanbod | undefined // { prijs, bron, leverancier?, inhoud?, productNaam?, link?, bijgewerkt? }
 }
 ```
 
 `metEigenPrijzen(voorbeeldPrijsBron, eigen)` in [`src/lib/eigenPrijzen.ts`](src/lib/eigenPrijzen.ts) legt de eigen
-prijzen over de voorbeeldbron heen (eigen prijs wint, 'niet leverbaar' haalt de winkel weg, een afwijkende inhoud
-per verpakking rekent het aantal verpakkingen om). `usePrijsBron()` uit `src/lib/prijsStore.ts` levert de actieve
-bron aan inkooplijst, winkeltotalen, goedkoopste winkel en offerte. Wil je later een echte feed/API koppelen, maak
+prijzen over de voorbeeldbron heen (eigen prijs wint, een afwijkende inhoud per verpakking rekent het aantal verpakkingen om). `usePrijsBron()` uit `src/lib/prijsStore.ts` levert de actieve
+bron aan inkooplijst en offerte. Wil je later een echte feed/API koppelen, maak
 dan een eigen `PrijsBron` en gebruik die als basis in plaats van `voorbeeldPrijsBron`.
 
 ## Ontwikkelen

@@ -10,12 +10,12 @@ export const standaardPlanning = (): Planning => ({ dagUren: 8, weekend: false, 
 
 /** Logische volgorde op de bouw. Onbekende taken komen achteraan. */
 export const VOLGORDE = [
-  'sloopwerk', 'egaliseren', 'waterdicht', 'vloerverwarming', 'wandtegels', 'spatwand', 'vloertegels',
-  'ondervloer', 'legvloer', 'plinten', 'inloopdouche', 'toilet', 'fontein', 'wastafelmeubel', 'stucwerk', 'kitwerk',
+  'sloopwerk', 'leidingwerk', 'elektra', 'ventilatie', 'dekvloer', 'egaliseren', 'waterdicht', 'vloerverwarming', 'wandtegels', 'spatwand', 'vloertegels',
+  'ondervloer', 'legvloer', 'plinten', 'bad', 'inloopdouche', 'toilet', 'fontein', 'wastafelmeubel', 'radiator', 'plafond', 'stucwerk', 'deur', 'kitwerk',
 ]
 
 /** Droog-/wachttijd (dagen) na een taak voordat de volgende kan beginnen. */
-export const DROOGTIJD: Record<string, number> = { egaliseren: 1, waterdicht: 1, stucwerk: 1 }
+export const DROOGTIJD: Record<string, number> = { dekvloer: 7, egaliseren: 1, waterdicht: 1, stucwerk: 1 }
 
 export interface Taak {
   id: string

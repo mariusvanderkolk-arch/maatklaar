@@ -78,7 +78,7 @@ describe('cloud-sync met twee apparaten', () => {
     let a = await laad()
     const basis = a.voorbeeldProjecten()[0]
     a.projectStore.voegToe({ ...basis, ...eigenProject('pA', 'Badkamer A', 1000) })
-    a.prijsStore.zet('kit', 'gamma', { prijs: 7.5 })
+    a.prijsStore.zet('kit', { prijs: 7.5 })
     await a.sync.startCloud(true)
     expect(a.sync.cloudStaat().toestemmingNodig).toBe(true)
     a.sync.geefToestemming(true)
@@ -95,7 +95,7 @@ describe('cloud-sync met twee apparaten', () => {
     await b.sync.syncNu()
     const namen = b.projectStore.alle().filter((p) => !p.voorbeeld).map((p) => p.naam).sort()
     expect(namen).toEqual(['Badkamer A', 'Keuken B']) // samengevoegd, niets kwijt
-    expect(b.prijsStore.alle().kit?.gamma?.prijs).toBe(7.5)
+    expect(b.prijsStore.alle().kit?.prijs).toBe(7.5)
     expect(server.rijen.some((r) => r.id === 'pB' && !r.deleted)).toBe(true)
 
     // B verwijdert project A → tombstone

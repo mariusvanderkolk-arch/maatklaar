@@ -17,6 +17,14 @@ export type ScopeKey =
   | 'legvloer'
   | 'ondervloer'
   | 'plinten'
+  | 'dekvloer'
+  | 'leidingwerk'
+  | 'elektra'
+  | 'radiator'
+  | 'ventilatie'
+  | 'bad'
+  | 'deur'
+  | 'plafond'
 
 export type Scope = Record<ScopeKey, boolean>
 
@@ -143,6 +151,8 @@ export interface Project {
   snijverlies: number
   /** uurtarief in euro incl. btw, voor de indicatieve arbeidsraming */
   uurtarief: number
+  /** opslag voor onvoorziene kosten in procenten (over materiaal + arbeid); ontbreekt = 0 */
+  onvoorzien?: number
   fotos: PhotoRef[]
   /** afgevinkte regels op de inkooplijst */
   afgevinkt: Record<string, boolean>

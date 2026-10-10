@@ -17,7 +17,7 @@ const STAPPEN = [
   { icon: ClipboardList, titel: 'Project', tekst: 'Klant en werkzaamheden vastleggen' },
   { icon: Camera, titel: 'Opmeten', tekst: "Foto's en maten van de ruimte" },
   { icon: Calculator, titel: 'Berekening', tekst: 'Oppervlakken en materialen' },
-  { icon: ShoppingCart, titel: 'Inkooplijst', tekst: 'Per winkel, met richtprijzen' },
+  { icon: ShoppingCart, titel: 'Inkooplijst', tekst: 'Met je eigen prijslijst' },
 ]
 
 const heroAfm = { ...standaardAfmetingen(), lengte: 2.8, breedte: 2.2, openingen: [
@@ -213,7 +213,7 @@ function ProjectKaart({ p }: { p: Project }) {
         </div>
         <div>
           <dt className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Richtprijs</dt>
-          <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{euro(Math.round(inkoop.goedkoopsteMix))}</dd>
+          <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{euro(Math.round(inkoop.totaal))}</dd>
         </div>
       </dl>
       <div className="mt-4 flex items-center justify-between text-xs text-ink-muted">

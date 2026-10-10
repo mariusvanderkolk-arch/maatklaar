@@ -170,11 +170,18 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
           </section>
         )}
 
+        {d.onv && d.onv[1] > 0 && (
+          <div className="avoid-break mt-6 flex items-baseline justify-between border-t border-sand-200 pt-3 text-[0.9rem]">
+            <span className="text-ink-soft">Onvoorzien ({getal(d.onv[0], 1)}% stelpost over materiaal{d.arb.length ? ' en arbeid' : ''})</span>
+            <span className="tabnum font-semibold">{euro(d.onv[1])}</span>
+          </div>
+        )}
+
         <section className="avoid-break mt-8 rounded-2xl bg-ink px-6 py-5 text-sand-50">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-gold-300">Totaal indicatief</p>
-              <p className="mt-1 text-xs text-sand-300">Materialen{d.arb.length ? ' + arbeid' : ''} · incl. 21% btw</p>
+              <p className="mt-1 text-xs text-sand-300">Materialen{d.arb.length ? ' + arbeid' : ''}{d.onv?.[1] ? ' + onvoorzien' : ''} · incl. 21% btw</p>
             </div>
             <p className="tabnum font-display text-[2.3rem] leading-none font-semibold">{euro(d.totaal)}</p>
           </div>

@@ -26,7 +26,7 @@ const BLOKKEN = [
       </Button>
     ),
     tekst:
-      'Standaard gebruikt de app voorbeeldprijzen voor Gamma, Praxis, Hornbach en Karwei. Onder Prijzen beheren vul je je eigen prijzen in; die gaan direct voor in de inkooplijst, de winkeltotalen en de offerte. Met exporteren en importeren neem je ze mee naar een ander apparaat.',
+      'Je werkt met één eigen prijslijst: per artikel jouw inkoopprijs, met desgewenst de leverancier. Zolang je niets invult rekent de app met voorbeeldprijzen. Eigen prijzen gaan direct voor in de inkooplijst en de offerte. Met exporteren en importeren (CSV/JSON) neem je ze mee naar een ander apparaat.',
   },
   {
     icon: Camera,

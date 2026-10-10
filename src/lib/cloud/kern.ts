@@ -5,7 +5,7 @@
  * (user_id, kind, id) met jsonb-data en updated_at. Conflicten: laatste wijziging wint.
  * Verwijderen = rij met deleted=true (tombstone), zodat andere apparaten het ook weghalen.
  */
-import type { EigenPrijs, EigenPrijzen } from '../eigenPrijzen'
+import { normaliseerPrijzen, type EigenPrijs, type EigenPrijzen } from '../eigenPrijzen'
 
 export type Soort = 'project' | 'factuur' | 'prijzen' | 'bedrijf' | 'design'
 
@@ -125,17 +125,13 @@ export function verwerkRemote(
   return { meta: uit, acties }
 }
 
-/** Eigen prijzen per cel samenvoegen: de meest recent bijgewerkte cel wint. */
-export function combineerPrijzenNieuwste(a: EigenPrijzen, b: EigenPrijzen): EigenPrijzen {
+/** Eigen prijzen per artikel samenvoegen: het meest recent bijgewerkte artikel wint (oud formaat wordt eerst omgezet). */
+export function combineerPrijzenNieuwste(a: unknown, b: unknown): EigenPrijzen {
   const uit: EigenPrijzen = {}
-  for (const bron of [a, b]) {
-    for (const [p, rij] of Object.entries(bron) as [keyof EigenPrijzen, Record<string, EigenPrijs>][]) {
-      const doel = { ...(uit[p] ?? {}) } as Record<string, EigenPrijs>
-      for (const [w, e] of Object.entries(rij ?? {})) {
-        const oud = doel[w]
-        if (!oud || (e?.bijgewerkt ?? '') > (oud.bijgewerkt ?? '')) doel[w] = e
-      }
-      ;(uit as Record<string, unknown>)[p] = doel
+  for (const bron of [normaliseerPrijzen(a), normaliseerPrijzen(b)]) {
+    for (const [p, e] of Object.entries(bron) as [keyof EigenPrijzen, EigenPrijs][]) {
+      const oud = uit[p]
+      if (!oud || (e?.bijgewerkt ?? '') > (oud.bijgewerkt ?? '')) uit[p] = e
     }
   }
   return uit

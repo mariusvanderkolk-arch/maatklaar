@@ -4,7 +4,7 @@
  */
 import { normaliseerProject } from './defaults'
 import { standaardBedrijf, type Bedrijf } from './bedrijf'
-import type { EigenPrijzen } from './eigenPrijzen'
+import { normaliseerPrijzen, telEigenPrijzen, type EigenPrijzen } from './eigenPrijzen'
 import type { AiInstellingen } from './ai'
 import type { Project } from './types'
 import { normaliseerFactuur, type Factuur } from './factuur'
@@ -77,7 +77,7 @@ export function leesBackup(tekst: string): Backup {
     gemaakt: typeof j.gemaakt === 'string' ? j.gemaakt : '',
     projecten,
     fotos,
-    prijzen: isObj(j.prijzen) ? (j.prijzen as EigenPrijzen) : {},
+    prijzen: isObj(j.prijzen) ? normaliseerPrijzen(j.prijzen) : {},
     bedrijf,
     facturen: (Array.isArray(j.facturen) ? j.facturen : []).map(normaliseerFactuur).filter((f): f is Factuur => f != null),
     ai,
@@ -113,7 +113,7 @@ export function combineerBedrijf(huidig: Bedrijf, uitBestand: Bedrijf | undefine
 
 export function samenvatting(b: Backup) {
   const eigen = b.projecten.filter((p) => !p.voorbeeld).length
-  const prijzen = Object.values(b.prijzen).reduce((n, r) => n + Object.keys(r ?? {}).length, 0)
+  const prijzen = telEigenPrijzen(b.prijzen)
   return { projecten: b.projecten.length, eigen, fotos: b.fotos.length, prijzen, bedrijf: !!b.bedrijf?.naam, facturen: b.facturen.length }
 }
 

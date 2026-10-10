@@ -25,7 +25,7 @@ export function PlanningScherm({ p }: { p: Project }) {
   const taken = useMemo(() => planTaken(arbeid, pl), [arbeid, pl])
   const start = pl.start ?? vandaag()
   const dagen = useMemo(() => maakDagplanning(taken, start, pl.weekend), [taken, start, pl.weekend])
-  const budget = maakBudget({ materialen: inkoop.goedkoopsteMix, arbeid, uurtarief: p.uurtarief }, pl)
+  const budget = maakBudget({ materialen: inkoop.totaal, arbeid, uurtarief: p.uurtarief }, pl)
   const werkdagen = taken.reduce((s, t) => s + t.dagen, 0)
   const eind = dagen[dagen.length - 1]?.datum
 

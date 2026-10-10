@@ -1,52 +1,37 @@
-/** Maakt van de berekende materialen een inkooplijst met prijzen per winkel. */
+/** Maakt van de berekende materialen één inkooplijst met de eigen prijslijst (geen vergelijking tussen winkels). */
 import { GROEPEN, omhoog, type Groep, type MateriaalRegel } from './calc'
-import { WINKELS, type PrijsBron, type WinkelId } from './prices'
+import type { PrijsBron } from './prices'
 
-export interface RegelAanbod {
-  winkel: WinkelId
-  /** prijs per prijseenheid (m² of verpakking/stuk) */
-  prijs: number
-  /** totaal voor deze regel bij deze winkel */
+export interface InkoopRegel extends MateriaalRegel {
+  sleutel: string
+  /** prijs per prijseenheid; ontbreekt = geen prijs bekend */
+  prijs?: number
+  /** regeltotaal */
   totaal: number
-  /** aantal te kopen verpakkingen bij deze winkel (kan afwijken bij een andere verpakkingsgrootte) */
-  aantal: number
-  verpakking: string
-  bron: 'eigen' | 'voorbeeld'
+  /** te kopen aantal (kan afwijken bij een eigen verpakkingsgrootte) */
+  koopAantal: number
+  koopVerpakking: string
+  bron: 'eigen' | 'voorbeeld' | 'geen'
+  leverancier?: string
   productNaam?: string
   link?: string
   bijgewerkt?: string
 }
 
-export interface InkoopRegel extends MateriaalRegel {
-  sleutel: string
-  aanbiedingen: RegelAanbod[]
-  goedkoopste?: RegelAanbod
-}
-
-export interface WinkelTotaal {
-  winkel: WinkelId
-  totaal: number
-  /** aantal regels dat deze winkel niet heeft */
-  ontbrekend: number
-}
-
 export interface PrijsStatus {
-  /** aantal gebruikte prijzen (regels × winkels) dat een eigen prijs is */
   eigen: number
-  /** aantal gebruikte prijzen dat nog een voorbeeldprijs is */
   voorbeeld: number
-  /** meest recente wijziging van de gebruikte eigen prijzen (ISO) */
   laatstBijgewerkt?: string
 }
 
 export interface Inkooplijst {
   regels: InkoopRegel[]
-  groepen: { id: Groep; naam: string; regels: InkoopRegel[] }[]
-  perWinkel: WinkelTotaal[]
-  /** som van de goedkoopste prijs per regel (winkels combineren) */
-  goedkoopsteMix: number
-  /** goedkoopste winkel als je alles bij één winkel koopt (alleen winkels met alle artikelen) */
-  besteEnkeleWinkel?: WinkelTotaal
+  groepen: { id: Groep; naam: string; regels: InkoopRegel[]; totaal: number }[]
+  totaal: number
+  /** regels zonder prijs */
+  zonderPrijs: number
+  /** er staat bij minstens één regel een leverancier */
+  metLeverancier: boolean
   prijsStatus: PrijsStatus
   bron: PrijsBron
 }
@@ -56,47 +41,46 @@ const nl = (n: number) => new Intl.NumberFormat('nl-NL', { maximumFractionDigits
 
 export function maakInkooplijst(materialen: MateriaalRegel[], bron: PrijsBron): Inkooplijst {
   const status: PrijsStatus = { eigen: 0, voorbeeld: 0 }
+  let zonderPrijs = 0
   const regels: InkoopRegel[] = materialen.map((m) => {
-    const aanbiedingen = bron
-      .aanbiedingen(m.id)
-      .map((a): RegelAanbod => {
-        const herkomst = a.bron ?? (bron.isVoorbeeld ? 'voorbeeld' : 'eigen')
-        // Andere verpakkingsgrootte bij deze winkel → aantal opnieuw berekenen.
-        const anders = a.inhoud != null && a.inhoud > 0 && m.inhoud != null && Math.abs(a.inhoud - m.inhoud) > 1e-9
-        const aantal = anders ? Math.max(1, omhoog(m.nodig / a.inhoud!)) : m.aantal
-        const prijsAantal = anders ? aantal : m.prijsAantal
-        const verpakking = anders ? `${m.verpakkingSoort ?? 'verpakking'} à ${nl(a.inhoud!)} ${m.nodigEenheid}` : m.verpakking
-        if (herkomst === 'eigen') {
-          status.eigen++
-          if (a.bijgewerkt && (!status.laatstBijgewerkt || a.bijgewerkt > status.laatstBijgewerkt)) status.laatstBijgewerkt = a.bijgewerkt
-        } else status.voorbeeld++
-        return {
-          winkel: a.winkel,
-          prijs: a.prijs,
-          totaal: cent(a.prijs * prijsAantal),
-          aantal,
-          verpakking,
-          bron: herkomst,
-          productNaam: a.productNaam,
-          link: a.link,
-          bijgewerkt: a.bijgewerkt,
-        }
-      })
-      .sort((a, b) => a.totaal - b.totaal)
-    return { ...m, sleutel: m.id, aanbiedingen, goedkoopste: aanbiedingen[0] }
-  })
-  const perWinkel: WinkelTotaal[] = WINKELS.map((w) => {
-    let totaal = 0
-    let ontbrekend = 0
-    for (const r of regels) {
-      const a = r.aanbiedingen.find((x) => x.winkel === w.id)
-      if (a) totaal += a.totaal
-      else ontbrekend++
+    const a = bron.aanbod(m.id)
+    if (!a) {
+      zonderPrijs++
+      return { ...m, sleutel: m.id, totaal: 0, koopAantal: m.aantal, koopVerpakking: m.verpakking, bron: 'geen' }
     }
-    return { winkel: w.id, totaal: cent(totaal), ontbrekend }
+    const anders = a.inhoud != null && a.inhoud > 0 && m.inhoud != null && Math.abs(a.inhoud - m.inhoud) > 1e-9
+    const koopAantal = anders ? Math.max(1, omhoog(m.nodig / a.inhoud!)) : m.aantal
+    const prijsAantal = anders ? koopAantal : m.prijsAantal
+    const koopVerpakking = anders ? `${m.verpakkingSoort ?? 'verpakking'} à ${nl(a.inhoud!)} ${m.nodigEenheid}` : m.verpakking
+    if (a.bron === 'eigen') {
+      status.eigen++
+      if (a.bijgewerkt && (!status.laatstBijgewerkt || a.bijgewerkt > status.laatstBijgewerkt)) status.laatstBijgewerkt = a.bijgewerkt
+    } else status.voorbeeld++
+    return {
+      ...m,
+      sleutel: m.id,
+      prijs: a.prijs,
+      totaal: cent(a.prijs * prijsAantal),
+      koopAantal,
+      koopVerpakking,
+      bron: a.bron,
+      leverancier: a.leverancier,
+      productNaam: a.productNaam,
+      link: a.link,
+      bijgewerkt: a.bijgewerkt,
+    }
   })
-  const goedkoopsteMix = cent(regels.reduce((s, r) => s + (r.goedkoopste?.totaal ?? 0), 0))
-  const volledig = perWinkel.filter((w) => w.ontbrekend === 0).sort((a, b) => a.totaal - b.totaal)
-  const groepen = GROEPEN.map((g) => ({ ...g, regels: regels.filter((r) => r.groep === g.id) })).filter((g) => g.regels.length)
-  return { regels, groepen, perWinkel, goedkoopsteMix, besteEnkeleWinkel: volledig[0], prijsStatus: status, bron }
+  const groepen = GROEPEN.map((g) => {
+    const rs = regels.filter((r) => r.groep === g.id)
+    return { ...g, regels: rs, totaal: cent(rs.reduce((s, r) => s + r.totaal, 0)) }
+  }).filter((g) => g.regels.length)
+  return {
+    regels,
+    groepen,
+    totaal: cent(regels.reduce((s, r) => s + r.totaal, 0)),
+    zonderPrijs,
+    metLeverancier: regels.some((r) => !!r.leverancier),
+    prijsStatus: status,
+    bron,
+  }
 }

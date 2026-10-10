@@ -13,7 +13,7 @@ Voor aannemers die badkamers, toiletten, keukens of vloeren doen:
 • ruimte opmeten (met plattegrond)
 • ontwerp in 2D en 3D om aan de klant te laten zien
 • materialen en uren uitrekenen
-• eigen inkoopprijzen invullen (snel, met zoeken en kopiëren tussen winkels)
+• je eigen prijslijst invullen (één prijs per artikel, met je eigen leverancier; snel zoeken en % aanpassen)
 • nette offerte + factuur naar de klant
 • alles blijft op je telefoon, geen account nodig
 

@@ -10,40 +10,31 @@ describe('inkooplijst', () => {
 
   it('markeert voorbeeldprijzen als voorbeeld', () => {
     expect(lijst.bron.isVoorbeeld).toBe(true)
+    expect(lijst.prijsStatus.eigen).toBe(0)
   })
 
-  it('kiest per regel de goedkoopste winkel', () => {
-    for (const r of lijst.regels) {
-      if (!r.goedkoopste) continue
-      for (const a of r.aanbiedingen) expect(r.goedkoopste.totaal).toBeLessThanOrEqual(a.totaal)
-    }
+  it('elke regel heeft een prijs en het totaal klopt', () => {
+    expect(lijst.zonderPrijs).toBe(0)
+    expect(lijst.totaal).toBeCloseTo(lijst.regels.reduce((s, r) => s + r.totaal, 0), 1)
   })
 
   it('tegels worden per m² geprijsd (dozen × m² per doos)', () => {
     const r = lijst.regels.find((x) => x.id === 'wandtegel')!
-    const gamma = r.aanbiedingen.find((a) => a.winkel === 'gamma')!
-    expect(gamma.totaal).toBeCloseTo(24.95 * r.aantal * p.wandtegel.m2PerDoos, 2)
+    expect(r.totaal).toBeCloseTo(23.99 * r.aantal * p.wandtegel.m2PerDoos, 2)
   })
 
-  it('goedkoopste mix is nooit duurder dan de goedkoopste complete winkel', () => {
-    if (lijst.besteEnkeleWinkel) expect(lijst.goedkoopsteMix).toBeLessThanOrEqual(lijst.besteEnkeleWinkel.totaal)
-  })
-
-  it('telt ontbrekende artikelen per winkel', () => {
-    const karwei = lijst.perWinkel.find((w) => w.winkel === 'karwei')!
-    expect(karwei.ontbrekend).toBeGreaterThan(0) // afdichtmanchet & bigbag niet in voorbeeldtabel
-  })
-
-  it('werkt met een eigen (echte) prijsbron', () => {
-    const bron: PrijsBron = {
-      id: 'test',
-      naam: 'Test',
-      isVoorbeeld: false,
-      peildatum: '2026-01-01',
-      aanbiedingen: () => [{ winkel: 'gamma', prijs: 1 }],
-    }
+  it('eigen verpakkingsgrootte rekent het aantal om', () => {
+    const bron: PrijsBron = { id: 't', naam: 'T', isVoorbeeld: false, peildatum: '2026-01-01', aanbod: (id) => (id === 'tegellijm' ? { prijs: 10, bron: 'eigen', inhoud: 5 } : voorbeeldPrijsBron.aanbod(id)) }
     const l = maakInkooplijst(berekenMaterialen(p), bron)
-    expect(l.perWinkel.find((w) => w.winkel === 'gamma')!.ontbrekend).toBe(0)
-    expect(l.besteEnkeleWinkel?.winkel).toBe('gamma')
+    const r = l.regels.find((x) => x.id === 'tegellijm')!
+    expect(r.koopAantal).toBeGreaterThanOrEqual(r.aantal)
+    expect(r.totaal).toBe(r.koopAantal * 10)
+  })
+
+  it('artikel zonder prijs telt als zonderPrijs', () => {
+    const bron: PrijsBron = { id: 't', naam: 'T', isVoorbeeld: false, peildatum: '2026-01-01', aanbod: () => undefined }
+    const l = maakInkooplijst(berekenMaterialen(p), bron)
+    expect(l.zonderPrijs).toBe(l.regels.length)
+    expect(l.totaal).toBe(0)
   })
 })

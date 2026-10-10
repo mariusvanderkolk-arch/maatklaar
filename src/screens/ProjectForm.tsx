@@ -5,7 +5,7 @@ import { SCOPE_ICONS } from '../components/scopeIcons'
 import { RUIMTE_ICONS } from '../components/ruimteIcons'
 import { track } from '../lib/analytics'
 import { nieuwProject, standaardAfmetingen } from '../lib/defaults'
-import { RUIMTES, ruimte, scopeItems, scopeVoor } from '../lib/ruimtes'
+import { RUIMTES, ruimte, scopeItems, scopePerFase, scopeVoor } from '../lib/ruimtes'
 import { ga } from '../lib/router'
 import { projectStore, useProject } from '../lib/store'
 import { useProjectToegang } from '../lib/billing/store'
@@ -143,8 +143,12 @@ export function ProjectForm({ id }: { id?: string }) {
               </Button>
             }
           />
-          <div className="grid gap-2.5 p-4 sm:grid-cols-2 sm:p-6">
-            {items.map((item) => {
+          <div className="space-y-4 p-4 sm:p-6">
+            {scopePerFase(type).map((g) => (
+            <div key={g.fase}>
+            <p className="text-[0.68rem] font-semibold tracking-[0.14em] text-gold-700 uppercase">{g.naam}</p>
+            <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
+            {g.items.map((item) => {
               const aan = scope[item.key]
               const Icon = SCOPE_ICONS[item.key]
               return (
@@ -182,6 +186,9 @@ export function ProjectForm({ id }: { id?: string }) {
                 </button>
               )
             })}
+            </div>
+            </div>
+            ))}
           </div>
         </Card>
 

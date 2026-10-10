@@ -1,5 +1,4 @@
 import { euro } from './format'
-import { winkelNaam } from './prices'
 import type { Inkooplijst } from './shopping'
 import type { Project } from './types'
 
@@ -10,17 +9,16 @@ export function inkoopTekst(p: Project, lijst: Inkooplijst): string {
     regels.push(g.naam.toUpperCase())
     for (const r of g.regels) {
       const vink = p.afgevinkt[r.sleutel] ? '[x]' : '[ ]'
-      const prijs = r.goedkoopste ? ` – ${euro(r.goedkoopste.totaal)} (${winkelNaam(r.goedkoopste.winkel)})` : ''
-      const g = r.goedkoopste
-      regels.push(`${vink} ${g?.aantal ?? r.aantal}× ${r.naam}${r.spec ? ` ${r.spec}` : ''} – ${g?.verpakking ?? r.verpakking}${prijs}`)
+      const prijs = r.bron !== 'geen' ? ` – ${euro(r.totaal)}${r.leverancier ? ` (${r.leverancier})` : ''}` : ''
+      regels.push(`${vink} ${r.koopAantal}× ${r.naam}${r.spec ? ` ${r.spec}` : ''} – ${r.koopVerpakking}${prijs}`)
     }
     regels.push('')
   }
-  regels.push(`Totaal (goedkoopste per artikel): ${euro(lijst.goedkoopsteMix)}`)
+  regels.push(`Totaal materiaal: ${euro(lijst.totaal)}`)
   const st = lijst.prijsStatus
-  if (st.eigen === 0) regels.push('Let op: richtprijzen zijn voorbeeldprijzen, geen actuele winkelprijzen.')
+  if (st.eigen === 0) regels.push('Let op: dit zijn voorbeeldprijzen, nog geen eigen inkoopprijzen.')
   else if (st.voorbeeld > 0) regels.push(`Let op: ${st.voorbeeld} van ${st.eigen + st.voorbeeld} prijzen zijn nog voorbeeldprijzen.`)
-  else regels.push('Prijzen: eigen prijzen.')
+  else regels.push('Prijzen: eigen prijslijst.')
   return regels.join('\n')
 }
 

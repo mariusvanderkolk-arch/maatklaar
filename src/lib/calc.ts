@@ -96,6 +96,24 @@ export const REGELS = {
   plintLengteM: 2.4,
   /** Montagekit voor plinten: ca. 12 m plint per koker van 310 ml. */
   montagekitMPerKoker: 12,
+
+  /** Big bags tot dit volume; daarboven een afvalcontainer (m³). */
+  containerVanafM3: 3,
+  containerM3: 6,
+  /** Zand-cement dekvloer: ca. 20 kg mortel per m² per cm, standaard 5 cm dik, zak à 25 kg. */
+  dekvloerKgPerM2PerCm: 20,
+  dekvloerDikteCm: 5,
+  dekvloerZakKg: 25,
+  /** Leidingwerk: meters waterleiding (warm + koud) per tappunt, afvoer 40/50 mm per tappunt, buislengte 2 m. */
+  waterleidingMPerTappunt: 6,
+  afvoerMPerTappunt: 3,
+  buisLengteM: 2,
+  /** Elektra: één inbouwspot per ca. 1,2 m² (minimaal 3), 2 spatwaterdichte stopcontacten. */
+  spotM2: 1.2,
+  spotsMin: 3,
+  stopcontacten: 2,
+  /** PVC-plafond: m² + 10% zaagverlies. */
+  plafondVerlies: 0.1,
 } as const
 
 /** Indicatieve arbeidsnormen (uren) voor de offerte-raming. */
@@ -123,6 +141,16 @@ export const ARBEID = {
   pvcPerM2: 0.35,
   ondervloerPerM2: 0.05,
   plintenPerM: 0.2,
+  dekvloerPerM2: 0.6,
+  dekvloerVast: 1,
+  leidingwerkPerTappunt: 1.5,
+  elektraVast: 3,
+  elektraPerSpot: 0.25,
+  radiator: 3,
+  ventilatie: 2.5,
+  bad: 5,
+  deur: 2.5,
+  plafondPerM2: 0.6,
 } as const
 
 /** Scope zonder werkzaamheden die niet bij het ruimtetype horen (bijv. na wisselen van type). */
@@ -322,17 +350,23 @@ export type Groep =
   | 'lijm-voeg'
   | 'afwerking'
   | 'sanitair'
+  | 'leidingwerk'
+  | 'elektra'
+  | 'timmerwerk'
 
 export const GROEPEN: { id: Groep; naam: string }[] = [
   { id: 'sloop', naam: 'Sloop & afvoer' },
-  { id: 'voorbereiding', naam: 'Voorbereiding ondergrond' },
+  { id: 'voorbereiding', naam: 'Ondergrond & dekvloer' },
+  { id: 'leidingwerk', naam: 'Leidingwerk water & afvoer' },
+  { id: 'elektra', naam: 'Elektra, verlichting & ventilatie' },
   { id: 'waterdicht', naam: 'Waterdicht maken' },
-  { id: 'vloerverwarming', naam: 'Vloerverwarming' },
+  { id: 'vloerverwarming', naam: 'Verwarming' },
   { id: 'tegels', naam: 'Tegels' },
   { id: 'vloer', naam: 'Vloer & plinten' },
   { id: 'lijm-voeg', naam: 'Lijm, voeg & toebehoren' },
   { id: 'afwerking', naam: 'Kit, profielen & afwerking' },
   { id: 'sanitair', naam: 'Sanitair' },
+  { id: 'timmerwerk', naam: 'Deur, dorpel & plafond' },
 ]
 
 export type ProductId =
@@ -371,6 +405,29 @@ export type ProductId =
   | 'ondervloer'
   | 'plint'
   | 'montagekit'
+  | 'container'
+  | 'afvalverwerking'
+  | 'dekvloer'
+  | 'waterleiding'
+  | 'afvoerbuis'
+  | 'afvoerbuis110'
+  | 'koppelingen'
+  | 'installatiemateriaal'
+  | 'aardlekgroep'
+  | 'inbouwspot'
+  | 'stopcontact'
+  | 'ventilator'
+  | 'ventilatiekanaal'
+  | 'designradiator'
+  | 'radiatoraansluitset'
+  | 'ligbad'
+  | 'badkraan'
+  | 'badafvoer'
+  | 'binnendeur'
+  | 'dorpel'
+  | 'deurbeslag'
+  | 'pvc-plafond'
+  | 'plafondprofielen'
 
 export interface MateriaalRegel {
   id: ProductId
@@ -418,12 +475,26 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     const vloerDikte = type === 'vloer' ? REGELS.sloopLegvloerM : type === 'keuken' ? REGELS.sloopVloerDunM : REGELS.sloopVloerM
     const m3 = (o.wandNetto * REGELS.sloopWandM + o.vloer * vloerDikte) * REGELS.sloopOpbulk
     const wandDeel = o.wandNetto > 0 ? `${nl(o.wandNetto)} m² ${type === 'keuken' ? 'spatwand' : 'wand'} × 2,5 cm + ` : ''
-    add({
-      id: 'bigbag', groep: 'sloop', naam: 'Big bag voor puin', spec: 'inhoud 1 m³',
-      nodig: m3, nodigEenheid: 'm³', aantal: Math.max(1, omhoog(m3 / REGELS.bigBagM3)), verpakking: 'stuk',
-      prijsAantal: Math.max(1, omhoog(m3 / REGELS.bigBagM3)),
-      toelichting: `(${wandDeel}${nl(o.vloer)} m² vloer × ${nl(vloerDikte * 100, 1)} cm) × 1,5 opbulk ≈ ${nl(m3)} m³`,
-    })
+    const uitleg = `(${wandDeel}${nl(o.vloer)} m² vloer × ${nl(vloerDikte * 100, 1)} cm) × 1,5 opbulk ≈ ${nl(m3)} m³`
+    if (m3 > REGELS.containerVanafM3) {
+      const n = Math.max(1, omhoog(m3 / REGELS.containerM3))
+      add({
+        id: 'container', groep: 'sloop', naam: 'Afvalcontainer (incl. plaatsen en afvoeren)', spec: `${REGELS.containerM3} m³`,
+        nodig: m3, nodigEenheid: 'm³', aantal: n, verpakking: 'stuk', prijsAantal: n,
+        toelichting: `${uitleg}; meer dan ${REGELS.containerVanafM3} m³ → container`,
+      })
+    } else {
+      const n = Math.max(1, omhoog(m3 / REGELS.bigBagM3))
+      add({
+        id: 'bigbag', groep: 'sloop', naam: 'Big bag voor puin', spec: 'inhoud 1 m³',
+        nodig: m3, nodigEenheid: 'm³', aantal: n, verpakking: 'stuk', prijsAantal: n, toelichting: uitleg,
+      })
+      add({
+        id: 'afvalverwerking', groep: 'sloop', naam: 'Afvalverwerking (ophalen en storten)', spec: 'per m³',
+        nodig: n, nodigEenheid: 'm³', aantal: n, verpakking: 'm³', prijsAantal: n,
+        toelichting: `${n} big bag${n === 1 ? '' : 's'} à 1 m³ laten ophalen en storten`,
+      })
+    }
     add({
       id: 'afdekset', groep: 'sloop', naam: 'Afdekfolie, stucloper & stofmaskers',
       nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1,
@@ -452,6 +523,52 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       nodig: kg, nodigEenheid: 'kg', aantal: zakken, verpakking: `zak à ${REGELS.egaliseerZakKg} kg`, prijsAantal: zakken, inhoud: REGELS.egaliseerZakKg, verpakkingSoort: 'zak',
       toelichting: `${nl(o.vloer)} m² × ${nl(p.afmetingen.egaliseerDikte, 1)} mm × ${nl(REGELS.egaliseerKgPerM2PerMm)} kg/m²/mm = ${nl(kg, 1)} kg`,
     })
+  }
+
+  if (s.dekvloer && o.vloer > 0) {
+    const kg = o.vloer * REGELS.dekvloerDikteCm * REGELS.dekvloerKgPerM2PerCm
+    const zakken = omhoog(kg / REGELS.dekvloerZakKg)
+    add({
+      id: 'dekvloer', groep: 'voorbereiding', naam: 'Zand-cementmortel (dekvloer)', spec: `${REGELS.dekvloerDikteCm} cm dik`,
+      nodig: kg, nodigEenheid: 'kg', aantal: zakken, verpakking: `zak à ${REGELS.dekvloerZakKg} kg`, prijsAantal: zakken, inhoud: REGELS.dekvloerZakKg, verpakkingSoort: 'zak',
+      toelichting: `${nl(o.vloer)} m² × ${REGELS.dekvloerDikteCm} cm × ${REGELS.dekvloerKgPerM2PerCm} kg/m²/cm = ${nl(kg, 0)} kg`,
+    })
+  }
+
+  // — Leidingwerk
+  const tp = tappunten(s, type)
+  if (s.leidingwerk && tp.totaal > 0) {
+    const water = tp.totaal * REGELS.waterleidingMPerTappunt
+    add({
+      id: 'waterleiding', groep: 'leidingwerk', naam: 'Waterleiding meerlagenbuis', spec: '16 mm, warm en koud',
+      nodig: water, nodigEenheid: 'm', aantal: water, verpakking: 'm', prijsAantal: water,
+      toelichting: `${tp.totaal} tappunt${tp.totaal === 1 ? '' : 'en'} × ${REGELS.waterleidingMPerTappunt} m`,
+    })
+    const klein = tp.totaal - tp.toilet
+    if (klein > 0) {
+      const m = klein * REGELS.afvoerMPerTappunt
+      const n = omhoog(m / REGELS.buisLengteM)
+      add({
+        id: 'afvoerbuis', groep: 'leidingwerk', naam: 'Afvoerbuis PVC 40/50 mm', spec: `lengte ${REGELS.buisLengteM} m`,
+        nodig: m, nodigEenheid: 'm', aantal: n, verpakking: `lengte à ${REGELS.buisLengteM} m`, prijsAantal: n, inhoud: REGELS.buisLengteM, verpakkingSoort: 'lengte',
+        toelichting: `${klein} afvoerpunt${klein === 1 ? '' : 'en'} × ${REGELS.afvoerMPerTappunt} m`,
+      })
+    }
+    if (tp.toilet) add({ id: 'afvoerbuis110', groep: 'leidingwerk', naam: 'Afvoerbuis PVC 110 mm (toilet)', spec: `lengte ${REGELS.buisLengteM} m`, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Eén lengte voor de toiletafvoer' })
+    add({ id: 'koppelingen', groep: 'leidingwerk', naam: 'Fittingen, koppelingen & stopkranen', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Eén set per ruimte' })
+  }
+
+  // — Elektra, verlichting & ventilatie
+  if (s.elektra) {
+    const spots = Math.max(REGELS.spotsMin, omhoog(o.vloer / REGELS.spotM2))
+    add({ id: 'aardlekgroep', groep: 'elektra', naam: 'Aardlekautomaat (extra groep)', nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Badkamer op een eigen groep met aardlekbeveiliging' })
+    add({ id: 'inbouwspot', groep: 'elektra', naam: 'LED-inbouwspot IP44', spec: 'dimbaar', nodig: spots, nodigEenheid: 'stuk', aantal: spots, verpakking: 'stuk', prijsAantal: spots, toelichting: `${nl(o.vloer)} m² ÷ ${nl(REGELS.spotM2, 1)} m² per spot (min. ${REGELS.spotsMin})` })
+    add({ id: 'stopcontact', groep: 'elektra', naam: 'Stopcontact spatwaterdicht', nodig: REGELS.stopcontacten, nodigEenheid: 'stuk', aantal: REGELS.stopcontacten, verpakking: 'stuk', prijsAantal: REGELS.stopcontacten, toelichting: 'Bij wastafel/spiegel en voor de föhn' })
+    add({ id: 'installatiemateriaal', groep: 'elektra', naam: 'Installatiemateriaal (draad, buis, dozen, schakelaar)', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Vaste post per ruimte' })
+  }
+  if (s.ventilatie) {
+    add({ id: 'ventilator', groep: 'elektra', naam: 'Badkamerventilator met vochtsensor', spec: 'Ø 100 mm', nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Eén per ruimte' })
+    add({ id: 'ventilatiekanaal', groep: 'elektra', naam: 'Ventilatieslang & doorvoer', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Aansluiting op kanaal of gevel' })
   }
 
   // — Waterdicht
@@ -497,6 +614,11 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       nodig: o.vloer, nodigEenheid: 'm²', aantal: platen, verpakking: `plaat à ${nl(REGELS.isolatieplaatM2)} m²`, prijsAantal: platen, inhoud: REGELS.isolatieplaatM2, verpakkingSoort: 'plaat',
       toelichting: `${nl(o.vloer)} m² ÷ ${nl(REGELS.isolatieplaatM2)} m² per plaat`,
     })
+  }
+
+  if (s.radiator) {
+    add({ id: 'designradiator', groep: 'vloerverwarming', naam: 'Designradiator', spec: 'ca. 180 × 60 cm', nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Eén per ruimte' })
+    add({ id: 'radiatoraansluitset', groep: 'vloerverwarming', naam: 'Radiatoraansluitset (kranen & koppelingen)', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Eén per radiator' })
   }
 
   // — Tegels, lijm en voeg
@@ -606,7 +728,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   if (prof > 0) {
     const stuks = omhoog(prof / REGELS.profielLengteM)
     add({
-      id: 'profiel', groep: 'afwerking', naam: 'Tegelprofiel aluminium', spec: `voor ${nl(p.wandtegel.dikte, 1)} mm tegel`,
+      id: 'profiel', groep: 'afwerking', naam: 'Tegelprofiel / hoekstrip aluminium', spec: `voor ${nl(p.wandtegel.dikte, 1)} mm tegel`,
       nodig: prof, nodigEenheid: 'm', aantal: stuks, verpakking: `lengte à ${nl(REGELS.profielLengteM, 1)} m`, prijsAantal: stuks, inhoud: REGELS.profielLengteM, verpakkingSoort: 'lengte',
       toelichting: type === 'keuken' ? `Bovenrand en zijkanten spatwand = ${nl(prof, 1)} m` : `Bovenrand tegelwerk en dagkanten ramen = ${nl(prof, 1)} m`,
     })
@@ -636,7 +758,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     const goot = Math.max(0.3, Math.round((p.afmetingen.douche.breedte - 0.1) * 10) / 10)
     stuk('glaswand', 'Inloopdouche glaswand', '8 mm helder glas · 200 cm hoog', 'Eén wand voor de douchezone')
     stuk('douchegoot', 'Douchegoot RVS', `${nl(goot * 100, 0)} cm`, `Doucheruimte ${nl(p.afmetingen.douche.breedte * 100, 0)} cm − 10 cm`)
-    stuk('regendouche', 'Thermostatische regendoucheset', 'opbouw', 'Eén set per douche')
+    stuk('regendouche', 'Thermostatische regendoucheset (incl. kraan)', 'opbouw', 'Eén set per douche')
   }
   if (s.toilet) {
     stuk('inbouwreservoir', 'Inbouwreservoir', 'voor hangtoilet', 'Vast per toilet')
@@ -652,6 +774,25 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   if (s.fontein) {
     stuk('fontein', 'Fonteinset compleet', 'fontein, kraan, sifon en stopkraan', 'Vast per toilet')
   }
+  if (s.bad) {
+    stuk('ligbad', 'Ligbad acryl', '170 × 75 cm, incl. poten', 'Vast per bad')
+    stuk('badkraan', 'Thermostatische badkraan', 'met handdouche', 'Vast per bad')
+    stuk('badafvoer', 'Badafvoer met overloop', 'waste', 'Vast per bad')
+  }
+
+  // — Deur, dorpel & plafond
+  const tim = (id: ProductId, naam: string, spec: string, toelichting: string) =>
+    add({ id, groep: 'timmerwerk', naam, spec, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting })
+  if (s.deur) {
+    tim('binnendeur', 'Binnendeur', 'opdek, wit gegrond', 'Eén deur')
+    tim('dorpel', 'Dorpel kunststeen', '93 cm', 'Onder de deur, waterkerend')
+    tim('deurbeslag', 'Deurbeslag met wc-/badkamersluiting', 'RVS', 'Eén set')
+  }
+  if (s.plafond && o.plafond > 0) {
+    const m2 = rond(o.plafond * (1 + REGELS.plafondVerlies), 1)
+    add({ id: 'pvc-plafond', groep: 'timmerwerk', naam: 'PVC-plafondpanelen', spec: 'vochtbestendig', nodig: m2, nodigEenheid: 'm²', aantal: m2, verpakking: 'm²', prijsAantal: m2, toelichting: `${nl(o.plafond)} m² + 10% zaagverlies` })
+    tim('plafondprofielen', 'Regelwerk & afwerkprofielen plafond', 'set', 'Vaste post per plafond')
+  }
 
   return regels
 }
@@ -660,6 +801,13 @@ export interface ArbeidRegel {
   scope: keyof typeof ARBEID | string
   omschrijving: string
   uren: number
+}
+
+/** Tappunten voor het leidingwerk (douche, bad, wastafel, toilet, fontein). */
+export function tappunten(s: Scope, type: ProjectType) {
+  const toilet = s.toilet ? 1 : 0
+  const totaal = (s.inloopdouche ? 1 : 0) + (s.bad ? 1 : 0) + (s.wastafelmeubel ? 1 : 0) + toilet + (s.fontein ? 1 : 0) + (type === 'keuken' ? 1 : 0)
+  return { totaal, toilet }
 }
 
 /** Indicatieve arbeidsuren per onderdeel. */
@@ -688,5 +836,14 @@ export function berekenArbeid(p: Project): ArbeidRegel[] {
   if (s.fontein) add('fontein', 'Fonteintje plaatsen', ARBEID.fontein)
   if (s.kitwerk) add('kitwerk', 'Kitwerk', kitLengte(p, o) * ARBEID.kitwerkPerM)
   if (s.stucwerk) add('stucwerk', 'Stucwerk en schilderen', (o.plafond + o.wandBovenTegels) * ARBEID.stucwerkPerM2)
+  if (s.dekvloer) add('dekvloer', 'Dekvloer storten', o.vloer * ARBEID.dekvloerPerM2 + ARBEID.dekvloerVast)
+  const tp = tappunten(s, type)
+  if (s.leidingwerk) add('leidingwerk', 'Leidingwerk water en afvoer', tp.totaal * ARBEID.leidingwerkPerTappunt)
+  if (s.elektra) add('elektra', 'Elektra en verlichting', ARBEID.elektraVast + Math.max(REGELS.spotsMin, omhoog(o.vloer / REGELS.spotM2)) * ARBEID.elektraPerSpot)
+  if (s.radiator) add('radiator', 'Radiator plaatsen en aansluiten', ARBEID.radiator)
+  if (s.ventilatie) add('ventilatie', 'Ventilatie aanleggen', ARBEID.ventilatie)
+  if (s.bad) add('bad', 'Ligbad plaatsen', ARBEID.bad)
+  if (s.deur) add('deur', 'Deur en dorpel plaatsen', ARBEID.deur)
+  if (s.plafond) add('plafond', 'PVC-plafond monteren', o.plafond * ARBEID.plafondPerM2)
   return r
 }

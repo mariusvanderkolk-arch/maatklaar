@@ -64,13 +64,17 @@ describe('verwerkRemote', () => {
 })
 
 describe('combineerPrijzenNieuwste', () => {
-  it('kiest per cel de meest recente prijs', () => {
-    const a = { kit: { gamma: { prijs: 7, bijgewerkt: '2026-10-01T00:00:00Z' }, praxis: { prijs: 8, bijgewerkt: '2026-10-03T00:00:00Z' } } }
-    const b = { kit: { gamma: { prijs: 6, bijgewerkt: '2026-10-02T00:00:00Z' } }, verf: { karwei: { prijs: 30, bijgewerkt: '2026-09-01T00:00:00Z' } } }
+  it('kiest per artikel de meest recente prijs', () => {
+    const a = { kit: { prijs: 7, bijgewerkt: '2026-10-01T00:00:00Z' }, primer: { prijs: 8, bijgewerkt: '2026-10-03T00:00:00Z' } }
+    const b = { kit: { prijs: 6, bijgewerkt: '2026-10-02T00:00:00Z' }, verf: { prijs: 30, bijgewerkt: '2026-09-01T00:00:00Z' } }
     const uit = combineerPrijzenNieuwste(a, b)
-    expect(uit.kit?.gamma?.prijs).toBe(6)
-    expect(uit.kit?.praxis?.prijs).toBe(8)
-    expect(uit.verf?.karwei?.prijs).toBe(30)
+    expect(uit.kit?.prijs).toBe(6)
+    expect(uit.primer?.prijs).toBe(8)
+    expect(uit.verf?.prijs).toBe(30)
+  })
+  it('zet oud cloudformaat (per winkel) om', () => {
+    const oud = { kit: { gamma: { prijs: 7, bijgewerkt: '2026-10-01T00:00:00Z' } } }
+    expect(combineerPrijzenNieuwste(oud, {}).kit).toMatchObject({ prijs: 7, leverancier: 'Gamma' })
   })
 })
 

@@ -1,21 +1,53 @@
-/** Opslag van eigen prijzen in localStorage + de actieve prijsbron (eigen prijzen over voorbeeldprijzen). */
+/** Opslag van de eigen prijslijst in localStorage + de actieve prijsbron (eigen prijzen over voorbeeldprijzen). */
 import { useSyncExternalStore } from 'react'
-import { kopieerWinkelPrijzen, metEigenPrijzen, pasPercentageToe, verwijderEigenPrijs, voegSamen, voorbeeldAlsEigen, vulVoorbeeldenAan, zetEigenPrijs, type EigenPrijs, type EigenPrijzen, type KopieerModus } from './eigenPrijzen'
-import { voorbeeldPrijsBron, type PrijsBron, type WinkelId } from './prices'
+import { isOudFormaat, metEigenPrijzen, normaliseerPrijzen, pasPercentageToe, verwijderEigenPrijs, voegSamen, vanOudFormaat, voorbeeldAlsEigen, vulVoorbeeldenAan, zetEigenPrijs, type EigenPrijs, type EigenPrijzen } from './eigenPrijzen'
+import { oudeWinkelNaam, voorbeeldPrijsBron, type PrijsBron } from './prices'
 import type { ProductId } from './calc'
 import { sleutel } from './modus'
 import { opslag } from './veiligeOpslag'
 
-const SLEUTEL = sleutel('prijzen:v1')
+/** Nieuwe prijslijst (één prijs per artikel). */
+const SLEUTEL = sleutel('prijslijst:v2')
+/** Oude prijzen per winkel (tot 1.2). Wordt NOOIT gewist: blijft staan als reservekopie. */
+export const OUDE_SLEUTEL = sleutel('prijzen:v1')
+/** Eenmalige melding na het omzetten. */
+const MELDING_SLEUTEL = sleutel('prijslijst:omzetting')
+
+export interface OmzetMelding {
+  winkel: string
+  uitHoofd: number
+  uitAndere: number
+  meerdere: number
+  gelezen?: boolean
+}
+
+function leesJson(k: string): unknown {
+  try {
+    const r = opslag.getItem(k)
+    return r ? JSON.parse(r) : null
+  } catch {
+    return null
+  }
+}
 
 function laad(): EigenPrijzen {
-  try {
-    const ruw = opslag.getItem(SLEUTEL)
-    const data = ruw ? JSON.parse(ruw) : {}
-    return data && typeof data === 'object' && !Array.isArray(data) ? data : {}
-  } catch {
-    return {}
+  const nieuw = leesJson(SLEUTEL)
+  if (nieuw && typeof nieuw === 'object') return normaliseerPrijzen(nieuw)
+  // Eerste keer na de update: oude prijzen per winkel omzetten (oude sleutel blijft onaangeroerd staan).
+  const oud = leesJson(OUDE_SLEUTEL)
+  if (!oud || typeof oud !== 'object') return {}
+  if (isOudFormaat(oud)) {
+    const o = vanOudFormaat(oud)
+    try {
+      opslag.setItem(SLEUTEL, JSON.stringify(o.prijzen))
+      if (o.winkel && (o.uitHoofd || o.uitAndere))
+        opslag.setItem(MELDING_SLEUTEL, JSON.stringify({ winkel: oudeWinkelNaam(o.winkel), uitHoofd: o.uitHoofd, uitAndere: o.uitAndere, meerdere: o.meerdere } satisfies OmzetMelding))
+    } catch {
+      /* opslag vol: omzetting geldt in deze sessie, volgende keer opnieuw */
+    }
+    return o.prijzen
   }
+  return normaliseerPrijzen(oud)
 }
 
 let eigen: EigenPrijzen = laad()
@@ -38,7 +70,6 @@ const abonneer = (f: () => void) => {
   return () => luisteraars.delete(f)
 }
 
-// Wijzigingen in een ander tabblad direct overnemen.
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
     if (e.key === SLEUTEL) {
@@ -53,33 +84,49 @@ export const useEigenPrijzen = () => useSyncExternalStore(abonneer, () => eigen)
 /** De prijsbron die de hele app gebruikt: eigen prijzen gaan vóór voorbeeldprijzen. */
 export const usePrijsBron = () => useSyncExternalStore(abonneer, () => bron)
 
+export function omzetMelding(): OmzetMelding | null {
+  const m = leesJson(MELDING_SLEUTEL) as OmzetMelding | null
+  return m && !m.gelezen ? m : null
+}
+export function omzetMeldingGelezen() {
+  const m = leesJson(MELDING_SLEUTEL) as OmzetMelding | null
+  if (m)
+    try {
+      opslag.setItem(MELDING_SLEUTEL, JSON.stringify({ ...m, gelezen: true }))
+    } catch {
+      /* */
+    }
+}
+/** Ruwe oude prijzen per winkel (reservekopie), of null. */
+export const oudePrijzen = () => {
+  const o = leesJson(OUDE_SLEUTEL)
+  return isOudFormaat(o) ? o : null
+}
+
 export const prijsStore = {
   alle: () => eigen,
   abonneer,
   bron: () => bron,
-  zet(product: ProductId, winkel: WinkelId, wijziging: Partial<Omit<EigenPrijs, 'bijgewerkt'>>) {
-    bewaar(zetEigenPrijs(eigen, product, winkel, wijziging))
+  zet(product: ProductId, wijziging: Partial<Omit<EigenPrijs, 'bijgewerkt'>>) {
+    bewaar(zetEigenPrijs(eigen, product, wijziging))
   },
-  herstel(product: ProductId, winkel: WinkelId) {
-    bewaar(verwijderEigenPrijs(eigen, product, winkel))
+  herstel(product: ProductId) {
+    bewaar(verwijderEigenPrijs(eigen, product))
   },
   importeer(extra: EigenPrijzen) {
-    bewaar(voegSamen(eigen, extra))
+    bewaar(voegSamen(eigen, normaliseerPrijzen(extra)))
   },
-  vervang(nieuw: EigenPrijzen) {
-    bewaar(nieuw)
+  /** Vervangt alles (cloud/back-up); accepteert ook het oude formaat. */
+  vervang(nieuw: unknown) {
+    bewaar(normaliseerPrijzen(nieuw))
   },
   allesTerug() {
     bewaar({})
   },
-  /** Neemt alle voorbeeldprijzen over als eigen prijzen (snelle start / bijvullen zonder overschrijven). */
   voorbeeldOvernemen() {
     bewaar(Object.keys(eigen).length ? vulVoorbeeldenAan(eigen, voorbeeldPrijsBron) : voorbeeldAlsEigen(voorbeeldPrijsBron))
   },
-  kopieerWinkel(van: WinkelId, naar: WinkelId, modus: KopieerModus = 'alleen-leeg') {
-    bewaar(kopieerWinkelPrijzen(eigen, van, naar, voorbeeldPrijsBron, modus))
-  },
-  pasPercentage(winkel: WinkelId, procent: number) {
-    bewaar(pasPercentageToe(eigen, winkel, procent))
+  pasPercentage(procent: number, filter: { leverancier?: string; groep?: string } = {}) {
+    bewaar(pasPercentageToe(eigen, procent, filter))
   },
 }

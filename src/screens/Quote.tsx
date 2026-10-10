@@ -133,6 +133,9 @@ export function Quote({ p }: { p: Project }) {
               <NumberField label="Uurtarief (incl. btw)" unit="€" value={p.uurtarief} onChange={(v) => projectStore.werkBij(p.id, (x) => ({ ...x, uurtarief: v }))} />
             </div>
           )}
+          <div className="mt-3">
+            <NumberField label="Onvoorzien (stelpost)" unit="%" value={p.onvoorzien ?? 0} min={0} onChange={(v) => projectStore.werkBij(p.id, (x) => ({ ...x, onvoorzien: Math.min(50, Math.max(0, v)) }))} />
+          </div>
           <label className="mt-4 block">
             <span className="mb-1.5 block text-[0.8rem] font-medium text-ink-soft">Notities op offerte</span>
             <textarea

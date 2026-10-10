@@ -1,221 +1,131 @@
-import { CATALOGUS } from './catalogus'
 import { describe, expect, it } from 'vitest'
-import { berekenMaterialen } from './calc'
-import { voorbeeldProjecten } from './defaults'
 import {
   importeerPrijzen,
-  kopieerWinkelPrijzen,
-  laatstBijgewerkt,
+  isOudFormaat,
   metEigenPrijzen,
   naarCsv,
   naarJson,
-  parseCsv,
+  normaliseerPrijzen,
   pasPercentageToe,
   telEigenPrijzen,
-  vanCsv,
-  vanJson,
-  verwijderEigenPrijs,
-  voegSamen,
+  vanOudFormaat,
   voorbeeldAlsEigen,
   vulVoorbeeldenAan,
   zetEigenPrijs,
   type EigenPrijzen,
 } from './eigenPrijzen'
-import { VOORBEELD_PRIJSTABEL, voorbeeldPrijsBron } from './prices'
+import { berekenMaterialen } from './calc'
+import { CATALOGUS } from './catalogus'
+import { nieuwProject } from './defaults'
+import { VOORBEELD_PRIJZEN, voorbeeldPrijsBron } from './prices'
 import { maakInkooplijst } from './shopping'
 
-const T1 = new Date('2026-09-20T10:00:00Z')
-const T2 = new Date('2026-09-28T15:30:00Z')
-const project = voorbeeldProjecten()[0]
-const materialen = berekenMaterialen(project)
+const NU = new Date('2026-10-10T10:00:00Z')
 
-describe('eigen prijzen overschrijven voorbeeldprijzen', () => {
-  it('zonder eigen prijzen is de bron gelijk aan het voorbeeld', () => {
-    const bron = metEigenPrijzen(voorbeeldPrijsBron, {})
-    expect(bron.isVoorbeeld).toBe(true)
-    expect(bron.aanbiedingen('tegellijm')).toEqual(voorbeeldPrijsBron.aanbiedingen('tegellijm'))
+describe('eigen prijslijst', () => {
+  it('elk catalogusartikel heeft een voorbeeldprijs', () => {
+    for (const c of CATALOGUS) expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
   })
 
-  it('eigen prijs gaat voor de voorbeeldprijs, andere winkels blijven voorbeeld', () => {
-    const eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
-    const bron = metEigenPrijzen(voorbeeldPrijsBron, eigen)
-    const a = bron.aanbiedingen('tegellijm')
-    expect(a.find((x) => x.winkel === 'gamma')).toMatchObject({ prijs: 17.5, bron: 'eigen', bijgewerkt: T1.toISOString() })
-    expect(a.find((x) => x.winkel === 'praxis')).toMatchObject({ prijs: VOORBEELD_PRIJSTABEL.tegellijm[1], bron: 'voorbeeld' })
+  it('eigen prijs gaat vóór voorbeeld, leverancier komt mee', () => {
+    const e = zetEigenPrijs({}, 'kit', { prijs: 6.5, leverancier: ' Bouwvoordeel Barneveld ' }, NU)
+    const bron = metEigenPrijzen(voorbeeldPrijsBron, e)
+    expect(bron.aanbod('kit')).toMatchObject({ prijs: 6.5, bron: 'eigen', leverancier: 'Bouwvoordeel Barneveld' })
+    expect(bron.aanbod('primer')?.bron).toBe('voorbeeld')
     expect(bron.isVoorbeeld).toBe(false)
   })
 
-  it('niet leverbaar haalt de winkel weg, ook als er een voorbeeldprijs is', () => {
-    const eigen = zetEigenPrijs({}, 'kit', 'hornbach', { nietLeverbaar: true }, T1)
-    const winkels = metEigenPrijzen(voorbeeldPrijsBron, eigen).aanbiedingen('kit').map((a) => a.winkel)
-    expect(winkels).not.toContain('hornbach')
-    expect(winkels).toHaveLength(3)
+  it('leeg maken ruimt op; alleen leverancier blijft bewaard', () => {
+    let e = zetEigenPrijs({}, 'kit', { prijs: 6.5 }, NU)
+    e = zetEigenPrijs(e, 'kit', { prijs: null }, NU)
+    expect(e.kit).toBeUndefined()
+    e = zetEigenPrijs(e, 'kit', { leverancier: 'X' }, NU)
+    expect(e.kit?.leverancier).toBe('X')
+    expect(telEigenPrijzen(e)).toBe(0)
+    expect(metEigenPrijzen(voorbeeldPrijsBron, e).aanbod('kit')).toMatchObject({ bron: 'voorbeeld', leverancier: 'X' })
   })
 
-  it('eigen prijs maakt een artikel leverbaar dat in het voorbeeld ontbrak', () => {
-    expect(VOORBEELD_PRIJSTABEL.afdichtmanchet[3]).toBeNull()
-    const eigen = zetEigenPrijs({}, 'afdichtmanchet', 'karwei', { prijs: 11 }, T1)
-    expect(metEigenPrijzen(voorbeeldPrijsBron, eigen).aanbiedingen('afdichtmanchet').map((a) => a.winkel)).toContain('karwei')
+  it('voorbeeld overnemen en bijvullen', () => {
+    const alles = voorbeeldAlsEigen(voorbeeldPrijsBron, NU)
+    expect(telEigenPrijzen(alles)).toBe(CATALOGUS.length)
+    const deel = zetEigenPrijs({}, 'kit', { prijs: 1 }, NU)
+    const bij = vulVoorbeeldenAan(deel, voorbeeldPrijsBron, NU)
+    expect(bij.kit?.prijs).toBe(1)
+    expect(telEigenPrijzen(bij)).toBe(CATALOGUS.length)
   })
 
-  it('productnaam en link zonder prijs houden de voorbeeldprijs', () => {
-    const eigen = zetEigenPrijs({}, 'primer', 'gamma', { productNaam: 'Bostik Primer', link: 'https://example.com' }, T1)
-    const a = metEigenPrijzen(voorbeeldPrijsBron, eigen).aanbiedingen('primer').find((x) => x.winkel === 'gamma')!
-    expect(a).toMatchObject({ bron: 'voorbeeld', productNaam: 'Bostik Primer', link: 'https://example.com' })
-    expect(telEigenPrijzen(eigen)).toBe(0)
-  })
-
-  it('lege invoer ruimt de regel op en herstel verwijdert de eigen prijs', () => {
-    let eigen = zetEigenPrijs({}, 'verf', 'praxis', { prijs: 30 }, T1)
-    eigen = zetEigenPrijs(eigen, 'verf', 'praxis', { prijs: null }, T2)
-    expect(eigen).toEqual({})
-    eigen = zetEigenPrijs(eigen, 'verf', 'praxis', { prijs: 30 }, T1)
-    expect(verwijderEigenPrijs(eigen, 'verf', 'praxis')).toEqual({})
-  })
-
-  it('laatst bijgewerkt = meest recente wijziging', () => {
-    let eigen = zetEigenPrijs({}, 'verf', 'praxis', { prijs: 30 }, T2)
-    eigen = zetEigenPrijs(eigen, 'kit', 'gamma', { prijs: 7 }, T1)
-    expect(laatstBijgewerkt(eigen)).toBe(T2.toISOString())
-  })
-
-  it('voegSamen: het nieuwe bestand wint per artikel/winkel', () => {
-    const a = zetEigenPrijs(zetEigenPrijs({}, 'kit', 'gamma', { prijs: 7 }, T1), 'kit', 'praxis', { prijs: 8 }, T1)
-    const b = zetEigenPrijs({}, 'kit', 'gamma', { prijs: 6 }, T2)
-    const c = voegSamen(a, b)
-    expect(c.kit?.gamma?.prijs).toBe(6)
-    expect(c.kit?.praxis?.prijs).toBe(8)
+  it('percentage per categorie en leverancier', () => {
+    let e: EigenPrijzen = zetEigenPrijs({}, 'kit', { prijs: 10, leverancier: 'A' }, NU)
+    e = zetEigenPrijs(e, 'primer', { prijs: 20, leverancier: 'B' }, NU)
+    expect(pasPercentageToe(e, 10, {}, NU).kit?.prijs).toBe(11)
+    const alleenA = pasPercentageToe(e, -10, { leverancier: 'a' }, NU)
+    expect(alleenA.kit?.prijs).toBe(9)
+    expect(alleenA.primer?.prijs).toBe(20)
   })
 })
 
-describe('inkooplijst met eigen prijzen', () => {
-  it('totalen en goedkoopste winkel gebruiken direct de eigen prijs', () => {
-    const voor = maakInkooplijst(materialen, metEigenPrijzen(voorbeeldPrijsBron, {}))
-    const lijm = voor.regels.find((r) => r.id === 'tegellijm')!
-    expect(lijm.goedkoopste?.winkel).toBe('hornbach')
-    const eigen = zetEigenPrijs({}, 'tegellijm', 'karwei', { prijs: 10 }, T1)
-    const na = maakInkooplijst(materialen, metEigenPrijzen(voorbeeldPrijsBron, eigen))
-    const lijmNa = na.regels.find((r) => r.id === 'tegellijm')!
-    expect(lijmNa.goedkoopste).toMatchObject({ winkel: 'karwei', bron: 'eigen', totaal: 10 * lijm.aantal })
-    const karweiVoor = voor.perWinkel.find((w) => w.winkel === 'karwei')!.totaal
-    const karweiNa = na.perWinkel.find((w) => w.winkel === 'karwei')!.totaal
-    expect(karweiNa).toBeCloseTo(karweiVoor - (VOORBEELD_PRIJSTABEL.tegellijm[3]! - 10) * lijm.aantal, 2)
+describe('omzetting oud formaat (prijzen per winkel)', () => {
+  const oud = {
+    kit: { gamma: { prijs: 8, bijgewerkt: '2026-01-01T00:00:00Z' }, praxis: { prijs: 7, bijgewerkt: '2026-01-02T00:00:00Z' } },
+    primer: { praxis: { prijs: 15, bijgewerkt: '2026-01-02T00:00:00Z' } },
+    voegmiddel: { praxis: { prijs: 11, bijgewerkt: '2026-01-02T00:00:00Z' } },
+    tegellijm: { gamma: { nietLeverbaar: true, bijgewerkt: '2026-01-02T00:00:00Z' }, karwei: { prijs: 19, bijgewerkt: '2026-01-02T00:00:00Z' } },
+  }
+  it('herkent oud formaat', () => {
+    expect(isOudFormaat(oud)).toBe(true)
+    expect(isOudFormaat({ kit: { prijs: 1, bijgewerkt: 'x' } })).toBe(false)
   })
-
-  it('andere verpakkingsgrootte bij een winkel herberekent het aantal', () => {
-    const lijm = materialen.find((m) => m.id === 'tegellijm')!
-    const eigen = zetEigenPrijs({}, 'tegellijm', 'praxis', { prijs: 15, inhoud: 20 }, T1)
-    const r = maakInkooplijst(materialen, metEigenPrijzen(voorbeeldPrijsBron, eigen)).regels.find((x) => x.id === 'tegellijm')!
-    const praxis = r.aanbiedingen.find((a) => a.winkel === 'praxis')!
-    expect(praxis.aantal).toBe(Math.ceil(lijm.nodig / 20))
-    expect(praxis.totaal).toBeCloseTo(15 * Math.ceil(lijm.nodig / 20), 2)
-    expect(praxis.verpakking).toBe('zak à 20 kg')
+  it('kiest de meest ingevulde winkel, vult aan uit andere, verliest geen artikel', () => {
+    const o = vanOudFormaat(oud, undefined, NU)
+    expect(o.winkel).toBe('praxis')
+    expect(o.prijzen.kit).toMatchObject({ prijs: 7, leverancier: 'Praxis' })
+    expect(o.prijzen.tegellijm).toMatchObject({ prijs: 19, leverancier: 'Karwei' })
+    expect(o.uitHoofd).toBe(3)
+    expect(o.uitAndere).toBe(1)
+    expect(o.meerdere).toBe(1)
   })
-
-  it('prijsstatus telt eigen en voorbeeldprijzen', () => {
-    const alleenVoorbeeld = maakInkooplijst(materialen, metEigenPrijzen(voorbeeldPrijsBron, {})).prijsStatus
-    expect(alleenVoorbeeld.eigen).toBe(0)
-    expect(alleenVoorbeeld.voorbeeld).toBeGreaterThan(0)
-
-    // alle gebruikte prijzen eigen maken
-    let eigen: EigenPrijzen = {}
-    for (const m of materialen)
-      for (const w of ['gamma', 'praxis', 'hornbach', 'karwei'] as const) eigen = zetEigenPrijs(eigen, m.id, w, { prijs: 5 }, T1)
-    eigen = zetEigenPrijs(eigen, 'kit', 'gamma', { prijs: 6 }, T2)
-    const st = maakInkooplijst(materialen, metEigenPrijzen(voorbeeldPrijsBron, eigen)).prijsStatus
-    expect(st.voorbeeld).toBe(0)
-    expect(st.eigen).toBe(materialen.length * 4)
-    expect(st.laatstBijgewerkt).toBe(T2.toISOString())
+  it('gekozen winkel wint', () => {
+    expect(vanOudFormaat(oud, 'gamma', NU).prijzen.kit?.prijs).toBe(8)
+  })
+  it('normaliseerPrijzen accepteert oud en nieuw', () => {
+    expect(normaliseerPrijzen(oud).kit?.prijs).toBe(7)
+    expect(normaliseerPrijzen({ kit: { prijs: '6,50', bijgewerkt: '2026-01-01' }, onzin: { prijs: 1 } })).toEqual({ kit: { prijs: 6.5, bijgewerkt: '2026-01-01T00:00:00.000Z' } })
   })
 })
 
-describe('export en import', () => {
-  const eigen = zetEigenPrijs(
-    zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 18.25, inhoud: 20, productNaam: 'Flexlijm; grijs "pro"', link: 'https://gamma.nl/x' }, T1),
-    'kit',
-    'hornbach',
-    { nietLeverbaar: true },
-    T2,
-  )
-
-  it('JSON heen en terug geeft dezelfde prijzen', () => {
-    expect(vanJson(naarJson(eigen))).toEqual(eigen)
+describe('import/export', () => {
+  const e = zetEigenPrijs(zetEigenPrijs({}, 'kit', { prijs: 6.5, leverancier: 'Bouw; "Voordeel"' }, NU), 'primer', { prijs: 12 }, NU)
+  it('JSON heen en terug', () => {
+    expect(importeerPrijzen(naarJson(e, NU), voorbeeldPrijsBron).prijzen).toEqual(e)
   })
-
-  it('JSON met onzin geeft een duidelijke fout', () => {
-    expect(() => vanJson('geen json')).toThrow(/geen geldig JSON/)
-    expect(() => vanJson('{"prijzen":{"onbekend":{"gamma":{"prijs":1}}}}')).toThrow(/Geen geldige prijzen/)
+  it('CSV heen en terug (voorbeeldregels worden overgeslagen)', () => {
+    const csv = naarCsv(e, voorbeeldPrijsBron)
+    expect(csv.split('\r\n')[0]).toContain('leverancier')
+    expect(importeerPrijzen(csv, voorbeeldPrijsBron).prijzen).toEqual(e)
   })
-
-  it('CSV bevat alle artikelen × 4 winkels en komt ongewijzigd terug', () => {
-    const csv = naarCsv(eigen, voorbeeldPrijsBron)
-    expect(parseCsv(csv)).toHaveLength(1 + CATALOGUS.length * 4)
-    expect(csv).toContain('18,25')
-    expect(vanCsv(csv, voorbeeldPrijsBron)).toEqual(eigen)
+  it('oud JSON-bestand (versie 1) met keuze van winkel', () => {
+    const v1 = JSON.stringify({ app: 'slimmer-wonen', type: 'prijzen', versie: 1, prijzen: { kit: { gamma: { prijs: 8, bijgewerkt: '2026-01-01T00:00:00Z' }, hornbach: { prijs: 9, bijgewerkt: '2026-01-01T00:00:00Z' } } } })
+    const r = importeerPrijzen(v1, voorbeeldPrijsBron)
+    expect(r.oud?.winkels.map((w) => w.id)).toEqual(['gamma', 'hornbach'])
+    expect(r.prijzen.kit?.prijs).toBe(8)
+    expect(importeerPrijzen(v1, voorbeeldPrijsBron, 'hornbach').prijzen.kit).toMatchObject({ prijs: 9, leverancier: 'Hornbach' })
   })
-
-  it('in Excel aangepaste voorbeeldprijs wordt een eigen prijs', () => {
-    const csv = naarCsv({}, voorbeeldPrijsBron).replace(/(primer;[^;]*;Praxis;)18,49/, '$116,99')
-    const uit = vanCsv(csv, voorbeeldPrijsBron, T2)
-    expect(uit).toEqual({ primer: { praxis: expect.objectContaining({ prijs: 16.99 }) } })
-  })
-
-  it('CSV met komma als scheidingsteken en winkelnaam in hoofdletters', () => {
-    const csv = 'product_id,winkel,prijs_incl_btw\nvoegmiddel,GAMMA,"9,95"\nonbekend,Gamma,1\n'
-    expect(vanCsv(csv, voorbeeldPrijsBron, T1)).toEqual({
-      voegmiddel: { gamma: { prijs: 9.95, bijgewerkt: T1.toISOString() } },
-    })
-  })
-
-  it('importeerPrijzen herkent JSON en CSV', () => {
-    expect(importeerPrijzen(naarJson(eigen), voorbeeldPrijsBron)).toEqual(eigen)
-    expect(importeerPrijzen(naarCsv(eigen, voorbeeldPrijsBron), voorbeeldPrijsBron)).toEqual(eigen)
-  })
-
-  it('CSV zonder verplichte kolommen geeft een fout', () => {
-    expect(() => vanCsv('a;b\n1;2', voorbeeldPrijsBron)).toThrow(/Onbekend CSV-formaat/)
+  it('oude CSV met winkelkolom', () => {
+    const csv = 'product_id;artikel;winkel;prijs_incl_btw;bron\nkit;Kit;Gamma;8,10;eigen\nkit;Kit;Praxis;;voorbeeld\nprimer;Primer;Praxis;14;eigen\nvoegmiddel;V;Praxis;10;eigen\n'
+    const r = importeerPrijzen(csv, voorbeeldPrijsBron)
+    expect(r.oud?.gekozen).toBe('praxis')
+    expect(r.prijzen.kit).toMatchObject({ prijs: 8.1, leverancier: 'Gamma' })
+    expect(r.prijzen.primer?.prijs).toBe(14)
   })
 })
 
-describe('voorbeeldAlsEigen en kopieerWinkelPrijzen', () => {
-  it('neemt alle voorbeeldprijzen over als eigen prijzen', () => {
-    const eigen = voorbeeldAlsEigen(voorbeeldPrijsBron, T1)
-    expect(telEigenPrijzen(eigen)).toBeGreaterThan(50)
-    expect(eigen.tegellijm?.gamma).toMatchObject({ prijs: VOORBEELD_PRIJSTABEL.tegellijm[0], bijgewerkt: T1.toISOString() })
-    // Geen prijs waar het voorbeeld null is
-    expect(eigen.afdichtmanchet?.karwei).toBeUndefined()
-  })
-
-  it('kopieert van Gamma naar Praxis alleen lege cellen', () => {
-    let eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
-    eigen = zetEigenPrijs(eigen, 'kit', 'praxis', { prijs: 9 }, T1)
-    const uit = kopieerWinkelPrijzen(eigen, 'gamma', 'praxis', voorbeeldPrijsBron, 'alleen-leeg', T2)
-    expect(uit.tegellijm?.praxis?.prijs).toBe(17.5)
-    expect(uit.kit?.praxis?.prijs).toBe(9) // bestaand blijft
-    // Artikel zonder eigen Gamma-prijs: voorbeeld van Gamma
-    expect(uit.primer?.praxis?.prijs).toBe(VOORBEELD_PRIJSTABEL.primer[0])
-  })
-
-  it('overschrijven vervangt bestaande doelprijzen', () => {
-    let eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
-    eigen = zetEigenPrijs(eigen, 'tegellijm', 'praxis', { prijs: 99 }, T1)
-    const uit = kopieerWinkelPrijzen(eigen, 'gamma', 'praxis', voorbeeldPrijsBron, 'overschrijven', T2)
-    expect(uit.tegellijm?.praxis?.prijs).toBe(17.5)
-  })
-
-  it('past percentage toe op eigen prijzen van één winkel', () => {
-    let eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 20 }, T1)
-    eigen = zetEigenPrijs(eigen, 'kit', 'praxis', { prijs: 10 }, T1)
-    const uit = pasPercentageToe(eigen, 'gamma', 10, T2)
-    expect(uit.tegellijm?.gamma?.prijs).toBe(22)
-    expect(uit.kit?.praxis?.prijs).toBe(10)
-  })
-
-  it('vulVoorbeeldenAan laat bestaande eigen prijzen staan', () => {
-    const eigen = zetEigenPrijs({}, 'tegellijm', 'gamma', { prijs: 17.5 }, T1)
-    const uit = vulVoorbeeldenAan(eigen, voorbeeldPrijsBron, T2)
-    expect(uit.tegellijm?.gamma?.prijs).toBe(17.5)
-    expect(uit.tegellijm?.praxis?.prijs).toBe(VOORBEELD_PRIJSTABEL.tegellijm[1])
-    expect(telEigenPrijzen(uit)).toBeGreaterThan(telEigenPrijzen(eigen))
+describe('inkooplijst met één prijslijst', () => {
+  it('totaal = som van regels, gegroepeerd per categorie', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    const lijst = maakInkooplijst(berekenMaterialen(p), metEigenPrijzen(voorbeeldPrijsBron, zetEigenPrijs({}, 'kit', { prijs: 1, leverancier: 'A' }, NU)))
+    expect(lijst.zonderPrijs).toBe(0)
+    expect(lijst.totaal).toBeCloseTo(lijst.groepen.reduce((s, g) => s + g.totaal, 0), 1)
+    expect(lijst.metLeverancier).toBe(true)
+    expect(lijst.regels.find((r) => r.id === 'kit')).toMatchObject({ prijs: 1, bron: 'eigen' })
   })
 })

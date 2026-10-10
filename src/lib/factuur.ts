@@ -82,6 +82,9 @@ export function maakFactuur(d: OfferteData, o: { id: string; nummer: string; pro
       excl: cent(uren * tariefExcl),
       btw: 21 as BtwTarief,
     })),
+    ...(d.onv && d.onv[1] > 0
+      ? [{ id: o.uid(), soort: 'materiaal' as const, omschrijving: `Onvoorzien (${String(d.onv[0]).replace('.', ',')}%)`, detail: 'stelpost', excl: excl(d.onv[1]), btw: 21 as BtwTarief }]
+      : []),
   ]
   return {
     id: o.id,

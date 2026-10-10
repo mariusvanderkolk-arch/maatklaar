@@ -1,6 +1,29 @@
 /** Ruimtetypes: welke werkzaamheden er bij horen, standaardkeuzes en standaardmaten. */
 import type { Afmetingen, ProjectType, Scope, ScopeKey } from './types'
 
+/** Fase/facet waaronder een werkzaamheid in de checklist staat. */
+export type Fase = 'sloop' | 'ondergrond' | 'installaties' | 'tegelwerk' | 'sanitair' | 'afwerking'
+export const FASES: { id: Fase; naam: string }[] = [
+  { id: 'sloop', naam: 'Sloop & afvoer' },
+  { id: 'ondergrond', naam: 'Ondergrond' },
+  { id: 'installaties', naam: 'Leidingwerk, elektra & klimaat' },
+  { id: 'tegelwerk', naam: 'Tegelwerk & vloer' },
+  { id: 'sanitair', naam: 'Sanitair' },
+  { id: 'afwerking', naam: 'Afwerking' },
+]
+export const FASE_VAN: Record<ScopeKey, Fase> = {
+  sloopwerk: 'sloop', dekvloer: 'ondergrond', egaliseren: 'ondergrond', waterdicht: 'ondergrond',
+  leidingwerk: 'installaties', elektra: 'installaties', ventilatie: 'installaties', vloerverwarming: 'installaties', radiator: 'installaties',
+  wandtegels: 'tegelwerk', vloertegels: 'tegelwerk', spatwand: 'tegelwerk', legvloer: 'tegelwerk', ondervloer: 'tegelwerk', plinten: 'tegelwerk',
+  inloopdouche: 'sanitair', bad: 'sanitair', toilet: 'sanitair', wastafelmeubel: 'sanitair', fontein: 'sanitair',
+  kitwerk: 'afwerking', stucwerk: 'afwerking', plafond: 'afwerking', deur: 'afwerking',
+}
+/** Checklist gegroepeerd per fase (lege fases weggelaten). */
+export function scopePerFase(type: ProjectType | undefined): { fase: Fase; naam: string; items: ScopeItem[] }[] {
+  const items = scopeItems(type)
+  return FASES.map((f) => ({ fase: f.id, naam: f.naam, items: items.filter((i) => FASE_VAN[i.key] === f.id) })).filter((g) => g.items.length)
+}
+
 export interface ScopeItem {
   key: ScopeKey
   label: string
@@ -26,6 +49,14 @@ export const SCOPE_BASIS: Record<ScopeKey, ScopeItem> = {
   legvloer: { key: 'legvloer', label: 'Laminaat of PVC', omschrijving: 'Klikvloer inclusief snijverlies' },
   ondervloer: { key: 'ondervloer', label: 'Ondervloer', omschrijving: 'Geluid- en vochtwerend, onder de klikvloer' },
   plinten: { key: 'plinten', label: 'Plinten', omschrijving: 'Langs alle wanden, minus deuren' },
+  dekvloer: { key: 'dekvloer', label: 'Nieuwe dekvloer', omschrijving: 'Zand-cement dekvloer (ca. 5 cm)', optioneel: true },
+  leidingwerk: { key: 'leidingwerk', label: 'Leidingwerk', omschrijving: 'Water- en afvoerleidingen verleggen/vernieuwen' },
+  elektra: { key: 'elektra', label: 'Elektra & verlichting', omschrijving: 'Extra groep, inbouwspots en stopcontacten' },
+  radiator: { key: 'radiator', label: 'Radiator', omschrijving: 'Designradiator met aansluitset', optioneel: true },
+  ventilatie: { key: 'ventilatie', label: 'Ventilatie', omschrijving: 'Ventilator met vochtsensor en afvoer' },
+  bad: { key: 'bad', label: 'Ligbad', omschrijving: 'Bad met kraan en afvoer', optioneel: true },
+  deur: { key: 'deur', label: 'Deur & dorpel', omschrijving: 'Nieuwe binnendeur, dorpel en beslag', optioneel: true },
+  plafond: { key: 'plafond', label: 'PVC-plafond', omschrijving: 'Vochtbestendige plafondpanelen (i.p.v. stucwerk)', optioneel: true },
 }
 
 export interface RuimteType {
@@ -48,8 +79,8 @@ export const RUIMTES: RuimteType[] = [
     id: 'badkamer',
     label: 'Badkamer',
     omschrijving: 'Tegels, waterdicht, douche en sanitair',
-    werk: ['sloopwerk', 'egaliseren', 'waterdicht', 'vloerverwarming', 'wandtegels', 'vloertegels', 'inloopdouche', 'toilet', 'wastafelmeubel', 'kitwerk', 'stucwerk'],
-    standaard: ['sloopwerk', 'egaliseren', 'waterdicht', 'wandtegels', 'vloertegels', 'inloopdouche', 'toilet', 'wastafelmeubel', 'kitwerk'],
+    werk: ['sloopwerk', 'dekvloer', 'egaliseren', 'leidingwerk', 'elektra', 'waterdicht', 'vloerverwarming', 'radiator', 'wandtegels', 'vloertegels', 'inloopdouche', 'bad', 'toilet', 'wastafelmeubel', 'ventilatie', 'kitwerk', 'stucwerk', 'plafond', 'deur'],
+    standaard: ['sloopwerk', 'egaliseren', 'leidingwerk', 'elektra', 'waterdicht', 'wandtegels', 'vloertegels', 'inloopdouche', 'toilet', 'wastafelmeubel', 'ventilatie', 'kitwerk'],
     afmetingen: { lengte: 2.5, breedte: 2.0, hoogte: 2.6, tegelhoogte: 2.6 },
     snijverlies: 10,
   },
@@ -57,7 +88,7 @@ export const RUIMTES: RuimteType[] = [
     id: 'toilet',
     label: 'Toilet',
     omschrijving: 'Wand- en vloertegels, toilet en fonteintje',
-    werk: ['sloopwerk', 'egaliseren', 'wandtegels', 'vloertegels', 'toilet', 'fontein', 'kitwerk', 'stucwerk'],
+    werk: ['sloopwerk', 'egaliseren', 'leidingwerk', 'elektra', 'wandtegels', 'vloertegels', 'toilet', 'fontein', 'ventilatie', 'kitwerk', 'stucwerk', 'plafond', 'deur'],
     standaard: ['sloopwerk', 'wandtegels', 'vloertegels', 'toilet', 'fontein', 'kitwerk', 'stucwerk'],
     teksten: {
       sloopwerk: { omschrijving: 'Oude tegels, toilet en fontein verwijderen' },
@@ -70,9 +101,13 @@ export const RUIMTES: RuimteType[] = [
     id: 'keuken',
     label: 'Keuken',
     omschrijving: 'Spatwand achter het aanrecht, vloer en kit',
-    werk: ['sloopwerk', 'spatwand', 'egaliseren', 'vloertegels', 'kitwerk'],
+    werk: ['sloopwerk', 'dekvloer', 'egaliseren', 'leidingwerk', 'elektra', 'ventilatie', 'spatwand', 'vloertegels', 'kitwerk', 'stucwerk', 'plafond', 'deur'],
     standaard: ['sloopwerk', 'spatwand', 'egaliseren', 'vloertegels', 'kitwerk'],
     teksten: {
+      leidingwerk: { omschrijving: 'Aansluiting spoelbak/vaatwasser verleggen' },
+      elektra: { omschrijving: 'Extra groep (kookplaat/oven), spots en stopcontacten' },
+      ventilatie: { label: 'Afzuiging', omschrijving: 'Afvoer voor afzuigkap of ventilator' },
+      stucwerk: { omschrijving: 'Plafond stucen en schilderen' },
       sloopwerk: { omschrijving: 'Oude spatwand en vloertegels verwijderen' },
       vloertegels: { label: 'Tegelvloer', omschrijving: 'Keukenvloer incl. lijm en voeg' },
       kitwerk: { omschrijving: 'Naad werkblad en zijkanten spatwand' },
@@ -84,12 +119,14 @@ export const RUIMTES: RuimteType[] = [
     id: 'vloer',
     label: 'Vloer & woonkamer',
     omschrijving: 'Laminaat, PVC of tegelvloer met plinten',
-    werk: ['sloopwerk', 'egaliseren', 'legvloer', 'vloertegels', 'ondervloer', 'plinten'],
+    werk: ['sloopwerk', 'dekvloer', 'egaliseren', 'vloerverwarming', 'legvloer', 'vloertegels', 'ondervloer', 'plinten', 'deur'],
     standaard: ['sloopwerk', 'legvloer', 'ondervloer', 'plinten'],
     teksten: {
       sloopwerk: { label: 'Oude vloer verwijderen', omschrijving: 'Vloerbedekking of laminaat eruit en afvoeren' },
       egaliseren: { omschrijving: 'Vlakke ondergrond voor de nieuwe vloer' },
       vloertegels: { label: 'Tegelvloer', omschrijving: 'In plaats van laminaat/PVC, incl. lijm en voeg' },
+      vloerverwarming: { omschrijving: 'Elektrische mat onder tegelvloer, met thermostaat' },
+      deur: { label: 'Dorpel & deur', omschrijving: 'Nieuwe dorpel en deur passend maken/vervangen' },
     },
     afmetingen: { lengte: 6.0, breedte: 4.5, hoogte: 2.6, tegelhoogte: 0 },
     snijverlies: 7,

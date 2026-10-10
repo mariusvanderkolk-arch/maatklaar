@@ -14,7 +14,7 @@ type Berekening = ReturnType<typeof berekenAlles>
 const verpakkingKort = (v: string) => v.replace(/^(doos|zak|bus|emmer|rol|koker|lengte|plaat|pak) à /, '$1 ')
 
 export function prijsTekstVoor(st: Berekening['inkoop']['prijsStatus'], datumTekst: (iso: string) => string): string {
-  if (st.eigen === 0) return 'Materiaalprijzen zijn richtprijzen (voorbeeld) en geen actuele winkelprijzen.'
+  if (st.eigen === 0) return 'Materiaalprijzen zijn richtprijzen (voorbeeld), nog geen eigen inkoopprijzen.'
   if (st.voorbeeld === 0) return `Materiaalprijzen zijn eigen prijzen, bijgewerkt op ${st.laatstBijgewerkt ? datumTekst(st.laatstBijgewerkt) : '—'}.`
   return `Materiaalprijzen zijn deels eigen prijzen; bedragen met * zijn voorbeeldprijzen (${st.voorbeeld} van ${st.eigen + st.voorbeeld} prijzen).`
 }
@@ -40,6 +40,8 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
   const gemengd = st.eigen > 0 && st.voorbeeld > 0
   const datum = p.offerte?.datum ?? vandaag()
   const arbTotaal = metArbeid ? Math.round(b.arbeidKosten * 100) / 100 : 0
+  const onvPct = Math.max(0, Math.min(50, p.onvoorzien ?? 0))
+  const onvBedrag = Math.round(((b.inkoop.totaal + arbTotaal) * onvPct) / 100 * 100) / 100
   return {
     v: 1,
     nr: p.offerte?.nummer ?? '—',
@@ -57,15 +59,16 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     opp: oppervlakRegels(p, b.oppervlakken),
     mat: b.inkoop.regels.map((r) => [
       `${r.naam}${r.spec ? ` · ${r.spec}` : ''}`,
-      `${r.goedkoopste?.aantal ?? r.aantal} × ${verpakkingKort(r.goedkoopste?.verpakking ?? r.verpakking)}`,
-      r.goedkoopste?.totaal ?? 0,
-      gemengd && r.goedkoopste?.bron === 'voorbeeld' ? 1 : 0,
+      `${r.koopAantal} × ${verpakkingKort(r.koopVerpakking)}`,
+      r.totaal,
+      gemengd && r.bron === 'voorbeeld' ? 1 : 0,
     ]),
-    matTotaal: b.inkoop.goedkoopsteMix,
+    matTotaal: b.inkoop.totaal,
     arb: metArbeid ? b.arbeid.map((a) => [a.omschrijving, a.uren]) : [],
     tarief: p.uurtarief,
     arbTotaal,
-    totaal: Math.round((b.inkoop.goedkoopsteMix + arbTotaal) * 100) / 100,
+    ...(onvPct > 0 ? { onv: [onvPct, onvBedrag] as [number, number] } : {}),
+    totaal: Math.round((b.inkoop.totaal + arbTotaal + onvBedrag) * 100) / 100,
     notities: p.notities,
     betaaltermijn: bedrijf.betaaltermijn.trim(),
     prijsTekst: prijsTekstVoor(st, datumTekst),

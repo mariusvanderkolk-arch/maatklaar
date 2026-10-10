@@ -31,6 +31,8 @@ export interface OfferteData {
   arb: [string, number][]
   tarief: number
   arbTotaal: number
+  /** onvoorzien: [percentage, bedrag] (optioneel) */
+  onv?: [number, number]
   totaal: number
   notities: string
   betaaltermijn: string
@@ -90,6 +92,7 @@ export function decodeerOfferte(code: string): OfferteData {
     arb: Array.isArray(o.arb) ? o.arb.filter((r): r is unknown[] => Array.isArray(r)).slice(0, 40).map((r) => [str(r[0], 120), isNum(r[1]) ? r[1] : 0]) : [],
     tarief: isNum(o.tarief) ? o.tarief : 0,
     arbTotaal: isNum(o.arbTotaal) ? o.arbTotaal : 0,
+    ...(Array.isArray(o.onv) && isNum(o.onv[0]) && isNum(o.onv[1]) ? { onv: [o.onv[0], o.onv[1]] as [number, number] } : {}),
     totaal: o.totaal as number,
     notities: str(o.notities, 2000),
     betaaltermijn: str(o.betaaltermijn, 400),
