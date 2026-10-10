@@ -90,3 +90,8 @@ describe('AI-modus (optioneel)', async () => {
     await expect(vraagAi(ai as never, [{ rol: 'gebruiker', tekst: 'hoi' }], 'Home', limiet)).rejects.toThrow(/limiet/)
   })
 })
+
+describe('contact', async () => {
+  const { whatsappLink } = await import('../feedback')
+  it('WhatsApp gaat direct naar Marius', () => expect(whatsappLink('a b')).toBe('https://wa.me/31640210974?text=a%20b'))
+})
