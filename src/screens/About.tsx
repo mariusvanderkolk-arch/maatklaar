@@ -1,3 +1,6 @@
+import { Star } from 'lucide-react'
+import { ReviewsBlok } from '../components/Beoordeel'
+import { reviewDialoog } from '../lib/reviews'
 import { Calculator, Camera, Database, RotateCcw, ScanLine, ShoppingCart } from 'lucide-react'
 import { LogoMark } from '../components/Logo'
 import { ONBOARDING_SLEUTEL } from '../components/Onboarding'
@@ -93,7 +96,18 @@ export function About() {
           </Card>
         ))}
       </div>
+      <ReviewsBlok className="mt-6" />
       <Card className="mt-6 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left">
+        <Star className="h-10 w-10 shrink-0 fill-gold-200 text-gold-500" />
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">Beoordeel Maatklaar</p>
+          <p className="mt-0.5 text-sm text-ink-muted">Geef sterren en een korte reactie. Openbaar alleen met jouw toestemming en na controle.</p>
+        </div>
+        <Button variant="secondary" onClick={reviewDialoog.open}>
+          Beoordelen
+        </Button>
+      </Card>
+      <Card className="mt-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left">
         <LogoMark className="h-14 w-14 shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="font-semibold">Voorbeeldprojecten</p>

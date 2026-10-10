@@ -8,7 +8,7 @@ import { TEST_MODUS } from './modus'
 
 export const EVENT_NAMEN = [
   'page_view', 'project_created', 'offerte_shared', 'offerte_printed', 'factuur_created', 'design_opened',
-  'chat_opened', 'chat_question_unanswered', 'feedback_opened', 'signup',
+  'chat_opened', 'chat_question_unanswered', 'feedback_opened', 'signup', 'review_submitted',
 ] as const
 export type EventNaam = (typeof EVENT_NAMEN)[number]
 

@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { ReviewsBlok } from '../components/Beoordeel'
+import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
 import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FolderOpen, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
 import { Plattegrond } from '../components/Plattegrond'
@@ -29,6 +32,7 @@ export function Home() {
   const projecten = useProjecten()
   const gesorteerd = [...projecten].sort((a, b) => b.updatedAt - a.updatedAt)
   const bk = backupStatus.use()
+  const [vraagReview, setVraagReview] = useState(() => reviewStatus.moetVragen())
   const herinner = backupHerinnering({ projecten, laatsteBackup: bk.laatste, gesnoozed: bk.later })
   return (
     <div className="bg-grain">
@@ -119,6 +123,8 @@ export function Home() {
           </div>
         </section>
 
+        <ReviewsBlok className="mt-10" />
+
         {/* Projecten */}
         <section className="mt-12">
           <div className="mb-5 flex items-end justify-between gap-4">
@@ -128,6 +134,24 @@ export function Home() {
             </div>
             {projecten.length > 0 && <p className="pb-1 text-sm text-ink-muted">{projecten.length} {projecten.length === 1 ? 'project' : 'projecten'}</p>}
           </div>
+          {vraagReview && (
+            <Notice
+              className="mb-5"
+              title="Bevalt Maatklaar?"
+              action={
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => { reviewStatus.later(); setVraagReview(false) }}>
+                    Later
+                  </Button>
+                  <Button size="sm" variant="primary" onClick={() => { reviewStatus.later(); setVraagReview(false); reviewDialoog.open() }}>
+                    Beoordeel Maatklaar
+                  </Button>
+                </div>
+              }
+            >
+              Je hebt al een paar offertes gemaakt. Wil je de app kort beoordelen? Dat kost een halve minuut.
+            </Notice>
+          )}
           {herinner && (
             <Notice
               className="mb-5"

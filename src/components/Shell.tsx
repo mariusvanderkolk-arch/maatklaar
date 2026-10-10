@@ -1,3 +1,5 @@
+import { BeoordeelDialoog } from './Beoordeel'
+import { reviewDialoog } from '../lib/reviews'
 import type { ReactNode } from 'react'
 import { Plus, Settings } from 'lucide-react'
 import { Logo } from './Logo'
@@ -78,6 +80,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         </div>
       </header>
       <OpslagWaarschuwing />
+      <BeoordeelDialoog />
       <main id="inhoud" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
@@ -88,6 +91,10 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
             <a href="#/over" className="underline underline-offset-2 hover:text-ink">
               Over de app
             </a>{' '}
+            ·{' '}
+            <button type="button" onClick={reviewDialoog.open} className="underline underline-offset-2 hover:text-ink">
+              Beoordeel Maatklaar
+            </button>{' '}
             ·{' '}
             <a href="#/account" className="underline underline-offset-2 hover:text-ink">
               {cloud.gebruiker ? `Account${cloud.syncAan ? ` (${STATUS_TEKST[cloud.status].toLowerCase()})` : ''}` : 'Inloggen'}

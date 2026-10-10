@@ -27,7 +27,7 @@ grant usage on sequence public.events_id_seq to anon, authenticated;
 drop policy if exists events_insert_only on public.events;
 create policy events_insert_only on public.events for insert to anon, authenticated with check (
   name in ('page_view','project_created','offerte_shared','offerte_printed','factuur_created','design_opened',
-           'chat_opened','chat_question_unanswered','feedback_opened','signup')
+           'chat_opened','chat_question_unanswered','feedback_opened','signup','review_submitted')
   and coalesce(length(path), 0) <= 100
   and coalesce(length(referrer_host), 0) <= 100
   and coalesce(length(session), 0) <= 16

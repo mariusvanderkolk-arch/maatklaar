@@ -31,6 +31,11 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
     tekst:
       'Om de app te verbeteren tellen we anoniem welke schermen en functies worden gebruikt (bijv. "offerte gedeeld"), met alleen het scherm, mobiel of desktop, de website waar je vandaan kwam en of je in een app-browser zit. Geen cookies, geen naam, e-mail of IP-adres en geen projectgegevens; alleen een willekeurige code die per dag en per browsertabblad verandert. Vragen die de hulpchat niet kon beantwoorden worden ingekort en zonder e-mailadressen of telefoonnummers bewaard om de hulp te verbeteren. Er zijn geen trackers of analysediensten van derden. Staat "Do Not Track" of "Global Privacy Control" aan in je browser, dan tellen we niets.',
   },
+  {
+    titel: 'Beoordelingen',
+    tekst:
+      'Als je Maatklaar beoordeelt, bewaren we alleen de sterren, je tekst en (als je die invult) je naam en bedrijf, met datum. Openbaar wordt het pas als jij daar toestemming voor geeft én Marius het heeft gecontroleerd. Wil je je beoordeling laten verwijderen? Stuur Marius een bericht.',
+  },
 ]
 
 export function Privacy() {

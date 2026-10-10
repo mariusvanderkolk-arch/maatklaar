@@ -1,3 +1,4 @@
+import { reviewStatus } from '../lib/reviews'
 import { useEffect, useMemo } from 'react'
 import { BadgeCheck, ReceiptText, Building2, Copy, ExternalLink, Printer, Send } from 'lucide-react'
 import { OfferteDocument } from '../components/OfferteDocument'
@@ -44,6 +45,7 @@ export function Quote({ p }: { p: Project }) {
     const url = offerteLink(data)
     setOfferte({ gedeeldOp: Date.now() })
     track('offerte_shared')
+    reviewStatus.telOfferte()
     const titel = `Offerte ${data.nr}${data.bedrijf.naam ? ` – ${data.bedrijf.naam}` : ''}`
     const tekst = `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en akkoord geven via deze link:`
     if (navigator.share) {
@@ -154,7 +156,7 @@ export function Quote({ p }: { p: Project }) {
             .
           </p>
           <div className="mt-4 grid gap-2">
-            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => { track('offerte_printed'); window.print() }}>
+            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => { track('offerte_printed'); reviewStatus.telOfferte(); window.print() }}>
               Afdrukken / PDF
             </Button>
             <Button
