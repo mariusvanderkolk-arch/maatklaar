@@ -8,6 +8,7 @@ import { Onboarding } from './components/Onboarding'
 import { laadLater } from './lib/lazy'
 import { CloudToestemming } from './components/CloudToestemming'
 import { InAppBanner } from './components/InAppBanner'
+import { HulpKnop } from './components/hulp/HulpKnop'
 
 const ProjectForm = laadLater(() => import('./screens/ProjectForm').then((m) => m.ProjectForm))
 const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m) => m.ProjectScreen))
@@ -63,6 +64,7 @@ export default function App() {
       </Foutgrens>
       {route.naam === 'home' && <Onboarding />}
       <CloudToestemming />
+      <HulpKnop route={route} />
       <Toaster />
     </Shell>
   )

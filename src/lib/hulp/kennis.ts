@@ -1,0 +1,184 @@
+/**
+ * Kennisbank van Maatklaar-hulp (offline, gratis). Gewone taal, korte antwoorden.
+ * Links: '/pad' = hash-route; 'project:<stap>' = die stap van het huidige of laatst gebruikte project.
+ */
+export interface HulpLink {
+  label: string
+  pad: string
+}
+export interface HulpItem {
+  id: string
+  vraag: string
+  /** extra zoekwoorden (synoniemen, spreektaal) */
+  woorden: string[]
+  antwoord: string
+  links?: HulpLink[]
+}
+
+const P = (label: string, pad: string): HulpLink => ({ label, pad })
+
+export const KENNIS: HulpItem[] = [
+  // — Starten
+  { id: 'wat-is', vraag: 'Wat is Maatklaar?', woorden: ['app', 'uitleg', 'wat doet', 'waarvoor', 'functies'],
+    antwoord: 'Maatklaar helpt aannemers en klussers van opmeten tot offerte: je meet de ruimte op, tekent een ontwerp in 2D/3D, laat materialen en uren uitrekenen, maakt een inkooplijst en stuurt de klant een nette offerte. Opgemeten, ontworpen, offerte klaar.',
+    links: [P('Over de app', '/over')] },
+  { id: 'start', vraag: 'Hoe begin ik?', woorden: ['beginnen', 'eerste keer', 'starten', 'nieuw', 'aan de slag', 'tutorial', 'rondleiding'],
+    antwoord: 'Tik op "+ Nieuw project", kies het type ruimte (badkamer, toilet, keuken of vloer) en vink de werkzaamheden aan. Daarna loop je de stappen door: Opmeten → Ontwerp → Berekening → Inkoop → Offerte → Planning. Tip: open eerst het voorbeeldproject "Badkamer Jansen" om te zien hoe het eruitziet.',
+    links: [P('Nieuw project', '/nieuw'), P('Naar projecten', '/')] },
+  { id: 'voorbeeld', vraag: 'Wat zijn de voorbeeldprojecten?', woorden: ['voorbeeldproject', 'badkamer jansen', 'demo', 'oefenen'],
+    antwoord: 'De voorbeeldprojecten laten zien hoe een compleet project eruitziet, met ontwerp en offerte. Je kunt er vrij in klikken en oefenen. Ze tellen niet mee als eigen project.',
+    links: [P('Naar projecten', '/')] },
+  { id: 'ruimtes', vraag: 'Welke ruimtes kan ik berekenen?', woorden: ['badkamer', 'toilet', 'wc', 'keuken', 'vloer', 'woonkamer', 'laminaat', 'pvc', 'type ruimte'],
+    antwoord: 'Badkamer, toilet, keuken (spatwand en tegels) en vloer/woonkamer (laminaat, PVC of tegels, met ondervloer en plinten). Per ruimte krijg je een passende checklist met werkzaamheden.',
+    links: [P('Nieuw project', '/nieuw')] },
+  { id: 'werkzaamheden', vraag: 'Hoe kies ik de werkzaamheden?', woorden: ['scope', 'checklist', 'sloopwerk', 'waterdicht', 'vloerverwarming', 'egaliseren', 'aanvinken'],
+    antwoord: 'Bij een nieuw project (of via "Bewerken") vink je de werkzaamheden aan, zoals sloopwerk, waterdicht maken, egaliseren, vloerverwarming en tegelwerk. Wat je aanvinkt bepaalt welke materialen en uren worden berekend en wat er op de offerte staat.',
+    links: [P('Nieuw project', '/nieuw')] },
+  { id: 'project-bewerken', vraag: 'Hoe pas ik een project aan of verwijder ik het?', woorden: ['wijzigen', 'aanpassen', 'verwijderen', 'weggooien', 'naam', 'klant', 'adres', 'bewerken'],
+    antwoord: 'Open het project en tik bovenaan op "Bewerken". Daar pas je naam, klant, adres, type en werkzaamheden aan. Onderaan staat "Verwijderen" (dat kan niet ongedaan worden gemaakt, maak eventueel eerst een back-up).' },
+
+  // — Opmeten
+  { id: 'opmeten', vraag: 'Hoe meet ik op?', woorden: ['meten', 'maten', 'afmetingen', 'lengte', 'breedte', 'hoogte', 'opmeting', 'inmeten', 'meter'],
+    antwoord: 'Ga naar stap 1 "Opmeten" en vul lengte, breedte en hoogte in (in meters, bv. 2,8). Voeg deuren en ramen toe en geef bij een badkamer de tegelhoogte en douchezone op. De plattegrond tekent live mee, zodat je meteen ziet of het klopt. Meet altijd op de langste/breedste plek.',
+    links: [P('Naar Opmeten', 'project:opmeten')] },
+  { id: 'deuren-ramen', vraag: 'Hoe tel ik deuren en ramen mee?', woorden: ['deur', 'raam', 'kozijn', 'openingen', 'aftrekken'],
+    antwoord: 'Voeg bij Opmeten elke deur en elk raam toe met breedte en hoogte. Die oppervlakken worden van de wandtegels afgetrokken, zodat je niet te veel bestelt.',
+    links: [P('Naar Opmeten', 'project:opmeten')] },
+  { id: 'tegelformaat', vraag: 'Waar kies ik het tegelformaat en snijverlies?', woorden: ['tegel', 'formaat', '60x60', '30x60', 'snijverlies', 'zaagverlies', 'verlies', 'doos', 'm2 per doos'],
+    antwoord: 'Bij Opmeten kies je per vloer en wand het tegelformaat (bv. 60×60 of 30×60), de inhoud per doos en het snijverlies. Reken op ongeveer 10% snijverlies, meer bij grote tegels of een visgraat. In het Ontwerp kun je de tegelmaat ook overnemen in de berekening.',
+    links: [P('Naar Opmeten', 'project:opmeten')] },
+  { id: 'fotos', vraag: 'Hoe voeg ik foto’s toe?', woorden: ['foto', 'fotos', 'camera', 'plaatje', 'afbeelding', 'uploaden'],
+    antwoord: 'Bij Opmeten tik je op "Foto maken" of "Uploaden". Foto’s worden verkleind en alleen op dit apparaat bewaard (niet in de cloud).',
+    links: [P('Naar Opmeten', 'project:opmeten')] },
+  { id: 'ai-foto', vraag: 'Wat doet de AI-fotoanalyse?', woorden: ['ai', 'kunstmatige intelligentie', 'gemini', 'analyse', 'herkennen', 'slim'],
+    antwoord: 'Met een eigen AI-sleutel (bv. gratis Google Gemini) kan de app je foto’s analyseren: elementen herkennen, werkzaamheden voorstellen en grove maten schatten. Het zijn suggesties die je per stuk overneemt; meet altijd zelf na. Zonder sleutel werkt alles gewoon zonder AI.',
+    links: [P('AI instellen', '/instellingen/ai')] },
+  { id: 'ai-sleutel', vraag: 'Hoe stel ik een AI-sleutel in?', woorden: ['api', 'sleutel', 'key', 'api key', 'gemini sleutel', 'openai', 'xai'],
+    antwoord: 'Ga naar Instellingen → AI, kies een dienst (Google Gemini is gratis te proberen), maak via de link een sleutel aan en plak die in het veld. Met "Verbinding testen" controleer je of het werkt. De sleutel blijft op dit apparaat en gaat niet mee in back-ups.',
+    links: [P('Instellingen → AI', '/instellingen/ai')] },
+  { id: 'ar', vraag: 'Kan ik meten met de camera (AR)?', woorden: ['ar', 'augmented', 'camera meten', 'webxr', 'laser'],
+    antwoord: 'AR-meten (beta) werkt op Android met Chrome en ARCore: tik twee punten aan en neem de afstand over. Het wijkt vaak een paar centimeter af, dus gebruik het als hulpmiddel en controleer met een rolmaat of laser.',
+    links: [P('Naar Opmeten', 'project:opmeten')] },
+
+  // — Ontwerp
+  { id: 'ontwerp', vraag: 'Hoe maak ik een 3D-ontwerp?', woorden: ['ontwerp', '3d', '2d', 'plattegrond', 'tekening', 'visoft', 'indeling', 'tekenen'],
+    antwoord: 'Open stap 2 "Ontwerp". De ruimte staat al klaar met je maten. Tik op een item in de bibliotheek (douche, toilet, badmeubel, radiator, keukenkastjes…) of sleep het omhoog naar de plattegrond. Kies onder "Tegels & afwerking" je vloer- en wandtegel en tik op "3D" om de ruimte te draaien en te bekijken.',
+    links: [P('Naar Ontwerp', 'project:ontwerp')] },
+  { id: 'ontwerp-bediening', vraag: 'Hoe verplaats of draai ik iets in het ontwerp?', woorden: ['verplaatsen', 'slepen', 'draaien', 'roteren', 'zoomen', 'knijpen', 'ongedaan', 'undo', 'verwijderen item'],
+    antwoord: 'Sleep een item met je vinger; het klikt vast aan de wand en een raster van 5 cm. Tik erop om het te selecteren: dan zie je de afstanden tot de wanden, het draai-bolletje en knoppen voor draaien, dupliceren en verwijderen. Knijp om te zoomen, sleep de achtergrond om te schuiven. Ongedaan maken en opnieuw staan bovenaan.',
+    links: [P('Naar Ontwerp', 'project:ontwerp')] },
+  { id: 'ontwerp-tegels', vraag: 'Hoe kies ik tegels in het ontwerp?', woorden: ['tegelkleur', 'marmer', 'travertin', 'beton', 'mozaiek', 'halfsteens', 'patroon', 'afwerking'],
+    antwoord: 'In het Ontwerp onder "Tegels & afwerking" kies je kleur/patroon (marmer, travertin, beton, terrazzo, hout…), het formaat en recht of halfsteens leggen. Het is meteen zichtbaar in 2D en 3D. Met "Tegelmaten overnemen in berekening" komt het formaat ook in de materiaalberekening.',
+    links: [P('Naar Ontwerp', 'project:ontwerp')] },
+  { id: 'ontwerp-offerte', vraag: 'Hoe zet ik het ontwerp op de offerte?', woorden: ['ontwerp offerte', 'klant laten zien', '3d beeld', 'png', 'exporteren ontwerp', 'afbeelding offerte'],
+    antwoord: 'Zet in het Ontwerp bij "Laten zien aan de klant" de schakelaar aan. De plattegrond komt dan op de offerte en in de klantlink (de klant kan daar ook zelf in 3D kijken). Tik in 3D op "Dit 3D-beeld op de offerte" voor een mooie 3D-afbeelding op de geprinte offerte. Je kunt ook PNG’s downloaden.',
+    links: [P('Naar Ontwerp', 'project:ontwerp')] },
+  { id: '3d-werkt-niet', vraag: 'De 3D-weergave werkt niet', woorden: ['3d werkt niet', 'webgl', 'zwart', 'leeg', 'traag'],
+    antwoord: '3D heeft WebGL nodig. Sommige ingebouwde browsers (zoals in WhatsApp) of oudere telefoons ondersteunen dat niet; dan blijft de 2D-plattegrond werken. Open de app in Chrome voor 3D.',
+    links: [P('Naar Ontwerp', 'project:ontwerp')] },
+
+  // — Berekening & inkoop
+  { id: 'berekening', vraag: 'Hoe werkt de berekening?', woorden: ['berekenen', 'uitrekenen', 'materialen', 'hoeveel', 'oppervlakte', 'm2', 'vierkante meter'],
+    antwoord: 'Stap "Berekening" rekent de oppervlakken (vloer, wanden, waterdicht) en alle materialen uit: tegels in hele dozen, lijm, voeg, primer, waterdichting, egaline, kit, profielen en meer. Bij elk materiaal staat hoe het is berekend, zodat je het kunt controleren.',
+    links: [P('Naar Berekening', 'project:berekening')] },
+  { id: 'rekenregels', vraag: 'Welke rekenregels gebruikt de app?', woorden: ['tegellijm', 'hoeveel', 'per m2', 'lijm', 'voegmiddel', 'kg', 'verbruik', 'formule', 'primer', 'kit'],
+    antwoord: 'Vuistregels: tegellijm 3,5 kg/m² (tot 30 cm), 4,5 kg/m² (tot 60 cm) en 5,5 kg/m² (groter); primer 0,15 L/m²; waterdichting 1,4 kg/m² in 2 lagen; egaline 1,6 kg per m² per mm; kit ± 8 m per koker. Tegels: netto m² plus snijverlies, afgerond op dozen.',
+    links: [P('Naar Berekening', 'project:berekening')] },
+  { id: 'uren', vraag: 'Hoe worden de arbeidsuren berekend?', woorden: ['uren', 'arbeid', 'loon', 'uurloon', 'tarief', 'werkuren', 'dagen'],
+    antwoord: 'De app schat de uren met eenvoudige normen per werkzaamheid en m². Je uurtarief (incl. btw) vul je per project in bij stap Offerte. Het blijft een indicatie: pas het aan naar je eigen ervaring.',
+    links: [P('Naar Offerte', 'project:offerte')] },
+  { id: 'inkoop', vraag: 'Hoe werkt de inkooplijst?', woorden: ['inkooplijst', 'boodschappenlijst', 'bestellen', 'winkel', 'bouwmarkt', 'afvinken', 'goedkoopste'],
+    antwoord: 'Stap "Inkoop" zet alle materialen per groep op een rij met richtprijs, de goedkoopste winkel per artikel en het totaal per winkel. Je kunt artikelen afvinken in de winkel en de lijst kopiëren of delen via WhatsApp.',
+    links: [P('Naar Inkoop', 'project:inkoop')] },
+
+  // — Prijzen
+  { id: 'prijzen', vraag: 'Hoe zet ik mijn prijzen?', woorden: ['prijs', 'prijzen', 'inkoopprijs', 'eigen prijzen', 'kosten', 'tarieven', 'prijslijst'],
+    antwoord: 'Open "Prijzen" bovenin. Tik op "Voorbeeldprijzen overnemen" voor een snelle start en pas daarna alleen aan wat bij jou anders is. Je kunt zoeken, direct in de lijst bewerken, een hele winkel kopiëren en prijzen met een percentage verhogen. Eigen prijzen gaan altijd vóór de voorbeeldprijzen.',
+    links: [P('Prijzen beheren', '/prijzen')] },
+  { id: 'voorbeeldprijzen', vraag: 'Zijn de prijzen actueel?', woorden: ['actueel', 'live prijzen', 'gamma', 'praxis', 'hornbach', 'karwei', 'voorbeeldprijzen', 'kloppen'],
+    antwoord: 'Nee, standaard zijn het voorbeeldprijzen (geen live koppeling met bouwmarkten). Vul je eigen inkoopprijzen in voor een betrouwbare offerte. Op de inkooplijst en offerte zie je hoeveel prijzen nog voorbeeld zijn.',
+    links: [P('Prijzen beheren', '/prijzen')] },
+  { id: 'prijzen-export', vraag: 'Kan ik prijzen importeren of exporteren (Excel)?', woorden: ['excel', 'csv', 'json', 'importeren', 'exporteren', 'prijzen overzetten'],
+    antwoord: 'Ja. Bij Prijzen kun je exporteren naar CSV (opent in Excel) of JSON, en weer importeren. Handig om prijzen in Excel in te vullen of naar een ander apparaat over te zetten. Ingelezen prijzen winnen van wat er al stond.',
+    links: [P('Prijzen beheren', '/prijzen')] },
+  { id: 'prijs-bulk', vraag: 'Hoe verhoog ik alle prijzen in één keer?', woorden: ['procent', 'percentage', 'verhogen', 'indexeren', 'bulk', 'alles duurder'],
+    antwoord: 'Bij Prijzen staat de knop "% aanpassen": daarmee pas je al je eigen prijzen bij één winkel in één keer aan, bijvoorbeeld +5% na een prijsverhoging van je leverancier.',
+    links: [P('Prijzen beheren', '/prijzen')] },
+
+  // — Offerte
+  { id: 'offerte', vraag: 'Hoe maak ik een offerte?', woorden: ['offerte', 'prijsopgave', 'aanbieding', 'begroting', 'opgave', 'quote'],
+    antwoord: 'Open stap "Offerte" in je project: die is automatisch opgebouwd uit werkzaamheden, materialen en uren. Vul eerst je bedrijfsgegevens in (logo, KvK, btw, IBAN). Daarna kun je de offerte afdrukken of als PDF opslaan, of een link delen met de klant.',
+    links: [P('Naar Offerte', 'project:offerte'), P('Bedrijfsgegevens', '/instellingen/bedrijf')] },
+  { id: 'offerte-link', vraag: 'Hoe stuur ik de offerte naar de klant?', woorden: ['delen', 'versturen', 'whatsapp', 'link', 'klant sturen', 'mailen', 'akkoord'],
+    antwoord: 'Tik bij Offerte op "Deel offerte-link". De klant opent de offerte op de telefoon, kan het ontwerp in 3D bekijken en geeft akkoord via WhatsApp of e-mail. Er is geen server: de offerte zit in de link zelf. Pas je iets aan, deel dan een nieuwe link.',
+    links: [P('Naar Offerte', 'project:offerte')] },
+  { id: 'pdf', vraag: 'Hoe maak ik een PDF van de offerte?', woorden: ['pdf', 'printen', 'afdrukken', 'opslaan als pdf', 'papier'],
+    antwoord: 'Tik bij Offerte op "Afdrukken / PDF". Kies in het printvenster "Opslaan als PDF". De opmaak is geschikt voor A4.',
+    links: [P('Naar Offerte', 'project:offerte')] },
+  { id: 'bedrijf', vraag: 'Hoe zet ik mijn logo en bedrijfsgegevens op de offerte?', woorden: ['logo', 'bedrijfsnaam', 'kvk', 'btw nummer', 'iban', 'huisstijl', 'bedrijfsgegevens', 'adres bedrijf'],
+    antwoord: 'Ga naar Instellingen → Bedrijf en vul naam, logo, adres, KvK, btw-nummer, IBAN en contactgegevens in. Die komen automatisch op elke offerte en factuur.',
+    links: [P('Bedrijfsgegevens', '/instellingen/bedrijf')] },
+  { id: 'offerte-instellingen', vraag: 'Waar stel ik geldigheid, btw en betaaltermijn in?', woorden: ['geldigheid', 'geldig tot', 'betaaltermijn', 'btw', 'opslag', 'marge', 'offertenummer', 'voorwaarden'],
+    antwoord: 'Bij Instellingen → Offerte stel je de nummering (voorvoegsel en volgnummer), de geldigheid in dagen, de betaaltermijn/voorwaarden en de factuurnummering en -betaaltermijn in. Het uurtarief vul je per project in bij stap Offerte.',
+    links: [P('Instellingen → Offerte', '/instellingen/offerte')] },
+  { id: 'offerte-aanpassen', vraag: 'Kan ik de offerte handmatig aanpassen?', woorden: ['aanpassen offerte', 'regel toevoegen', 'korting', 'prijs wijzigen offerte', 'extra'],
+    antwoord: 'De offerte volgt je project: pas werkzaamheden, maten, prijzen of uurtarief aan en de offerte rekent mee. Extra kosten kun je bij Planning toevoegen. Opmerkingen voor de klant zet je in het notitieveld bij de offerte. Het uurtarief pas je daar ook aan.',
+    links: [P('Naar Offerte', 'project:offerte')] },
+
+  // — Facturen & planning
+  { id: 'factuur', vraag: 'Hoe maak ik een factuur?', woorden: ['factuur', 'facturen', 'rekening', 'betaling', 'factureren', 'nota'],
+    antwoord: 'Bij een offerte tik je op "Factuur maken": de gegevens worden overgenomen. Alle facturen vind je onder "Facturen" bovenin, met eigen nummer, btw-specificatie, status (concept, verzonden, betaald, te laat) en afdrukken als PDF.',
+    links: [P('Facturen', '/facturen'), P('Naar Offerte', 'project:offerte')] },
+  { id: 'factuur-betaald', vraag: 'Hoe markeer ik een factuur als betaald?', woorden: ['betaald', 'openstaand', 'herinnering', 'aanmaning'],
+    antwoord: 'Open de factuur onder "Facturen" en markeer hem als betaald. In het overzicht zie je per factuur de status: concept, verzonden, betaald of te laat.',
+    links: [P('Facturen', '/facturen')] },
+  { id: 'planning', vraag: 'Hoe werkt de planning en urenregistratie?', woorden: ['planning', 'agenda', 'droogtijd', 'uren schrijven', 'urenregistratie', 'budget', 'meerwerk'],
+    antwoord: 'Stap "Planning & uren" maakt een dagplanning met droogtijden en weekenden. Je schrijft gewerkte uren en extra kosten, en ziet hoe je ervoor staat ten opzichte van de offerte (budgetbewaking).',
+    links: [P('Naar Planning', 'project:planning')] },
+
+  // — Account, cloud, back-up
+  { id: 'account', vraag: 'Heb ik een account nodig?', woorden: ['account', 'inloggen', 'registreren', 'aanmelden', 'login', 'wachtwoord'],
+    antwoord: 'Nee. Zonder account werkt alles op dit apparaat. Met een (gratis) account kun je je gegevens synchroniseren tussen telefoon, tablet en laptop. Inloggen kan met een inloglink per e-mail of met e-mail en wachtwoord.',
+    links: [P('Account', '/account')] },
+  { id: 'cloud', vraag: 'Hoe gebruik ik de app op meerdere apparaten?', woorden: ['cloud', 'sync', 'synchroniseren', 'laptop', 'tablet', 'ander apparaat', 'telefoon en computer'],
+    antwoord: 'Log op elk apparaat in met hetzelfde account (via "Inloggen" onderaan de pagina). Projecten, planning, facturen, prijzen, ontwerpen en bedrijfsgegevens worden gesynchroniseerd. Foto’s blijven op het apparaat waar je ze maakte. Bij de eerste keer vraagt de app of je lokale gegevens mag samenvoegen; er wordt nooit iets verwijderd.',
+    links: [P('Account & cloud', '/account')] },
+  { id: 'wachtwoord', vraag: 'Ik ben mijn wachtwoord vergeten', woorden: ['wachtwoord vergeten', 'reset', 'inloglink', 'kan niet inloggen', 'mail komt niet'],
+    antwoord: 'Kies bij Account "Wachtwoord vergeten" of log in met een inloglink per e-mail. Geen mail ontvangen? Kijk in je spam en wacht een minuut; open de link op hetzelfde apparaat en in dezelfde browser.',
+    links: [P('Account', '/account')] },
+  { id: 'backup', vraag: 'Hoe maak ik een back-up?', woorden: ['back-up', 'backup', 'veiligheid', 'kwijt', 'opslaan', 'bestand', 'herstellen', 'terugzetten'],
+    antwoord: 'Ga naar Instellingen → Back-up en tik op "Back-up maken": je krijgt één bestand met al je projecten, foto’s, prijzen, facturen en bedrijfsgegevens (zonder API-sleutels). Terugzetten kan daar ook, met samenvoegen of vervangen. Maak regelmatig een back-up, zeker zonder account.',
+    links: [P('Back-up', '/instellingen/backup')] },
+  { id: 'nieuwe-telefoon', vraag: 'Ik heb een nieuwe telefoon, hoe krijg ik mijn gegevens over?', woorden: ['nieuwe telefoon', 'overzetten', 'verhuizen', 'andere telefoon', 'gegevens kwijt'],
+    antwoord: 'Twee manieren: log op beide telefoons in met hetzelfde account (cloud-sync), of maak op de oude telefoon een back-up en zet dat bestand terug op de nieuwe via Instellingen → Back-up.',
+    links: [P('Back-up', '/instellingen/backup'), P('Account', '/account')] },
+  { id: 'opslag-vol', vraag: 'De opslag is vol', woorden: ['opslag vol', 'geheugen', 'ruimte', 'quota', 'te groot'],
+    antwoord: 'De browser heeft beperkte opslag. Maak een back-up, verwijder oude projecten of foto’s die je niet meer nodig hebt, en gebruik eventueel een account zodat je gegevens ook in de cloud staan.',
+    links: [P('Back-up', '/instellingen/backup')] },
+
+  // — Gratis, privacy, techniek
+  { id: 'gratis', vraag: 'Is Maatklaar gratis?', woorden: ['gratis', 'kosten', 'betalen', 'abonnement', 'prijs app', 'pro', 'geld'],
+    antwoord: 'Ja, Maatklaar is op dit moment helemaal gratis en zonder limiet. Er komt mogelijk later een Pro-abonnement; je bestaande projecten blijven dan altijd van jou en bruikbaar.',
+    links: [P('Over de app', '/over')] },
+  { id: 'privacy', vraag: 'Wat gebeurt er met mijn gegevens (privacy)?', woorden: ['privacy', 'gegevens', 'avg', 'gdpr', 'veilig', 'server', 'delen', 'wie ziet'],
+    antwoord: 'Zonder account blijft alles op je eigen apparaat. Met een account worden je gegevens beveiligd opgeslagen zodat alleen jij ze kunt zien. Foto’s gaan alleen naar een AI-dienst als je dat zelf doet met je eigen sleutel. Een offerte-link kan iedereen lezen die de link heeft.',
+    links: [P('Privacyverklaring', '/privacy')] },
+  { id: 'installeren', vraag: 'Kan ik de app installeren op mijn telefoon?', woorden: ['installeren', 'app store', 'play store', 'beginscherm', 'icoon', 'pwa', 'downloaden'],
+    antwoord: 'Ja. Open Maatklaar in Chrome (Android) of Safari (iPhone) en kies "Toevoegen aan startscherm" / "App installeren". Dan opent het als een gewone app, ook offline.' },
+  { id: 'offline', vraag: 'Werkt de app zonder internet?', woorden: ['offline', 'geen internet', 'geen bereik', 'kelder', 'zonder wifi'],
+    antwoord: 'Ja, na het eerste bezoek werkt Maatklaar ook zonder internet. Alleen inloggen, cloud-sync, AI en het versturen van links hebben internet nodig.' },
+  { id: 'whatsapp-browser', vraag: 'De app doet raar in WhatsApp', woorden: ['whatsapp browser', 'in-app', 'facebook', 'instagram', 'chrome openen', 'wit scherm', 'laadt niet'],
+    antwoord: 'Links uit WhatsApp of Instagram openen in een beperkte ingebouwde browser. Tik bovenin op "Openen in Chrome" (of via ⋮ → Openen in browser). Daar werkt alles, inclusief 3D en installeren.' },
+  { id: 'naam', vraag: 'Heette dit vroeger Slimmer Wonen?', woorden: ['slimmer wonen', 'oude naam', 'naam veranderd', 'rebrand'],
+    antwoord: 'Ja. Slimmer Wonen heet nu Maatklaar. Oude links sturen automatisch door en al je projecten en prijzen staan er nog.' },
+  { id: 'btw', vraag: 'Rekent de app met of zonder btw?', woorden: ['btw', '21%', '9%', 'exclusief', 'inclusief', 'belasting'],
+    antwoord: 'De offerte rekent met bedragen inclusief 21% btw (ook het uurtarief is incl. btw). Een factuur krijgt een btw-specificatie. Je btw-nummer vul je in bij Instellingen → Bedrijf. Twijfel je over 9% of 21% (bijv. arbeid bij woningrenovatie)? Vraag het je boekhouder.',
+    links: [P('Bedrijfsgegevens', '/instellingen/bedrijf')] },
+  { id: 'fout', vraag: 'Ik zie een foutmelding of iets werkt niet', woorden: ['fout', 'error', 'bug', 'kapot', 'werkt niet', 'probleem', 'vastgelopen', 'crash'],
+    antwoord: 'Probeer eerst de pagina opnieuw te laden. Werkt het daarna nog niet, open de app dan in Chrome en maak voor de zekerheid een back-up. Laat het Marius weten (knop hieronder) met wat je deed; dan lossen we het op.',
+    links: [P('Back-up', '/instellingen/backup')] },
+  { id: 'contact', vraag: 'Hoe neem ik contact op?', woorden: ['contact', 'marius', 'vraag stellen', 'hulp nodig', 'feedback', 'idee', 'suggestie', 'telefoon'],
+    antwoord: 'Stuur Marius een bericht via WhatsApp of mail met de knoppen hieronder. Ideeën en feedback zijn heel welkom!' },
+]
+
+export const kennisVan = (id: string) => KENNIS.find((k) => k.id === id)
