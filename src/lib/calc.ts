@@ -472,7 +472,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
 
   // — Sloop & afvoer
   if (s.container && !s.sloopwerk) {
-    add({ id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer (plaatsen, huurperiode, ophalen)', spec: `${REGELS.containerM3} m³`, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1 })
+    add({ id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer (plaatsen, huurperiode, ophalen)', spec: `${REGELS.containerM3} m³`, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Container zonder sloopwerk: 1 stuk' })
   }
   if (s.sloopwerk) {
     const vloerDikte = type === 'vloer' ? REGELS.sloopLegvloerM : type === 'keuken' ? REGELS.sloopVloerDunM : REGELS.sloopVloerM
