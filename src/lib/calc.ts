@@ -471,17 +471,28 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   }
 
   // — Sloop & afvoer
+  if (s.container && !s.sloopwerk) {
+    add({ id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer (plaatsen, huurperiode, ophalen)', spec: `${REGELS.containerM3} m³`, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1 })
+  }
   if (s.sloopwerk) {
     const vloerDikte = type === 'vloer' ? REGELS.sloopLegvloerM : type === 'keuken' ? REGELS.sloopVloerDunM : REGELS.sloopVloerM
     const m3 = (o.wandNetto * REGELS.sloopWandM + o.vloer * vloerDikte) * REGELS.sloopOpbulk
     const wandDeel = o.wandNetto > 0 ? `${nl(o.wandNetto)} m² ${type === 'keuken' ? 'spatwand' : 'wand'} × 2,5 cm + ` : ''
     const uitleg = `(${wandDeel}${nl(o.vloer)} m² vloer × ${nl(vloerDikte * 100, 1)} cm) × 1,5 opbulk ≈ ${nl(m3)} m³`
-    if (m3 > REGELS.containerVanafM3) {
+    // Container: zelf aan te zetten ('Huur container'); bij oude projecten zonder keuze automatisch boven 3 m³.
+    const metContainer = p.scope.container ?? m3 > REGELS.containerVanafM3
+    if (metContainer && ruimte(type).werk.includes('container')) {
       const n = Math.max(1, omhoog(m3 / REGELS.containerM3))
       add({
-        id: 'container', groep: 'sloop', naam: 'Afvalcontainer (incl. plaatsen en afvoeren)', spec: `${REGELS.containerM3} m³`,
+        id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer (plaatsen, huurperiode, ophalen)', spec: `${REGELS.containerM3} m³`,
         nodig: m3, nodigEenheid: 'm³', aantal: n, verpakking: 'stuk', prijsAantal: n,
-        toelichting: `${uitleg}; meer dan ${REGELS.containerVanafM3} m³ → container`,
+        toelichting: `${uitleg} → ${n} container${n === 1 ? '' : 's'} à ${REGELS.containerM3} m³`,
+      })
+      const st = Math.max(1, omhoog(m3))
+      add({
+        id: 'afvalverwerking', groep: 'sloop', naam: 'Afvalverwerking (stortkosten)', spec: 'per m³',
+        nodig: m3, nodigEenheid: 'm³', aantal: st, verpakking: 'm³', prijsAantal: st,
+        toelichting: `${nl(m3)} m³ bouw- en sloopafval storten`,
       })
     } else {
       const n = Math.max(1, omhoog(m3 / REGELS.bigBagM3))

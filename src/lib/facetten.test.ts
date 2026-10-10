@@ -15,11 +15,23 @@ describe('volledige facetlijst per ruimte', () => {
       for (const m of mat) expect(voorbeeldPrijsBron.aanbod(m.id), m.id).toBeDefined()
       const metArbeid = new Set(arb.map((a) => a.scope))
       // elke gekozen werkzaamheid levert arbeid op (kitwerk op een vloer zonder kitnaden uitgezonderd)
-      for (const k of r.werk as ScopeKey[]) if (!(r.id === 'vloer' && k === 'kitwerk')) expect(metArbeid.has(k), `${r.id}/${k}`).toBe(true)
+      for (const k of r.werk as ScopeKey[]) if (k !== 'container' && !(r.id === 'vloer' && k === 'kitwerk')) expect(metArbeid.has(k), `${r.id}/${k}`).toBe(true)
       // checklist is volledig gegroepeerd
       expect(scopePerFase(r.id).flatMap((g) => g.items.map((i) => i.key)).sort()).toEqual([...r.werk].sort())
     })
   }
+  it('huur container is een aparte, kiesbare post naast stortkosten en big bags (alle ruimtes)', () => {
+    for (const r of RUIMTES) {
+      expect(r.werk, r.id).toContain('container')
+      const basis = nieuwProject({ type: r.id })
+      const ids = (c: boolean) => berekenMaterialen({ ...basis, scope: { ...basis.scope, sloopwerk: true, container: c } }).map((m) => m.id)
+      expect(ids(true), r.id).toEqual(expect.arrayContaining(['container', 'afvalverwerking']))
+      expect(ids(true)).not.toContain('bigbag')
+      expect(ids(false)).toEqual(expect.arrayContaining(['bigbag', 'afvalverwerking']))
+      expect(ids(false)).not.toContain('container')
+    }
+    expect(voorbeeldPrijsBron.aanbod('container')?.bron).toBe('voorbeeld')
+  })
   it('badkamer, toilet en keuken hebben leidingwerk, elektra en ventilatie', () => {
     for (const id of ['badkamer', 'toilet', 'keuken'] as const) {
       const w = RUIMTES.find((r) => r.id === id)!.werk

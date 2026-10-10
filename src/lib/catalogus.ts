@@ -17,8 +17,8 @@ const nl = (n: number) => new Intl.NumberFormat('nl-NL', { maximumFractionDigits
 export const CATALOGUS: CatalogusItem[] = [
   { id: 'bigbag', groep: 'sloop', naam: 'Big bag voor puin', eenheid: 'per stuk (1 m³)' },
   { id: 'afdekset', groep: 'sloop', naam: 'Afdekfolie, stucloper & stofmaskers', eenheid: 'per set' },
-  { id: 'container', groep: 'sloop', naam: 'Afvalcontainer 6 m³ (incl. plaatsen en afvoeren)', eenheid: 'per stuk', toelichting: 'Bij meer dan 3 m³ sloopafval' },
-  { id: 'afvalverwerking', groep: 'sloop', naam: 'Afvalverwerking (ophalen en storten)', eenheid: 'per m³' },
+  { id: 'container', groep: 'sloop', naam: 'Huur afvalcontainer 6 m³', eenheid: 'per stuk', toelichting: 'Plaatsen, huurperiode en ophalen; stortkosten apart (afvalverwerking)' },
+  { id: 'afvalverwerking', groep: 'sloop', naam: 'Afvalverwerking / stortkosten', eenheid: 'per m³' },
   { id: 'primer', groep: 'voorbereiding', naam: 'Voorstrijkmiddel (primer)', inhoud: { standaard: REGELS.primerBusL, eenheid: 'L', soort: 'bus' } },
   { id: 'egaliseer', groep: 'voorbereiding', naam: 'Egaliseermiddel', inhoud: { standaard: REGELS.egaliseerZakKg, eenheid: 'kg', soort: 'zak' } },
   { id: 'dekvloer', groep: 'voorbereiding', naam: 'Zand-cementmortel (dekvloer)', inhoud: { standaard: REGELS.dekvloerZakKg, eenheid: 'kg', soort: 'zak' } },

@@ -34,7 +34,7 @@ export const VOORBEELD_PRIJZEN: Record<ProductId, number> = {
   // sloop & afvoer
   bigbag: 11.99,
   afdekset: 24.99,
-  container: 395,
+  container: 275,
   afvalverwerking: 85,
   // ondergrond
   primer: 18.99,

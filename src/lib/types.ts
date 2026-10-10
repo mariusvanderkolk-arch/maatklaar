@@ -2,6 +2,7 @@
 
 export type ScopeKey =
   | 'sloopwerk'
+  | 'container'
   | 'waterdicht'
   | 'egaliseren'
   | 'vloerverwarming'
