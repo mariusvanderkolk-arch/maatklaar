@@ -1,3 +1,7 @@
+import { toast } from '../components/Toast'
+import { InsprekenKnop } from '../components/Inspreken'
+import { pasInspraakToe, type Inspraak } from '../lib/inspraak'
+import type { Afmetingen } from '../lib/types'
 import { AFVAL_SOORTEN, CONTAINER_MATEN, MAX_ZWAAR_M3 } from '../lib/calc'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat } from '../lib/types'
 import { useState } from 'react'
@@ -23,6 +27,17 @@ export function ProjectForm({ id }: { id?: string }) {
   const [scope, setScope] = useState<Scope>(concept.scope)
   const [type, setType] = useState<ProjectType>(concept.type)
   const [container, setContainer] = useState<ContainerKeuze>(concept.container ?? {})
+  const [inspraak, setInspraak] = useState<Inspraak | null>(null)
+  const maten = (a: Afmetingen): Afmetingen => (inspraak ? pasInspraakToe({ ...concept, afmetingen: a }, { ...inspraak, type: undefined, aan: [], uit: [] }).afmetingen : a)
+  const toepassen = (r: Inspraak) => {
+    const n = pasInspraakToe({ ...concept, type, scope, container, klant }, r)
+    setType(n.type)
+    setScope(n.scope)
+    setContainer(n.container ?? {})
+    if (n.klant && !klant) setKlant(n.klant)
+    setInspraak(r)
+    toast('Overgenomen uit je inspraak — controleer en sla op')
+  }
 
   const toegang = useProjectToegang()
   if (id && !bestaand) return <NietGevonden />
@@ -47,13 +62,13 @@ export function ProjectForm({ id }: { id?: string }) {
         ...p,
         ...velden,
         // bij een ander ruimtetype: typische maten (spatwand, tegelhoogte) van het nieuwe type, lengte/breedte blijven
-        afmetingen: anderType ? { ...standaardAfmetingen(type), lengte: p.afmetingen.lengte, breedte: p.afmetingen.breedte, openingen: p.afmetingen.openingen } : p.afmetingen,
+        afmetingen: maten(anderType ? { ...standaardAfmetingen(type), lengte: p.afmetingen.lengte, breedte: p.afmetingen.breedte, openingen: p.afmetingen.openingen } : p.afmetingen),
         snijverlies: anderType ? ruimte(type).snijverlies : p.snijverlies,
       }))
       ga(`/project/${bestaand.id}/opmeten`)
     } else {
       const basis = nieuwProject({ type })
-      const p = { ...concept, ...velden, afmetingen: basis.afmetingen, snijverlies: basis.snijverlies, createdAt: Date.now(), updatedAt: Date.now() }
+      const p = { ...concept, ...velden, afmetingen: maten(basis.afmetingen), snijverlies: basis.snijverlies, createdAt: Date.now(), updatedAt: Date.now() }
       projectStore.voegToe(p)
       track('project_created')
       ga(`/project/${p.id}/opmeten`)
@@ -84,7 +99,7 @@ export function ProjectForm({ id }: { id?: string }) {
 
       <div className="mt-8 space-y-5">
         <Card>
-          <CardHeader title="Projectgegevens" sub="Wordt gebruikt op de inkooplijst en de offerte." />
+          <CardHeader title="Projectgegevens" sub="Wordt gebruikt op de inkooplijst en de offerte." action={<InsprekenKnop type={type} onToepassen={toepassen} />} />
           <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
             <div className="sm:col-span-2">
               <TextField label="Projectnaam" value={naam} onChange={setNaam} placeholder="Bijv. Badkamer Jansen" autoFocus={!bestaand} />

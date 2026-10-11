@@ -1,3 +1,5 @@
+import { InsprekenKnop } from '../components/Inspreken'
+import { pasInspraakToe } from '../lib/inspraak'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { AppWindow, ScanLine, CookingPot, DoorOpen, Layers, LayoutGrid, Plus, Ruler, Settings2, ShowerHead, Trash2 } from 'lucide-react'
 import { Fotos } from '../components/Fotos'
@@ -88,9 +90,12 @@ export function Measure({ p }: { p: Project }) {
             title="Afmetingen ruimte"
             sub={type === 'vloer' ? 'Binnenmaten van de vloer in meters, van wand tot wand.' : 'Binnenmaten in meters, gemeten van wand tot wand.'}
             action={
+              <div className="flex flex-wrap justify-end gap-2">
+              <InsprekenKnop type={type} onToepassen={(r) => (upd((x) => pasInspraakToe(x, r)), toast('Overgenomen uit je inspraak'))} />
               <Button size="sm" variant="secondary" icon={<ScanLine className="h-4 w-4" />} onClick={() => setAr('open')} title="Meten met de camera via WebXR (beta)">
                 AR <span className="text-[0.65rem] font-semibold tracking-wide text-gold-700 uppercase">beta</span>
               </Button>
+              </div>
             }
           />
           {ar && (
