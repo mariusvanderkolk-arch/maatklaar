@@ -1,8 +1,9 @@
+import { HuisIllustratie } from '../components/HuisIllustratie'
 import { useState } from 'react'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
-import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FolderOpen, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
+import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
 import { Plattegrond } from '../components/Plattegrond'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
@@ -103,9 +104,9 @@ export function Home() {
               <div className="min-w-0 flex-1">
                 <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Nieuw in versie {APP_VERSIE_KORT}</p>
                 <p className="mt-1 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Slimmer Wonen heet nu <strong className="font-semibold text-ink">Maatklaar</strong>: je projecten, prijzen en account blijven gewoon staan.
-                  Plus Ontwerp: teken de ruimte als plattegrond met douche, toilet, meubel en tegels, bekijk hem in 3D en zet het ontwerp op de
-                  offerte en in de klantlink. Werkt met je vinger op de telefoon. Nog steeds gratis; gegevens blijven op dit apparaat.
+                  <strong className="font-semibold text-ink">Inspreken</strong>: tik op de microfoon, zeg bijvoorbeeld “badkamer 2 bij 3 meter, tegels tot plafond,
+                  inloopdouche, container 6 kuub” en Maatklaar vult ruimte, maten en onderdelen in. Je controleert alles eerst. Bekijk ook het voorbeeldproject
+                  met alle onderdelen, van sloop en container tot afwerking.
                 </p>
               </div>
               <Button
@@ -182,10 +183,19 @@ export function Home() {
                 onClick={() => ga('/nieuw')}
                 className="group flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-sand-400/80 text-ink-muted transition hover:border-gold-400 hover:bg-paper/60 hover:text-ink"
               >
-                <span className="grid h-12 w-12 place-items-center rounded-full bg-paper ring-1 ring-sand-300 transition group-hover:ring-gold-300">
-                  <Plus className="h-5 w-5 text-gold-600" />
-                </span>
-                <span className="text-sm font-medium">Nieuw project starten</span>
+                {gesorteerd.every((p) => p.voorbeeld) ? (
+                  <>
+                    <HuisIllustratie className="h-auto w-full max-w-[260px]" />
+                    <span className="flex items-center gap-1.5 text-sm font-medium"><Plus className="h-4 w-4 text-gold-600" /> Start je eerste eigen project</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-paper ring-1 ring-sand-300 transition group-hover:ring-gold-300">
+                      <Plus className="h-5 w-5 text-gold-600" />
+                    </span>
+                    <span className="text-sm font-medium">Nieuw project starten</span>
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -253,10 +263,8 @@ function ProjectKaart({ p }: { p: Project }) {
 function LeegOverzicht() {
   return (
     <div className="card flex flex-col items-center px-6 py-14 text-center">
-      <span className="grid h-16 w-16 place-items-center rounded-2xl bg-gold-100 text-gold-600 ring-1 ring-gold-200">
-        <FolderOpen className="h-7 w-7" />
-      </span>
-      <h3 className="mt-5 text-[1.7rem] font-semibold">Nog geen projecten</h3>
+      <HuisIllustratie className="h-auto w-full max-w-[320px]" />
+      <h3 className="mt-4 text-[1.7rem] font-semibold">Nog geen projecten</h3>
       <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
         Start je eerste project: badkamer, toilet, keuken of vloer. Binnen een paar minuten heb je oppervlakken, materialen en een inkooplijst.
       </p>

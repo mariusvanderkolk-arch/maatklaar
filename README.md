@@ -1,6 +1,6 @@
 # Maatklaar
 
-*Opgemeten, ontworpen, offerte klaar.* (voorheen Slimmer Wonen; de oude links sturen automatisch door)
+*Opgemeten, ontworpen, offerte klaar.*
 
 **Opmeten, materialen berekenen, inkooplijst, offerte en planning voor badkamers, toiletten, keukens en vloeren** — voor aannemers en klussers.
 
@@ -128,7 +128,7 @@ Een aparte testlink om door te sturen: **https://mariusvanderkolk-arch.github.io
 
 ## Merknaam en opslag
 
-De app heette eerder Slimmer Wonen. Opslagsleutels (`slimmer-wonen:*`, `slimmer-wonen-test:*`), IndexedDB-namen,
+Technisch: Opslagsleutels (`slimmer-wonen:*`, `slimmer-wonen-test:*`), IndexedDB-namen,
 de interne back-up-id en de Supabase-`kind`-namen zijn bewust ongewijzigd, zodat bestaande gegevens en cloud-sync blijven werken.
 De oude URL's (`/slimmer-wonen/`, `/slimmer-wonen-test/`) zijn kleine redirect-repo's naar `/maatklaar/` en `/maatklaar-test/`.
 

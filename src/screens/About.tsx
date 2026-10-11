@@ -110,15 +110,15 @@ export function About() {
       <Card className="mt-4 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left">
         <LogoMark className="h-14 w-14 shrink-0" />
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">Voorbeeldprojecten</p>
-          <p className="mt-0.5 text-sm text-ink-muted">Zet de vier voorbeeldprojecten (badkamer, toilet, keuken en woonkamer) terug om de app te verkennen.</p>
+          <p className="font-semibold">Voorbeeldproject</p>
+          <p className="mt-0.5 text-sm text-ink-muted">Zet het voorbeeldproject met alle onderdelen (van sloop en container tot afwerking) terug om de app te verkennen.</p>
         </div>
         <Button
           variant="secondary"
           icon={<RotateCcw className="h-4 w-4" />}
           onClick={() => {
             projectStore.herstelVoorbeelden()
-            toast('Voorbeeldprojecten hersteld')
+            toast('Voorbeeldproject hersteld')
             ga('/')
           }}
         >

@@ -7,7 +7,6 @@ Kopieer en plak. Pas de aanhef aan. Stuur naar aannemers/klussers die je kent.
 Hoi! 👋
 
 Maatklaar is live — *opgemeten, ontworpen, offerte klaar* — en voorlopig **gratis**.
-(Voorheen heette de app Slimmer Wonen; oude links werken nog.)
 
 Voor aannemers die badkamers, toiletten, keukens of vloeren doen:
 • ruimte opmeten (met plattegrond)

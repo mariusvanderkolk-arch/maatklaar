@@ -72,7 +72,7 @@ export function Verhuiskaart({ altijd = false }: { altijd?: boolean }) {
             <p className="mt-1 text-sm text-ink-soft">{melding} Op het oude adres blijft alles ook gewoon staan.</p>
           ) : (
             <p className="mt-1 text-sm text-ink-soft">
-              Gebruikte je Maatklaar al via de oude link (…github.io/maatklaar of Slimmer Wonen)? Je projecten, prijzen en facturen staan daar nog veilig op dit apparaat. Zet ze hier in één tik over; er wordt niets gewist. Met een account? Dan kun je ook gewoon inloggen.
+              Gebruikte je Maatklaar al via de oude link (…github.io/maatklaar)? Je projecten, prijzen en facturen staan daar nog veilig op dit apparaat. Zet ze hier in één tik over; er wordt niets gewist. Met een account? Dan kun je ook gewoon inloggen.
             </p>
           )}
           {status === 'wacht' && <p className="mt-2 text-sm text-gold-700">Er is een venster geopend op het oude adres. Bevestig daar het overzetten…</p>}

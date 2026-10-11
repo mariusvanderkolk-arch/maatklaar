@@ -41,7 +41,6 @@ describe('juiste antwoord', () => {
     ['prijzen in excel', 'prijzen-export'],
     ['alle prijzen 5 procent omhoog', 'prijs-bulk'],
     ['op meerdere apparaten werken', 'cloud'],
-    ['heette dit vroeger slimmer wonen', 'naam'],
     ['factuur betaald zetten', 'factuur-betaald'],
     ['droogtijden planning', 'planning'],
   ]

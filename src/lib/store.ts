@@ -1,6 +1,6 @@
 /** Projectopslag in localStorage met een klein, reactief store-patroon. */
 import { useSyncExternalStore } from 'react'
-import { normaliseerProject, voorbeeldProjecten } from './defaults'
+import { normaliseerProject, OUDE_VOORBEELDEN, voorbeeldProjecten } from './defaults'
 import type { Project } from './types'
 import { sleutel } from './modus'
 import { opslag } from './veiligeOpslag'
@@ -8,7 +8,7 @@ import { opslag } from './veiligeOpslag'
 const SLEUTEL = sleutel('projecten:v1')
 /** Versie van de voorbeeldset; bij een hogere versie worden nieuwe voorbeelden één keer toegevoegd. */
 const VOORBEELD_SLEUTEL = sleutel('voorbeelden')
-const VOORBEELD_VERSIE = 2
+const VOORBEELD_VERSIE = 3
 
 let projecten: Project[] = laad()
 const luisteraars = new Set<() => void>()
@@ -29,9 +29,7 @@ function laad(): Project[] {
     const data = JSON.parse(ruw)
     let lijst: Project[] = Array.isArray(data) ? data.filter((p) => p && typeof p.id === 'string').map(normaliseerProject) : []
     if (Number(opslag.getItem(VOORBEELD_SLEUTEL) ?? 1) < VOORBEELD_VERSIE) {
-      // Nieuwe voorbeelden (keuken, woonkamer) één keer toevoegen voor bestaande gebruikers.
-      const nieuw = voorbeeldProjecten().filter((v) => ['keuken-bakker', 'woonkamer-visser'].includes(v.voorbeeldId ?? ''))
-      lijst = [...lijst, ...nieuw.filter((v) => !lijst.some((p) => p.voorbeeldId === v.voorbeeldId))]
+      lijst = migreerVoorbeelden(lijst)
       try {
         opslag.setItem(SLEUTEL, JSON.stringify(lijst))
         opslag.setItem(VOORBEELD_SLEUTEL, String(VOORBEELD_VERSIE))
@@ -43,6 +41,17 @@ function laad(): Project[] {
   } catch {
     return []
   }
+}
+
+/**
+ * Vervangt de oude losse voorbeelden door het ene complete voorbeeld.
+ * Alleen onaangeroerde oude voorbeelden verdwijnen; eigen projecten en bewerkte voorbeelden blijven staan.
+ */
+export function migreerVoorbeelden(lijst: Project[]): Project[] {
+  const onaangeroerd = (p: Project) => p.voorbeeld && p.voorbeeldId != null && p.voorbeeldId in OUDE_VOORBEELDEN && p.updatedAt - p.createdAt === OUDE_VOORBEELDEN[p.voorbeeldId]
+  const rest = lijst.filter((p) => !onaangeroerd(p))
+  const nieuw = voorbeeldProjecten().filter((v) => !rest.some((p) => p.voorbeeldId === v.voorbeeldId))
+  return [...rest, ...nieuw]
 }
 
 export let opslagFout: string | null = null

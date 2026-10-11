@@ -384,10 +384,13 @@ describe('ruimtes en voorbeelden', () => {
     }
   })
 
-  it('er is een keuken- en een vloervoorbeeld', () => {
-    const types = voorbeeldProjecten().map((p) => p.type)
-    expect(types).toContain('keuken')
-    expect(types).toContain('vloer')
+  it('één voorbeeldproject met alle badkameronderdelen, incl. container', () => {
+    const vb = voorbeeldProjecten()
+    expect(vb).toHaveLength(1)
+    for (const k of scopeItems('badkamer').map((i) => i.key)) expect(vb[0].scope[k]).toBe(true)
+    expect(vb[0].container).toEqual({ maat: 6, soort: 'gemengd' })
+    const ids = berekenMaterialen(vb[0]).map((r) => r.id)
+    expect(ids).toContain('container')
   })
 
   it('oude projecten (zonder type/spatwand/legvloer) worden aangevuld als badkamer', () => {

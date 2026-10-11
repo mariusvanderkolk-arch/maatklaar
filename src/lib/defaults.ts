@@ -61,19 +61,30 @@ const iso = (t: number) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+/** Oude ingebouwde voorbeelden met hun vaste verschil tussen aangemaakt en bijgewerkt (ms): onaangeroerde kopieën zijn zo te herkennen. */
+export const OUDE_VOORBEELDEN: Record<string, number> = {
+  'badkamer-jansen': 5 * 86_400_000,
+  'douche-de-vries': 8 * 86_400_000,
+  'keuken-bakker': 1 * 86_400_000,
+  'woonkamer-visser': 4 * 86_400_000,
+}
+
+/** Eén voorbeeldproject met alle onderdelen. */
 export function voorbeeldProjecten(): Project[] {
   const dag = 86_400_000
   const nu = Date.now()
   return [
     nieuwProject({
-      voorbeeldId: 'badkamer-jansen',
-      naam: 'Badkamer Jansen',
+      voorbeeldId: 'compleet-jansen',
+      naam: 'Voorbeeld: badkamer Jansen (alle onderdelen)',
       klant: 'Fam. Jansen',
       adres: 'Lindenlaan 12, Amersfoort',
       createdAt: nu - 6 * dag,
       updatedAt: nu - 1 * dag,
       voorbeeld: true,
-      scope: { ...standaardScope(), vloerverwarming: true },
+      // alle onderdelen van een badkamer aan: sloop + container, ondergrond, installaties, tegelwerk, sanitair, afwerking
+      scope: { ...standaardScope(), ...Object.fromEntries(ruimte('badkamer').werk.map((k) => [k, true])) },
+      container: { maat: 6, soort: 'gemengd' },
       afmetingen: {
         lengte: 2.8,
         breedte: 2.2,
@@ -107,87 +118,6 @@ export function voorbeeldProjecten(): Project[] {
           { id: uid(), datum: iso(nu - 3 * dag), omschrijving: 'Afvoer toilet verplaatsen', soort: 'meerwerk', bedrag: 145 },
         ],
       },
-    }),
-    nieuwProject({
-      voorbeeldId: 'douche-de-vries',
-      naam: 'Toilet & douche De Vries',
-      klant: 'M. de Vries',
-      adres: 'Havenstraat 4, Zwolle',
-      createdAt: nu - 12 * dag,
-      updatedAt: nu - 4 * dag,
-      voorbeeld: true,
-      scope: {
-        ...scopeVoor('badkamer'),
-        sloopwerk: true,
-        egaliseren: false,
-        waterdicht: true,
-        vloerverwarming: false,
-        wandtegels: true,
-        vloertegels: true,
-        inloopdouche: true,
-        toilet: false,
-        wastafelmeubel: true,
-        kitwerk: true,
-        stucwerk: true,
-      },
-      afmetingen: {
-        lengte: 2.0,
-        breedte: 1.7,
-        hoogte: 2.5,
-        tegelhoogte: 1.2,
-        openingen: [{ id: uid(), type: 'deur', breedte: 0.78, hoogte: 2.01, vanafVloer: 0 }],
-        douche: { breedte: 0.9, diepte: 0.9 },
-        egaliseerDikte: 3,
-        spatwand: { lengte: 3, hoogte: 0.6 },
-      },
-      wandtegel: { lengte: 20, breedte: 20, m2PerDoos: 1.0, dikte: 8, voeg: 2 },
-      vloertegel: { lengte: 30, breedte: 30, m2PerDoos: 1.08, dikte: 9, voeg: 3 },
-      snijverlies: 12,
-      notities: 'Halfhoog betegelen, daarboven stucwerk en vochtbestendige verf.',
-    }),
-    nieuwProject({
-      voorbeeldId: 'keuken-bakker',
-      type: 'keuken',
-      naam: 'Keuken Bakker',
-      klant: 'S. Bakker',
-      adres: 'Kerkweg 31, Utrecht',
-      createdAt: nu - 3 * dag,
-      updatedAt: nu - 2 * dag,
-      voorbeeld: true,
-      afmetingen: {
-        ...standaardAfmetingen('keuken'),
-        lengte: 4.2,
-        breedte: 3.1,
-        openingen: [{ id: uid(), type: 'deur', breedte: 0.83, hoogte: 2.11, vanafVloer: 0 }],
-        spatwand: { lengte: 3.4, hoogte: 0.65 },
-        egaliseerDikte: 4,
-      },
-      wandtegel: { lengte: 30, breedte: 7.5, m2PerDoos: 0.5, dikte: 8, voeg: 2 },
-      vloertegel: { lengte: 120, breedte: 60, m2PerDoos: 1.44, dikte: 10, voeg: 3 },
-      notities: 'Spatwand in zellige-look, liggend verband. Vloer doorleggen tot onder het keukenblok.',
-    }),
-    nieuwProject({
-      voorbeeldId: 'woonkamer-visser',
-      type: 'vloer',
-      naam: 'Woonkamer Visser',
-      klant: 'Fam. Visser',
-      adres: 'Molenstraat 8, Deventer',
-      createdAt: nu - 9 * dag,
-      updatedAt: nu - 5 * dag,
-      voorbeeld: true,
-      scope: { ...scopeVoor('vloer'), egaliseren: true },
-      afmetingen: {
-        ...standaardAfmetingen('vloer'),
-        lengte: 7.2,
-        breedte: 4.6,
-        openingen: [
-          { id: uid(), type: 'deur', breedte: 0.83, hoogte: 2.11, vanafVloer: 0 },
-          { id: uid(), type: 'deur', breedte: 1.6, hoogte: 2.11, vanafVloer: 0 },
-        ],
-        egaliseerDikte: 2,
-      },
-      legvloer: { soort: 'pvc', m2PerPak: LEGVLOER_PAK.pvc },
-      notities: 'PVC visgraat-look in eiken naturel. Plinten wit, 7 cm hoog.',
     }),
   ]
 }
