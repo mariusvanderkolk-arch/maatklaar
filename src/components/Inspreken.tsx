@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, Info, Mic, MicOff, Sparkles } from 'lucide-react'
 import { Button, Dialog } from './ui'
 import { AFVAL_SOORTEN } from '../lib/calc'
+import { isAndroid, plakVast, transcriptUit } from '../lib/spraak'
 import { verwerkInspraak, type Inspraak } from '../lib/inspraak'
 import { ruimte, SCOPE_BASIS } from '../lib/ruimtes'
 import type { ProjectType } from '../lib/types'
@@ -55,32 +56,61 @@ function InsprekenDialoog({ type, onClose, onToepassen }: { type: ProjectType; o
   const [uitkomst, setUitkomst] = useState<{ r: Inspraak; bron: 'ai' | 'regels' } | null>(null)
   const sr = useRef<SR | null>(null)
   const Klasse = spraakKlasse()
-  useEffect(() => () => sr.current?.stop(), [])
+  useEffect(() => () => ((gewenst.current = false), sr.current?.stop()), [])
 
+  // vast = tekst van eerdere sessies/typen; sessie = definitieve tekst van de lopende sessie
+  const vast = useRef('')
+  const sessie = useRef('')
+  const gewenst = useRef(false)
+  const android = isAndroid()
+
+  const sessieStarten = (r: SR) => {
+    sessie.current = ''
+    try {
+      r.start()
+      return true
+    } catch {
+      return false
+    }
+  }
   const start = () => {
     if (!Klasse) return
     setMicFout('')
     const r = new Klasse()
     r.lang = 'nl-NL'
-    r.continuous = true
+    // Android herhaalt resultaten bij continuous; daar per zin een korte sessie en automatisch herstarten.
+    r.continuous = !android
     r.interimResults = true
-    const basis = tekst ? `${tekst.trim()} ` : ''
+    vast.current = tekst.trim()
     r.onresult = (e) => {
-      let t = ''
-      for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript
-      setTekst(basis + t)
+      const { definitief, tussen } = transcriptUit(e.results)
+      sessie.current = definitief
+      setTekst(plakVast(plakVast(vast.current, definitief), tussen).slice(0, 600))
     }
-    r.onerror = (e) => setMicFout(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Geen toegang tot de microfoon. Typ je omschrijving hieronder, of open Maatklaar in Chrome/Safari.' : 'Spraakherkenning lukte niet. Typ je omschrijving hieronder.')
-    r.onend = () => setLuistert(false)
-    try {
-      r.start()
-      sr.current = r
-      setLuistert(true)
-    } catch {
+    r.onerror = (e) => {
+      if (e.error === 'no-speech' || e.error === 'aborted') return
+      gewenst.current = false
+      setMicFout(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Geen toegang tot de microfoon. Typ je omschrijving hieronder, of open Maatklaar in Chrome/Safari.' : 'Spraakherkenning lukte niet. Typ je omschrijving hieronder.')
+    }
+    r.onend = () => {
+      // sessietekst één keer vastleggen; daarna niet opnieuw toevoegen
+      vast.current = plakVast(vast.current, sessie.current)
+      sessie.current = ''
+      setTekst(vast.current.slice(0, 600))
+      if (gewenst.current && sr.current === r && sessieStarten(r)) return
+      gewenst.current = false
+      setLuistert(false)
+    }
+    sr.current = r
+    gewenst.current = true
+    if (sessieStarten(r)) setLuistert(true)
+    else {
+      gewenst.current = false
       setMicFout('Spraakherkenning is niet beschikbaar. Typ je omschrijving hieronder.')
     }
   }
   const stop = () => {
+    gewenst.current = false
     sr.current?.stop()
     setLuistert(false)
   }
