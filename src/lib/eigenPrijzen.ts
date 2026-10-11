@@ -96,6 +96,7 @@ export function voegSamen(eigen: EigenPrijzen, extra: EigenPrijzen): EigenPrijze
 export function voorbeeldAlsEigen(basis: PrijsBron, nu = new Date()): EigenPrijzen {
   let uit: EigenPrijzen = {}
   for (const item of CATALOGUS) {
+    if (item.oud) continue
     const a = basis.aanbod(item.id)
     if (a) uit = zetEigenPrijs(uit, item.id, { prijs: a.prijs }, nu)
   }
@@ -106,6 +107,7 @@ export function voorbeeldAlsEigen(basis: PrijsBron, nu = new Date()): EigenPrijz
 export function vulVoorbeeldenAan(eigen: EigenPrijzen, basis: PrijsBron, nu = new Date()): EigenPrijzen {
   let uit = eigen
   for (const item of CATALOGUS) {
+    if (item.oud) continue
     if (heeftPrijs(eigen[item.id])) continue
     const a = basis.aanbod(item.id)
     if (a) uit = zetEigenPrijs(uit, item.id, { prijs: a.prijs }, nu)
