@@ -1,3 +1,4 @@
+import { veiligeUrl } from '../lib/veiligeUrl'
 import { EigenArtikelDialoog } from '../components/Artikelen'
 import { eigenArtikelStore, useEigenArtikelen, type EigenArtikel } from '../lib/eigenArtikelen'
 import { combineerArtikelen } from '../lib/backup'
@@ -437,8 +438,8 @@ function PrijsRij({ item, e, toonLev, onDetail }: { item: CatalogusItem; e?: Eig
       <div className="min-w-0">
         <p className="text-[0.92rem] font-semibold text-ink">
           {item.naam}
-          {e?.link && (
-            <a href={e.link} target="_blank" rel="noreferrer" aria-label="Productpagina openen" className="ml-1.5 inline-flex translate-y-0.5 text-gold-600 hover:text-gold-700">
+          {veiligeUrl(e?.link) && (
+            <a href={veiligeUrl(e?.link)} target="_blank" rel="noreferrer" aria-label="Productpagina openen" className="ml-1.5 inline-flex translate-y-0.5 text-gold-600 hover:text-gold-700">
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}
@@ -592,7 +593,7 @@ function PrijsDetails({ item, eigen, onClose }: { item: CatalogusItem; eigen: Ei
           <div className="flex gap-2">
             <input className={veld} type="url" inputMode="url" placeholder="https://" defaultValue={e?.link ?? ''} onChange={(ev) => zet({ link: ev.target.value })} />
             {linkOk && (
-              <a href={e!.link} target="_blank" rel="noreferrer" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-paper text-gold-700 ring-1 ring-sand-300 hover:ring-gold-400" aria-label="Link openen">
+              <a href={veiligeUrl(e!.link)} target="_blank" rel="noreferrer" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-paper text-gold-700 ring-1 ring-sand-300 hover:ring-gold-400" aria-label="Link openen">
                 <ExternalLink className="h-4 w-4" />
               </a>
             )}

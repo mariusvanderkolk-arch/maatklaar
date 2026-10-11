@@ -64,7 +64,7 @@ export const tekenLink = (token: string, basis = `${location.origin}${location.p
 
 export const FOUT_TEKST: Record<Fout, string> = {
   'niet-beschikbaar': 'Digitaal tekenen is nog niet beschikbaar.',
-  'niet-gevonden': 'Deze offerte is niet gevonden. Vraag de aannemer om een nieuwe link.',
+  'niet-gevonden': 'Deze offerte is niet gevonden of de link is verlopen (na 90 dagen, of 1 jaar na ondertekening). Vraag de aannemer om een nieuwe link.',
   'al-getekend': 'Deze offerte is al getekend.',
   gewijzigd: 'De offerte is intussen gewijzigd. Vraag de aannemer om een nieuwe link.',
   ongeldig: 'Vul je naam in en zet je handtekening.',

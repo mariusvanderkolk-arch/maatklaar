@@ -1,3 +1,4 @@
+import { inVreemdFrame } from '../lib/veiligeUrl'
 import { useEffect, useMemo, useState } from 'react'
 import { HandtekeningVeld } from '../components/Handtekening'
 import { FOUT_TEKST, haalTekenStatus, teken, type Fout, type TekenStatus } from '../lib/ondertekenen'
@@ -247,6 +248,18 @@ export function KlantTekenen({ token }: { token: string }) {
     }
   }, [token])
 
+  if (inVreemdFrame())
+    return (
+      <Kader>
+        <div className="mx-auto max-w-md px-6 py-20 text-center text-sm text-ink-muted">
+          Deze offerte kan om veiligheidsredenen niet binnen een andere website worden getekend.{' '}
+          <a className="font-medium text-ink underline" href={location.href} target="_blank" rel="noopener noreferrer">
+            Open de offerte rechtstreeks
+          </a>
+          .
+        </div>
+      </Kader>
+    )
   if ('laden' in status) return <Kader><div className="mx-auto max-w-md px-6 py-20 text-center text-sm text-ink-muted">Offerte laden…</div></Kader>
   if ('fout' in status)
     return (

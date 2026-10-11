@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
@@ -15,6 +16,44 @@ const siteUrl = (process.env.VITE_SITE_URL || 'https://maatklaar.nl/').replace(/
 
 function siteUrlPlugin(): Plugin {
   return { name: 'maatklaar-site-url', transformIndexHtml: (html) => html.replaceAll('https://mariusvanderkolk-arch.github.io/maatklaar/', siteUrl) }
+}
+
+/**
+ * Content-Security-Policy als meta-tag (GitHub Pages kan geen headers zetten).
+ * Scripts alleen van de eigen site + de inline noodscript(s) via hash; geen eval, geen plugins, geen <base>-kaping.
+ * connect-src staat https: toe omdat de aannemer zelf een AI-dienst (eigen base-URL) kan instellen.
+ * frame-ancestors werkt niet via meta; daarvoor is er een JS-controle op de tekenpagina.
+ */
+export function cspPlugin(): Plugin {
+  return {
+    name: 'maatklaar-csp',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        const hashes = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)]
+          .map((m) => m[1])
+          .filter((code) => code.trim())
+          .map((code) => `'sha256-${createHash('sha256').update(code).digest('base64')}'`)
+        const csp = [
+          "default-src 'self'",
+          `script-src 'self' ${hashes.join(' ')}`.trim(),
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self' data:",
+          "connect-src 'self' https: wss://cdhrbfawrhburztuzdha.supabase.co",
+          "worker-src 'self' blob:",
+          "manifest-src 'self'",
+          "media-src 'self' blob: data:",
+          "frame-src 'none'",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join('; ')
+        return html.replace('<meta charset="UTF-8" />', `<meta charset="UTF-8" />\n    <meta http-equiv="Content-Security-Policy" content="${csp}" />\n    <meta name="referrer" content="strict-origin-when-cross-origin" />`)
+      },
+    },
+  }
 }
 
 /** Past in de testbouw de titel, robots-meta en het manifest aan. */
@@ -42,7 +81,7 @@ function testversie(): Plugin {
 
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss(), siteUrlPlugin(), ...(test ? [testversie()] : [])],
+  plugins: [react(), tailwindcss(), siteUrlPlugin(), cspPlugin(), ...(test ? [testversie()] : [])],
   // Ook oudere Android WebViews (in-app browser van WhatsApp e.d.) moeten de code kunnen lezen.
   build: { ...(overzetten ? { outDir: 'dist-overzetten', rollupOptions: { input: resolve(__dirname, 'overzetten.html') } } : {}), target: ['es2019', 'chrome80', 'safari13', 'firefox78', 'edge88'], cssTarget: ['chrome80', 'safari13', 'firefox78', 'edge88'] },
   test: { environment: 'node' },

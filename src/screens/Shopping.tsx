@@ -1,3 +1,4 @@
+import { veiligeUrl } from '../lib/veiligeUrl'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
 import { useState } from 'react'
 import { ArrowRight, Copy, ExternalLink, RotateCcw, Share2, Truck, ListChecks, ShoppingCart, X } from 'lucide-react'
@@ -125,9 +126,9 @@ export function Shopping({ p }: { p: Project }) {
                                         <X className="h-3.5 w-3.5" />
                                       </span>
                                     )}
-                                    {r.link && (
+                                    {veiligeUrl(r.link) && (
                                       <a
-                                        href={r.link}
+                                        href={veiligeUrl(r.link)}
                                         target="_blank"
                                         rel="noreferrer"
                                         onClick={(e) => e.stopPropagation()}
