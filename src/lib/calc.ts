@@ -16,6 +16,7 @@
  *   met 5% overlap, plinten langs de omtrek minus deuren (+10% zaagverlies).
  */
 import { ruimte } from './ruimtes'
+import { DETAIL_ARTIKELEN, type DetailId } from './artikelen'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat, Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
 
 /** Vuistregels en verpakkingsgroottes. Eén plek, zodat ze makkelijk bij te stellen zijn. */
@@ -353,6 +354,7 @@ export type Groep =
   | 'leidingwerk'
   | 'elektra'
   | 'timmerwerk'
+  | 'keuken'
 
 export const GROEPEN: { id: Groep; naam: string }[] = [
   { id: 'sloop', naam: 'Sloop & afvoer' },
@@ -367,9 +369,13 @@ export const GROEPEN: { id: Groep; naam: string }[] = [
   { id: 'afwerking', naam: 'Kit, profielen & afwerking' },
   { id: 'sanitair', naam: 'Sanitair' },
   { id: 'timmerwerk', naam: 'Deur, dorpel & plafond' },
+  { id: 'keuken', naam: 'Keuken' },
 ]
 
-export type ProductId =
+/** Eigen artikel van de aannemer (onbeperkt, per categorie). */
+export type EigenArtikelId = `eigen-${string}`
+export type ProductId = BasisId | DetailId | EigenArtikelId
+export type BasisId =
   | 'wandtegel'
   | 'vloertegel'
   | 'tegellijm'
@@ -459,6 +465,21 @@ export interface MateriaalRegel {
   prijsAantal: number
   /** korte onderbouwing van de berekening */
   toelichting: string
+  /** unieke sleutel (bij handmatig toegevoegde artikelen); standaard = id */
+  sleutel?: string
+  /** onderdeel van een vroegere set (voor eigen setprijzen van vóór de uitsplitsing) */
+  uitSet?: ProductId
+  /** handmatig toegevoegd aan het project */
+  handmatig?: string
+}
+
+const DETAIL = new Map<string, { groep: Groep; naam: string; eenheid: string }>(DETAIL_ARTIKELEN.map(([id, groep, naam, eenheid]) => [id, { groep: groep as Groep, naam, eenheid }]))
+/** Regel voor een los artikel uit de uitgebreide lijst. */
+export function detailRegel(id: DetailId, aantal: number, toelichting: string, uitSet?: ProductId): MateriaalRegel {
+  const d = DETAIL.get(id)!
+  const n = Math.max(0, Math.ceil(aantal))
+  const verp = d.eenheid.replace(/^per /, '')
+  return { id, groep: d.groep, naam: d.naam, nodig: n, nodigEenheid: verp, aantal: n, verpakking: verp, prijsAantal: n, toelichting, ...(uitSet ? { uitSet } : {}) }
 }
 
 const nl = (n: number, d = 2) =>
@@ -513,11 +534,10 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       })
       stort(n, `${n} big bag${n === 1 ? '' : 's'} à 1 m³ laten ophalen en storten`)
     }
-    add({
-      id: 'afdekset', groep: 'sloop', naam: 'Afdekfolie, stucloper & stofmaskers',
-      nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1,
-      toelichting: 'Vaste post per project',
-    })
+    add(detailRegel('afdekfolie', 2, 'Vloer en spullen afdekken', 'afdekset'))
+    add(detailRegel('stucloper', 1, 'Looproute beschermen', 'afdekset'))
+    add(detailRegel('stofmasker', 1, 'FFP2 tijdens sloop', 'afdekset'))
+    add(detailRegel('puinzakken', 1, 'Klein sloopafval', 'afdekset'))
   }
 
   // — Voorbereiding
@@ -573,7 +593,25 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       })
     }
     if (tp.toilet) add({ id: 'afvoerbuis110', groep: 'leidingwerk', naam: 'Afvoerbuis PVC 110 mm (toilet)', spec: `lengte ${REGELS.buisLengteM} m`, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Eén lengte voor de toiletafvoer' })
-    add({ id: 'koppelingen', groep: 'leidingwerk', naam: 'Fittingen, koppelingen & stopkranen', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Eén set per ruimte' })
+    // losse fittingen, ruwe aantallen per tappunt (warm + koud)
+    const k = 'koppelingen' as const
+    add(detailRegel('knel-bocht', tp.totaal * 2, `${tp.totaal} tappunt(en) × 2 bochten`, k))
+    add(detailRegel('knel-t', Math.max(1, tp.totaal - 1) * 2, 'Aftakkingen warm en koud', k))
+    add(detailRegel('knel-recht', 2, 'Aansluiting op bestaande leiding', k))
+    add(detailRegel('muurplaat', tp.totaal * 2 - tp.toilet, 'Warm + koud per tappunt (toilet alleen koud)', k))
+    add(detailRegel('stopkraan', 2, 'Hoofdafsluiting ruimte warm en koud', k))
+    add(detailRegel('hoekstopkraan', tp.toilet, 'Toiletaansluiting', k))
+    add(detailRegel('leidingbeugel', water / 5, `${nl(water)} m leiding, beugel per 0,5 m`, k))
+    add(detailRegel('leidingisolatie', water / 4, 'Warmwaterleiding isoleren (helft van de lengte)', k))
+    if (klein > 0) {
+      add(detailRegel('afvoer-bocht90', klein * 2, `${klein} afvoerpunt(en) × 2`, k))
+      add(detailRegel('afvoer-bocht45', klein, 'Eén per afvoerpunt', k))
+      add(detailRegel('afvoer-t', Math.max(0, klein - 1), 'Samenvoegen afvoeren', k))
+      add(detailRegel('afvoerbeugel', 1, 'Bevestiging afvoer', k))
+    }
+    if (tp.toilet) add(detailRegel('manchet-toilet', 1, 'Aansluiting closet', k))
+    add(detailRegel('pvc-lijm', 1, 'PVC-verbindingen', k))
+    add(detailRegel('teflontape', 1, 'Schroefdraadverbindingen', k))
   }
 
   // — Elektra, verlichting & ventilatie
@@ -582,11 +620,20 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     add({ id: 'aardlekgroep', groep: 'elektra', naam: 'Aardlekautomaat (extra groep)', nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Badkamer op een eigen groep met aardlekbeveiliging' })
     add({ id: 'inbouwspot', groep: 'elektra', naam: 'LED-inbouwspot IP44', spec: 'dimbaar', nodig: spots, nodigEenheid: 'stuk', aantal: spots, verpakking: 'stuk', prijsAantal: spots, toelichting: `${nl(o.vloer)} m² ÷ ${nl(REGELS.spotM2, 1)} m² per spot (min. ${REGELS.spotsMin})` })
     add({ id: 'stopcontact', groep: 'elektra', naam: 'Stopcontact spatwaterdicht', nodig: REGELS.stopcontacten, nodigEenheid: 'stuk', aantal: REGELS.stopcontacten, verpakking: 'stuk', prijsAantal: REGELS.stopcontacten, toelichting: 'Bij wastafel/spiegel en voor de föhn' })
-    add({ id: 'installatiemateriaal', groep: 'elektra', naam: 'Installatiemateriaal (draad, buis, dozen, schakelaar)', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Vaste post per ruimte' })
+    const e = 'installatiemateriaal' as const
+    const punten = spots + REGELS.stopcontacten + 1
+    add(detailRegel('vd-draad', 1, `${punten} aansluitpunten`, e))
+    add(detailRegel('elektrabuis', punten * 1.5, 'Ca. 6 m buis per aansluitpunt', e))
+    add(detailRegel('inbouwdoos', REGELS.stopcontacten + 2, 'Wandcontactdozen + schakelaar + lasdoos', e))
+    add(detailRegel('wago', 1, 'Verbindingen', e))
+    add(detailRegel('schakelaar', 1, 'Verlichting', e))
+    add(detailRegel('afdekraam', REGELS.stopcontacten + 1, 'Schakelaar en contactdozen', e))
   }
   if (s.ventilatie) {
     add({ id: 'ventilator', groep: 'elektra', naam: 'Badkamerventilator met vochtsensor', spec: 'Ø 100 mm', nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Eén per ruimte' })
-    add({ id: 'ventilatiekanaal', groep: 'elektra', naam: 'Ventilatieslang & doorvoer', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Aansluiting op kanaal of gevel' })
+    add(detailRegel('ventilatie-slang', 1, 'Ventilator naar kanaal of gevel', 'ventilatiekanaal'))
+    add(detailRegel('ventilatie-doorvoer', 1, 'Doorvoer met rooster', 'ventilatiekanaal'))
+    add(detailRegel('ventilatie-klem', 1, 'Slang vastzetten', 'ventilatiekanaal'))
   }
 
   // — Waterdicht
@@ -606,11 +653,11 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       nodig: band, nodigEenheid: 'm', aantal: rollen, verpakking: `rol à ${REGELS.afdichtbandRolM} m`, prijsAantal: rollen, inhoud: REGELS.afdichtbandRolM, verpakkingSoort: 'rol',
       toelichting: `Naad vloer-wand${s.inloopdouche ? ' + 2 hoeknaden douche' : ''} + 10% overlap = ${nl(band, 1)} m`,
     })
-    add({
-      id: 'afdichtmanchet', groep: 'waterdicht', naam: 'Afdichtmanchetten (afvoer & leidingen)',
-      nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1,
-      toelichting: 'Eén set voor afvoer en leidingdoorvoeren',
-    })
+    add(detailRegel('manchet-vloer', 1, 'Afvoerdoorvoer in de vloer', 'afdichtmanchet'))
+    add(detailRegel('manchet-wand', tp.totaal * 2 - tp.toilet, 'Leidingdoorvoeren in de natte zone', 'afdichtmanchet'))
+    if (s.inloopdouche) {
+      add(detailRegel('binnenhoek', 2, 'Hoeken douchezone', 'afdichtband'))
+    }
   }
 
   // — Vloerverwarming
@@ -636,7 +683,9 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
 
   if (s.radiator) {
     add({ id: 'designradiator', groep: 'vloerverwarming', naam: 'Designradiator', spec: 'ca. 180 × 60 cm', nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting: 'Eén per ruimte' })
-    add({ id: 'radiatoraansluitset', groep: 'vloerverwarming', naam: 'Radiatoraansluitset (kranen & koppelingen)', nodig: 1, nodigEenheid: 'set', aantal: 1, verpakking: 'set', prijsAantal: 1, toelichting: 'Eén per radiator' })
+    add(detailRegel('radiatorkraan', 1, 'Aanvoer', 'radiatoraansluitset'))
+    add(detailRegel('radiator-voetventiel', 1, 'Retour', 'radiatoraansluitset'))
+    add(detailRegel('radiator-koppeling', 1, 'Aansluiting op leiding', 'radiatoraansluitset'))
   }
 
   // — Tegels, lijm en voeg
@@ -809,7 +858,10 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   if (s.plafond && o.plafond > 0) {
     const m2 = rond(o.plafond * (1 + REGELS.plafondVerlies), 1)
     add({ id: 'pvc-plafond', groep: 'timmerwerk', naam: 'PVC-plafondpanelen', spec: 'vochtbestendig', nodig: m2, nodigEenheid: 'm²', aantal: m2, verpakking: 'm²', prijsAantal: m2, toelichting: `${nl(o.plafond)} m² + 10% zaagverlies` })
-    tim('plafondprofielen', 'Regelwerk & afwerkprofielen plafond', 'set', 'Vaste post per plafond')
+    const omtrekP = 2 * (p.afmetingen.lengte + p.afmetingen.breedte)
+    add(detailRegel('plafond-regels', (p.afmetingen.lengte / 0.4 + 1) * p.afmetingen.breedte / 2.7, 'Regels h.o.h. 40 cm', 'plafondprofielen'))
+    add(detailRegel('plafond-startprofiel', omtrekP / 2.6, `${nl(omtrekP)} m omtrek`, 'plafondprofielen'))
+    add(detailRegel('plafond-schroeven', 1, 'Bevestiging', 'plafondprofielen'))
   }
 
   return regels

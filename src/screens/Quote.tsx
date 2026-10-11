@@ -1,3 +1,4 @@
+import { ArtikelToevoegenKnop } from '../components/Artikelen'
 import { TekenKaart, zelfdeVersie } from '../components/TekenKaart'
 import { reviewStatus } from '../lib/reviews'
 import { useEffect, useMemo } from 'react'
@@ -169,6 +170,7 @@ export function Quote({ p }: { p: Project }) {
             >
               Kopieer materiaallijst
             </Button>
+            <ArtikelToevoegenKnop p={p} className="w-full" />
           </div>
         </Card>
         {!data.ow && (

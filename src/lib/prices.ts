@@ -4,7 +4,8 @@
  * LET OP: er zijn géén live prijzen gekoppeld. De voorbeeldprijzen hieronder zijn richtprijzen
  * (incl. btw) om de werking te tonen. Eigen prijzen (Prijzen beheren) gaan altijd voor.
  */
-import type { ProductId } from './calc'
+import type { BasisId, ProductId } from './calc'
+import { DETAIL_ARTIKELEN } from './artikelen'
 
 export interface PrijsAanbod {
   /** prijs in euro incl. btw per prijseenheid (m² bij tegels/matten, anders per verpakking/stuk) */
@@ -30,7 +31,7 @@ export interface PrijsBron {
 }
 
 /** Voorbeeld-richtprijzen (incl. btw), één per artikel. */
-export const VOORBEELD_PRIJZEN: Record<ProductId, number> = {
+const BASIS_PRIJZEN: Record<BasisId, number> = {
   // sloop & afvoer
   bigbag: 11.99,
   afdekset: 24.99,
@@ -106,6 +107,11 @@ export const VOORBEELD_PRIJZEN: Record<ProductId, number> = {
   deurbeslag: 39.95,
   'pvc-plafond': 19.95,
   plafondprofielen: 34.95,
+}
+
+export const VOORBEELD_PRIJZEN: Partial<Record<ProductId, number>> = {
+  ...BASIS_PRIJZEN,
+  ...Object.fromEntries(DETAIL_ARTIKELEN.map(([id, , , , prijs]) => [id, prijs])),
 }
 
 export const VOORBEELD_PEILDATUM = '2026-10-01'

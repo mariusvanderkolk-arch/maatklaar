@@ -1,5 +1,6 @@
 /** Overzicht van alle artikelen waarvoor een prijs kan worden ingesteld (zelfde groepen als de berekening). */
 import { REGELS, type Groep, type ProductId } from './calc'
+import { DETAIL_ARTIKELEN, SETS } from './artikelen'
 
 export interface CatalogusItem {
   id: ProductId
@@ -10,11 +11,13 @@ export interface CatalogusItem {
   /** artikel met een verpakkingsgrootte (eigen afwijkende inhoud mogelijk) */
   inhoud?: { standaard: number; eenheid: string; soort: string }
   toelichting?: string
+  /** oude set: alleen zichtbaar als je er al een eigen prijs voor had */
+  oud?: boolean
 }
 
 const nl = (n: number) => new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 2 }).format(n)
 
-export const CATALOGUS: CatalogusItem[] = [
+const BASIS: CatalogusItem[] = [
   { id: 'bigbag', groep: 'sloop', naam: 'Big bag voor puin', eenheid: 'per stuk (1 m³)' },
   { id: 'afdekset', groep: 'sloop', naam: 'Afdekfolie, stucloper & stofmaskers', eenheid: 'per set' },
   { id: 'container-3', groep: 'sloop', naam: 'Huur container 3 m³', eenheid: 'per stuk', toelichting: 'Plaatsen, huurperiode en ophalen; stortkosten apart' },
@@ -79,6 +82,13 @@ export const CATALOGUS: CatalogusItem[] = [
   { id: 'deurbeslag', groep: 'timmerwerk', naam: 'Deurbeslag met wc-/badkamersluiting', eenheid: 'per set' },
   { id: 'pvc-plafond', groep: 'timmerwerk', naam: 'PVC-plafondpanelen', eenheid: 'per m²' },
   { id: 'plafondprofielen', groep: 'timmerwerk', naam: 'Regelwerk & afwerkprofielen plafond', eenheid: 'per set' },
+]
+
+/** Alle artikelen: basis + uitgebreide losse artikelen. Oude sets staan achteraan als 'oud'. */
+export const CATALOGUS: CatalogusItem[] = [
+  ...BASIS.filter((b) => !(b.id in SETS)),
+  ...DETAIL_ARTIKELEN.map(([id, groep, naam, eenheid]) => ({ id, groep: groep as Groep, naam, eenheid })),
+  ...BASIS.filter((b) => b.id in SETS).map((b) => ({ ...b, naam: `${b.naam} (oude set)`, oud: true, toelichting: 'Vervangen door losse artikelen. Je eigen setprijs blijft gelden tot je de losse artikelen prijst.' })),
 ]
 
 export const catalogusItem = (id: ProductId) => CATALOGUS.find((c) => c.id === id)

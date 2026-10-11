@@ -1,5 +1,6 @@
+import { ArtikelToevoegenKnop } from '../components/Artikelen'
 import { useState } from 'react'
-import { ArrowRight, Copy, ExternalLink, RotateCcw, Share2, Truck, ListChecks, ShoppingCart } from 'lucide-react'
+import { ArrowRight, Copy, ExternalLink, RotateCcw, Share2, Truck, ListChecks, ShoppingCart, X } from 'lucide-react'
 import { Badge, Button, Card, Checkbox, Notice, LeegStaat } from '../components/ui'
 import { GROEP_ICONS } from '../components/groepIcons'
 import { toast } from '../components/Toast'
@@ -39,7 +40,8 @@ export function Shopping({ p }: { p: Project }) {
                   {afgevinkt} van {inkoop.regels.length} artikelen afgevinkt
                 </p>
               </div>
-              <div className="flex gap-1.5">
+              <div className="flex flex-wrap gap-1.5">
+                <ArtikelToevoegenKnop p={p} />
                 <Button
                   size="sm"
                   variant="secondary"
@@ -108,6 +110,21 @@ export function Shopping({ p }: { p: Project }) {
                                   <span className={`block text-[0.92rem] font-medium ${aan ? 'text-ink-muted line-through decoration-gold-500/70' : 'text-ink'}`}>
                                     <span className="tabnum mr-1.5 font-semibold text-gold-700">{r.koopAantal}×</span>
                                     {r.naam}
+                                    {r.handmatig && (
+                                      <span
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`${r.naam} verwijderen`}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          projectStore.werkBij(p.id, (x) => ({ ...x, extraArtikelen: (x.extraArtikelen ?? []).filter((a) => a.sleutel !== r.handmatig) }))
+                                          toast('Artikel verwijderd')
+                                        }}
+                                        className="ml-1.5 inline-flex translate-y-0.5 text-ink-muted hover:text-rust"
+                                      >
+                                        <X className="h-3.5 w-3.5" />
+                                      </span>
+                                    )}
                                     {r.link && (
                                       <a
                                         href={r.link}

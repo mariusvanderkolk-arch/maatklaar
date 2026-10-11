@@ -108,7 +108,7 @@ export function TextField({
   fout?: string | null
   autoFocus?: boolean
   type?: 'text' | 'email' | 'tel' | 'url' | 'password'
-  inputMode?: 'text' | 'email' | 'tel' | 'url' | 'numeric'
+  inputMode?: 'text' | 'email' | 'tel' | 'url' | 'numeric' | 'decimal'
   autoComplete?: string
 }) {
   const id = useId()

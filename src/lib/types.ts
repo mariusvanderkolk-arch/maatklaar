@@ -159,6 +159,8 @@ export interface Project {
   /** keuze bij 'Huur container': maat (m³, of auto) en afvalsoort */
   container?: ContainerKeuze
   fotos: PhotoRef[]
+  /** handmatig toegevoegde artikelen (catalogus of eigen artikel) met eigen aantal */
+  extraArtikelen?: ExtraArtikel[]
   /** afgevinkte regels op de inkooplijst */
   afgevinkt: Record<string, boolean>
   notities: string
@@ -189,4 +191,12 @@ export interface ContainerKeuze {
   maat?: ContainerMaat
   /** ontbreekt = gemengd bouw- en sloopafval */
   soort?: AfvalSoort
+}
+
+export interface ExtraArtikel {
+  /** unieke sleutel van de regel */
+  sleutel: string
+  /** ProductId uit de catalogus of 'eigen-…' */
+  id: string
+  aantal: number
 }

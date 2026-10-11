@@ -1,5 +1,7 @@
+import { EigenArtikelDialoog } from '../components/Artikelen'
+import { useEigenArtikelen, type EigenArtikel } from '../lib/eigenArtikelen'
 import { useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Archive, Download, ExternalLink, FileJson, FileSpreadsheet, Percent, RotateCcw, Search, Sparkles, SlidersHorizontal, Upload, X } from 'lucide-react'
+import { ArrowLeft, Archive, Download, ExternalLink, FileJson, FileSpreadsheet, Percent, Plus, RotateCcw, Search, Sparkles, SlidersHorizontal, Upload, X } from 'lucide-react'
 import { Badge, Button, Card, Dialog, LeegStaat, Notice, PageTitle } from '../components/ui'
 import { GROEP_ICONS } from '../components/groepIcons'
 import { toast } from '../components/Toast'
@@ -15,7 +17,7 @@ type Filter = 'alle' | 'eigen' | 'voorbeeld'
 
 const vbPrijs = (p: ProductId): number | undefined => VOORBEELD_PRIJZEN[p]
 const heeftEigen = (e?: EigenPrijs) => e?.prijs != null
-const TOTAAL = CATALOGUS.length
+const TOTAAL = CATALOGUS.filter((c) => !c.oud).length
 
 export function Prices({ terugNaar }: { terugNaar?: string }) {
   const eigen = useEigenPrijzen()
@@ -23,6 +25,8 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
   const [filter, setFilter] = useState<Filter>('alle')
   const [groepFilter, setGroepFilter] = useState<Groep | 'alle'>('alle')
   const [detail, setDetail] = useState<CatalogusItem>()
+  const eigenArt = useEigenArtikelen()
+  const [artDialoog, setArtDialoog] = useState<{ artikel?: EigenArtikel; groep?: Groep }>()
   const [bevestig, setBevestig] = useState(false)
   const [bulkOpen, setBulkOpen] = useState(false)
   const [toonLev, setToonLev] = useState(() => leveranciers(eigen).length > 0)
@@ -35,7 +39,7 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
   const leeg = aantalEigen === 0
   const backup = useMemo(() => oudePrijzen(), [])
 
-  const telling = useMemo(() => ({ alle: TOTAAL, eigen: aantalEigen, voorbeeld: CATALOGUS.filter((i) => !heeftEigen(eigen[i.id])).length }), [eigen, aantalEigen])
+  const telling = useMemo(() => ({ alle: TOTAAL, eigen: aantalEigen, voorbeeld: CATALOGUS.filter((i) => !i.oud && !heeftEigen(eigen[i.id])).length }), [eigen, aantalEigen])
 
   const groepen = useMemo(() => {
     const q = zoek.trim().toLowerCase()
@@ -45,6 +49,7 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
         if (item.groep !== g.id) return false
         if (groepFilter !== 'alle' && item.groep !== groepFilter) return false
         const e = eigen[item.id]
+        if (item.oud && !heeftEigen(e)) return false
         if (filter === 'eigen' && !heeftEigen(e)) return false
         if (filter === 'voorbeeld' && heeftEigen(e)) return false
         if (!q) return true
@@ -277,7 +282,25 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
                       {g.items.map((item) => (
                         <PrijsRij key={item.id} item={item} e={eigen[item.id]} toonLev={toonLev} onDetail={() => setDetail(item)} />
                       ))}
+                      {eigenArt
+                        .filter((a) => a.groep === g.id && (!zoek.trim() || `${a.naam} ${a.leverancier ?? ''}`.toLowerCase().includes(zoek.trim().toLowerCase())))
+                        .map((a) => (
+                          <li key={a.id}>
+                            <button type="button" onClick={() => setArtDialoog({ artikel: a })} className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-sand-50 sm:px-6">
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-[0.9rem] font-medium text-ink">{a.naam} <Badge tone="gold">Eigen artikel</Badge></span>
+                                <span className="block text-[0.75rem] text-ink-muted">{a.eenheid}{a.leverancier ? ` · ${a.leverancier}` : ''}</span>
+                              </span>
+                              <span className="tabnum text-[0.9rem] font-semibold text-ink">{a.prijs != null ? euro(a.prijs) : '—'}</span>
+                            </button>
+                          </li>
+                        ))}
                     </ul>
+                    <div className="px-5 pb-3 sm:px-6">
+                      <button type="button" onClick={() => setArtDialoog({ groep: g.id })} className="inline-flex items-center gap-1.5 text-[0.8rem] font-medium text-gold-700 hover:text-gold-800">
+                        <Plus className="h-3.5 w-3.5" /> Eigen artikel in {g.naam.toLowerCase()}
+                      </button>
+                    </div>
                   </section>
                 )
               })}
@@ -296,6 +319,7 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
           <option key={l} value={l} />
         ))}
       </datalist>
+      {artDialoog && <EigenArtikelDialoog artikel={artDialoog.artikel} groep={artDialoog.groep} onClose={() => setArtDialoog(undefined)} />}
       {detail && <PrijsDetails item={detail} eigen={eigen} onClose={() => setDetail(undefined)} />}
       {bulkOpen && <BulkDialog eigen={eigen} onClose={() => setBulkOpen(false)} />}
       {oudImport && (

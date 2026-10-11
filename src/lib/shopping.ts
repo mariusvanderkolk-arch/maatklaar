@@ -46,7 +46,7 @@ export function maakInkooplijst(materialen: MateriaalRegel[], bron: PrijsBron): 
     const a = bron.aanbod(m.id)
     if (!a) {
       zonderPrijs++
-      return { ...m, sleutel: m.id, totaal: 0, koopAantal: m.aantal, koopVerpakking: m.verpakking, bron: 'geen' }
+      return { ...m, sleutel: m.sleutel ?? m.id, totaal: 0, koopAantal: m.aantal, koopVerpakking: m.verpakking, bron: 'geen' }
     }
     const anders = a.inhoud != null && a.inhoud > 0 && m.inhoud != null && Math.abs(a.inhoud - m.inhoud) > 1e-9
     const koopAantal = anders ? Math.max(1, omhoog(m.nodig / a.inhoud!)) : m.aantal
@@ -58,7 +58,7 @@ export function maakInkooplijst(materialen: MateriaalRegel[], bron: PrijsBron): 
     } else status.voorbeeld++
     return {
       ...m,
-      sleutel: m.id,
+      sleutel: m.sleutel ?? m.id,
       prijs: a.prijs,
       totaal: cent(a.prijs * prijsAantal),
       koopAantal,
