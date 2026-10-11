@@ -1,7 +1,7 @@
 // Maatklaar – Inspreken: zet een gesproken/getypte omschrijving om naar projectvelden met Google Gemini.
 // POST { tekst } → { resultaat }   (503 zolang GEMINI_API_KEY niet is ingesteld; de app valt dan terug op de eigen regel-parser)
 // Eén bestand, zonder imports: kan zo in het Supabase-dashboard worden geplakt. Zet "Verify JWT" UIT (de app stuurt de publishable key).
-// Secrets: GEMINI_API_KEY (verplicht), GEMINI_MODEL (optioneel, standaard gemini-2.5-flash), APP_ORIGIN (optioneel, komma-gescheiden).
+// Secrets: GEMINI_API_KEY (verplicht), GEMINI_MODEL (optioneel, standaard gemini-flash-latest, met lichtere modellen als terugval), APP_ORIGIN (optioneel, komma-gescheiden).
 
 const cors = {
   'access-control-allow-origin': '*',
@@ -23,7 +23,7 @@ const SCHEMA = {
     tegelhoogte: { type: 'STRING', description: "'plafond' of een getal in meter als tekst" },
     aan: { type: 'ARRAY', items: { type: 'STRING', enum: SCOPE } },
     uit: { type: 'ARRAY', items: { type: 'STRING', enum: SCOPE } },
-    container: { type: 'OBJECT', properties: { maat: { type: 'INTEGER', enum: [3, 6, 10, 15] }, soort: { type: 'STRING', enum: ['gemengd', 'puin', 'hout', 'grond'] } } },
+    container: { type: 'OBJECT', properties: { maat: { type: 'INTEGER', description: '3, 6, 10 of 15 (m³)' }, soort: { type: 'STRING', enum: ['gemengd', 'puin', 'hout', 'grond'] } } },
     klant: { type: 'STRING' },
     notitie: { type: 'STRING', description: 'overige wensen die niet in de velden passen, kort' },
   },
@@ -63,24 +63,37 @@ Deno.serve(async (req) => {
     /* */
   }
   if (!tekst) return json({ error: 'Geen tekst.' }, 400)
-  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'
-  try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: tekst }] }],
-        generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: SCHEMA },
-      }),
-    })
-    if (!r.ok) return json({ error: `Gemini ${r.status}` }, 502)
-    const d = await r.json()
-    const uit = d?.candidates?.[0]?.content?.parts?.[0]?.text
-    const resultaat = JSON.parse(uit ?? '{}')
-    if (typeof resultaat.tegelhoogte === 'string' && resultaat.tegelhoogte !== 'plafond') resultaat.tegelhoogte = Number(resultaat.tegelhoogte.replace(',', '.')) || undefined
-    return json({ resultaat })
-  } catch {
-    return json({ error: 'Verwerken mislukt.' }, 502)
+  // eerst het ingestelde model, dan lichtere modellen als Google druk is (503/429/500)
+  const modellen = [...new Set([Deno.env.get('GEMINI_MODEL') || 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-lite-latest'])]
+  let laatste = 0
+  for (const model of modellen) {
+    for (let poging = 0; poging < 2; poging++) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: PROMPT }] },
+            contents: [{ role: 'user', parts: [{ text: tekst }] }],
+            generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: SCHEMA },
+          }),
+        })
+        laatste = r.status
+        if (r.status === 503 || r.status === 429 || r.status >= 500) {
+          if (poging === 0) await new Promise((ok) => setTimeout(ok, 600))
+          continue
+        }
+        if (r.status === 404) break // model bestaat niet (meer): volgende
+        if (!r.ok) return json({ error: `Gemini ${r.status}` }, 502)
+        const d = await r.json()
+        const uit = d?.candidates?.[0]?.content?.parts?.[0]?.text
+        const resultaat = JSON.parse(uit ?? '{}')
+        if (typeof resultaat.tegelhoogte === 'string' && resultaat.tegelhoogte !== 'plafond') resultaat.tegelhoogte = Number(resultaat.tegelhoogte.replace(',', '.')) || undefined
+        return json({ resultaat, model })
+      } catch {
+        laatste = 0
+      }
+    }
   }
+  return json({ error: `Gemini niet beschikbaar (${laatste})` }, 502)
 })

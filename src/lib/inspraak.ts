@@ -167,7 +167,7 @@ export async function verwerkInspraak(invoer: string, f: typeof fetch = fetch): 
   if (!t) return { r: { aan: [], uit: [] }, bron: 'regels' }
   try {
     const ctl = new AbortController()
-    const timer = setTimeout(() => ctl.abort(), 12000)
+    const timer = setTimeout(() => ctl.abort(), 25000)
     const res = await f(INSPRAAK_URL, { method: 'POST', signal: ctl.signal, headers: { apikey: SUPABASE_KEY, 'content-type': 'application/json' }, body: JSON.stringify({ tekst: t }) })
     clearTimeout(timer)
     if (res.ok) {
