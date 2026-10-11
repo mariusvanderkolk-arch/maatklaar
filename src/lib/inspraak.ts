@@ -18,8 +18,16 @@ export interface Inspraak {
   aan: ScopeKey[]
   uit: ScopeKey[]
   container?: { maat?: ContainerMaat; soort?: AfvalSoort }
+  /** tegelformaat in cm */
+  wandtegel?: TegelMaat
+  vloertegel?: TegelMaat
   klant?: string
   notitie?: string
+}
+
+export interface TegelMaat {
+  lengte: number
+  breedte: number
 }
 
 export const SCOPE_KEYS: ScopeKey[] = [
@@ -52,6 +60,12 @@ export function schoon(r: unknown): Inspraak {
     const m = MATEN.includes(c.maat as ContainerMaat) ? (c.maat as ContainerMaat) : undefined
     const s = SOORTEN.includes(c.soort as AfvalSoort) ? (c.soort as AfvalSoort) : undefined
     if (m || s) uitkomst.container = { ...(m ? { maat: m } : {}), ...(s ? { soort: s } : {}) }
+  }
+  for (const soort of ['wandtegel', 'vloertegel'] as const) {
+    const tm = o[soort] && typeof o[soort] === 'object' ? (o[soort] as Record<string, unknown>) : null
+    const a = tm ? maat(tm.lengte, 2, 300) : undefined
+    const b = tm ? maat(tm.breedte, 2, 300) : undefined
+    if (a && b) uitkomst[soort] = { lengte: Math.max(a, b), breedte: Math.min(a, b) }
   }
   const k = tekst(o.klant, 80)
   if (k) uitkomst.klant = k
@@ -97,9 +111,33 @@ const TREFWOORDEN: [RegExp, ScopeKey[]][] = [
   [/\b(deur|dorpel)\b/, ['deur']],
 ]
 
+const TEGEL_MATEN = [10, 15, 20, 25, 30, 40, 45, 50, 60, 75, 80, 90, 100, 120, 150]
+/**
+ * Corrigeert bekende fouten van spraakherkenning (vooral Android-Chrome):
+ * Engelse woorden ('Floor' → vloer) en aan elkaar geplakte tegelmaten ('3060' → '30 bij 60').
+ */
+export function normaliseerSpraak(invoer: string): string {
+  let t = invoer
+    .replace(/\bfloors?\b/gi, 'vloer')
+    .replace(/\b(walls?|wall tiles?)\b/gi, 'wand')
+    .replace(/\btiles?\b/gi, 'tegels')
+    .replace(/\b(by|times)\b/gi, 'bij')
+    .replace(/(\d)\s*[x×*]\s*(\d)/g, '$1 bij $2')
+  if (/tegel|vloer|wand|bij|keer/i.test(t)) {
+    t = t.replace(/\b(\d{4,5})\b/g, (heel) => {
+      for (let i = 2; i <= heel.length - 2; i++) {
+        const a = Number(heel.slice(0, i)), b = Number(heel.slice(i))
+        if (heel[i] !== '0' && TEGEL_MATEN.includes(a) && TEGEL_MATEN.includes(b)) return `${a} bij ${b}`
+      }
+      return heel
+    })
+  }
+  return t
+}
+
 /** Eenvoudige parser voor Nederlandse zinnen zoals "badkamer 2 bij 3 meter, tegels tot plafond, inloopdouche". */
 export function regelParser(invoer: string): Inspraak {
-  let t = ` ${invoer.toLowerCase().replace(/[“”"]/g, ' ').replace(/\s+/g, ' ')} `
+  let t = ` ${normaliseerSpraak(invoer).toLowerCase().replace(/[“”"]/g, ' ').replace(/\s+/g, ' ')} `
   for (const [w, c] of Object.entries(WOORDGETAL)) t = t.replace(new RegExp(`(?<=\\s)${w}(?=\\s|$|[,.])`, 'g'), c)
   t = t.replace(/(\d+)\s+komma\s+(\d+)/g, '$1,$2').replace(/(\d+)\s*(?:meter|m)\s*(\d{1,2})\b(?!\s*(?:bij|x|kuub|m3|m³))/g, (_, a, b) => `${a},${b.padStart(2, '0')}`)
   const r: Inspraak = { aan: [], uit: [] }
@@ -107,8 +145,31 @@ export function regelParser(invoer: string): Inspraak {
   const typeHit = /\b(badkamer|douche ?ruimte)\b/.test(t) ? 'badkamer' : /\b(toilet ?ruimte|wc ?ruimte)\b/.test(t) || /^\s*(toilet|wc)\b/.test(t) ? 'toilet' : /\bkeuken\b/.test(t) ? 'keuken' : /\b(woonkamer|slaapkamer|vloer leggen|laminaat|pvc[- ]?vloer|vloer)\b/.test(t) && !/\bbadkamer|toilet|keuken\b/.test(t) ? 'vloer' : undefined
   if (typeHit) r.type = typeHit as ProjectType
 
-  // afmetingen: "2 bij 3", "2,5 x 3 meter", "250 bij 300 cm"
-  const m = t.match(new RegExp(`${N}\\s*(cm|centimeter|m|meter)?\\s*(?:bij|x|×|keer|op)\\s*${N}\\s*(cm|centimeter|m|meter)?`))
+  // alle "a bij b"-paren; tegelmaten herkennen aan de woorden eromheen, de rest is de ruimte
+  const paren = [...t.matchAll(new RegExp(`${N}\\s*(cm|centimeter|m|meter)?\\s*(?:bij|x|×|keer|op)\\s*${N}\\s*(cm|centimeter|m|meter)?`, 'g'))]
+  let m: RegExpMatchArray | undefined
+  let tegelContext = false
+  for (const p of paren) {
+    const a = getal(p[1]), b = getal(p[3])
+    const na = t.slice(p.index! + p[0].length, p.index! + p[0].length + 22)
+    const voor = t.slice(Math.max(0, p.index! - 40), p.index!)
+    const cmMaat = a >= 5 && b >= 5 && a <= 300 && b <= 300 && !/^\s*(m|meter)\b/.test(na) && (/tegel/.test(voor + na) || tegelContext)
+    if (!cmMaat) {
+      if (!m) m = p
+      continue
+    }
+    tegelContext = true
+    const maatT = { lengte: Math.max(a, b), breedte: Math.min(a, b) }
+    const naSoort = na.match(/^\s*(?:cm)?\s*(?:voor |op |aan )?(?:de )?(vloer|wand|muur)/)?.[1]
+    const voorSoort = [...voor.matchAll(/(vloer|wand|muur)/g)].at(-1)?.[1]
+    const soort = naSoort ?? voorSoort
+    if (soort === 'vloer') r.vloertegel = maatT
+    else if (soort === 'wand' || soort === 'muur') r.wandtegel = maatT
+    else {
+      if (!r.wandtegel) r.wandtegel = maatT
+      if (!r.vloertegel) r.vloertegel = maatT
+    }
+  }
   if (m) {
     const cm = /^c/.test(m[2] ?? m[4] ?? '')
     let a = getal(m[1]), b = getal(m[3])
@@ -145,6 +206,8 @@ export function regelParser(invoer: string): Inspraak {
     if (/\btegels?\b/.test(z) && !/wandtegel|vloertegel/.test(z) && !neg) r.aan.push(...(r.type === 'keuken' ? (['spatwand'] as ScopeKey[]) : (['wandtegels', 'vloertegels'] as ScopeKey[])))
     if (/\b(big ?bags?)\b/.test(z)) r.uit.push('container')
   }
+  if (r.wandtegel) r.aan.push('wandtegels')
+  if (r.vloertegel) r.aan.push('vloertegels')
   // container: maat en soort
   if (r.aan.includes('container')) {
     const cm = t.match(new RegExp(`${N}\\s*(?:kuub|m3|m³|kubieke)`)) ?? t.match(new RegExp(`container (?:van )?${N}`))
@@ -168,11 +231,18 @@ export async function verwerkInspraak(invoer: string, f: typeof fetch = fetch): 
   try {
     const ctl = new AbortController()
     const timer = setTimeout(() => ctl.abort(), 25000)
-    const res = await f(INSPRAAK_URL, { method: 'POST', signal: ctl.signal, headers: { apikey: SUPABASE_KEY, 'content-type': 'application/json' }, body: JSON.stringify({ tekst: t }) })
+    const res = await f(INSPRAAK_URL, { method: 'POST', signal: ctl.signal, headers: { apikey: SUPABASE_KEY, 'content-type': 'application/json' }, body: JSON.stringify({ tekst: normaliseerSpraak(t) }) })
     clearTimeout(timer)
     if (res.ok) {
       const data = (await res.json()) as { resultaat?: unknown }
-      if (data?.resultaat) return { r: schoon(data.resultaat), bron: 'ai' }
+      if (data?.resultaat) {
+        // Aanvullen met de eigen herkenning voor wat de AI liet liggen (bijv. tegelmaten alleen in de notitie).
+        const ai = schoon(data.resultaat)
+        const regels = regelParser(t)
+        for (const k of ['wandtegel', 'vloertegel', 'hoogte', 'tegelhoogte'] as const) if (ai[k] == null && regels[k] != null) Object.assign(ai, { [k]: regels[k] })
+        if (ai.notitie && (ai.wandtegel || ai.vloertegel) && /^[\s\w,×x.-]*tegels?[\s\w,×x.-]*$/i.test(ai.notitie) && /\d/.test(ai.notitie)) delete ai.notitie
+        return { r: ai, bron: 'ai' }
+      }
     }
     return { r: regelParser(t), bron: 'regels', reden: res.status === 404 ? 'niet-ingesteld' : res.status === 503 ? 'geen-sleutel' : 'fout' }
   } catch {
@@ -201,6 +271,8 @@ export function pasInspraakToe(p: Project, r: Inspraak): Project {
     type,
     scope,
     afmetingen: a,
+    ...(r.wandtegel ? { wandtegel: { ...p.wandtegel, ...r.wandtegel } } : {}),
+    ...(r.vloertegel ? { vloertegel: { ...p.vloertegel, ...r.vloertegel } } : {}),
     ...(r.container ? { container: { ...p.container, ...r.container } } : {}),
     ...(r.klant && !p.klant ? { klant: r.klant } : {}),
     ...(r.notitie ? { notities: p.notities ? `${p.notities}\n${r.notitie}` : r.notitie } : {}),

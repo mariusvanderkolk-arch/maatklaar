@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { pasInspraakToe, regelParser, schoon, verwerkInspraak } from './inspraak'
+import { normaliseerSpraak, pasInspraakToe, regelParser, schoon, verwerkInspraak } from './inspraak'
 import { nieuwProject } from './defaults'
 
 describe('regelParser', () => {
@@ -48,5 +48,43 @@ describe('pasInspraakToe', () => {
     expect(n.scope.bad).toBeFalsy() // past niet bij toilet
     expect(n.scope.fontein).toBe(false)
     expect(n.container).toEqual({ maat: 3 })
+  })
+})
+
+describe('tegelmaten en Android-spraakfouten', () => {
+  const ANDROID = 'badkamer 2 bij 3 tegels tot het plafond ongeveer 240 hoog tegels maat van de tegels worden 60 bij 60 Floor en 3060 wandtegels'
+  it('normaliseert Floor en 3060', () => {
+    expect(normaliseerSpraak(ANDROID)).toContain('60 bij 60 vloer en 30 bij 60 wandtegels')
+    expect(normaliseerSpraak('tegels 60120 en 3030')).toBe('tegels 60 bij 120 en 30 bij 30')
+    expect(normaliseerSpraak('container 6 kuub, 2024')).toBe('container 6 kuub, 2024')
+  })
+  it('exacte Android-zin → ruimte, hoogte en tegelmaten', () => {
+    const r = regelParser(ANDROID)
+    expect(r).toMatchObject({ type: 'badkamer', lengte: 3, breedte: 2, hoogte: 2.4, tegelhoogte: 'plafond', vloertegel: { lengte: 60, breedte: 60 }, wandtegel: { lengte: 60, breedte: 30 } })
+    expect(r.aan).toEqual(expect.arrayContaining(['wandtegels', 'vloertegels']))
+  })
+  it('andere volgordes', () => {
+    expect(regelParser('wandtegels 30 x 60, vloertegels 60 bij 60 cm, badkamer 2,5 bij 3')).toMatchObject({ lengte: 3, breedte: 2.5, wandtegel: { lengte: 60, breedte: 30 }, vloertegel: { lengte: 60, breedte: 60 } })
+    expect(regelParser('toilet 1 bij 1,5 met tegels 30 bij 30')).toMatchObject({ lengte: 1.5, wandtegel: { lengte: 30 }, vloertegel: { lengte: 30 } })
+  })
+  it('tegelmaten komen in het project (en dus in de berekening)', () => {
+    const n = pasInspraakToe(nieuwProject({ type: 'badkamer' }), regelParser(ANDROID))
+    expect(n.wandtegel).toMatchObject({ lengte: 60, breedte: 30 })
+    expect(n.vloertegel).toMatchObject({ lengte: 60, breedte: 60 })
+    expect(n.afmetingen.hoogte).toBe(2.4)
+    expect(n.afmetingen.tegelhoogte).toBe(2.4)
+    expect(schoon({ aan: [], uit: [], wandtegel: { lengte: 600, breedte: 30 } }).wandtegel).toBeUndefined()
+  })
+})
+
+describe('AI-uitslag aanvullen', () => {
+  it('tegelmaten uit de notitie van Gemini komen alsnog in de velden', async () => {
+    const zin = 'badkamer 2 bij 3 tegels tot het plafond ongeveer 240 hoog tegels maat van de tegels worden 60 bij 60 Floor en 3060 wandtegels'
+    const ai = { aan: ['wandtegels', 'vloertegels'], uit: [], breedte: 2, hoogte: 2.4, lengte: 3, notitie: 'vloertegels 60x60, wandtegels 30x60', tegelhoogte: 'plafond', type: 'badkamer' }
+    const f = (async () => ({ ok: true, status: 200, json: async () => ({ resultaat: ai }) })) as unknown as typeof fetch
+    const { r, bron } = await verwerkInspraak(zin, f)
+    expect(bron).toBe('ai')
+    expect(r).toMatchObject({ wandtegel: { lengte: 60, breedte: 30 }, vloertegel: { lengte: 60, breedte: 60 } })
+    expect(r.notitie).toBeUndefined()
   })
 })

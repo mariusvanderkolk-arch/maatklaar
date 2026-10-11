@@ -24,6 +24,8 @@ const SCHEMA = {
     aan: { type: 'ARRAY', items: { type: 'STRING', enum: SCOPE } },
     uit: { type: 'ARRAY', items: { type: 'STRING', enum: SCOPE } },
     container: { type: 'OBJECT', properties: { maat: { type: 'INTEGER', description: '3, 6, 10 of 15 (m³)' }, soort: { type: 'STRING', enum: ['gemengd', 'puin', 'hout', 'grond'] } } },
+    wandtegel: { type: 'OBJECT', description: 'formaat wandtegel in cm', properties: { lengte: { type: 'NUMBER' }, breedte: { type: 'NUMBER' } } },
+    vloertegel: { type: 'OBJECT', description: 'formaat vloertegel in cm', properties: { lengte: { type: 'NUMBER' }, breedte: { type: 'NUMBER' } } },
     klant: { type: 'STRING' },
     notitie: { type: 'STRING', description: 'overige wensen die niet in de velden passen, kort' },
   },
@@ -36,7 +38,12 @@ Onderdelen (gebruik alleen deze sleutels): ${SCOPE.join(', ')}.
 Regels: "vervangen", "slopen", "eruit" → sloopwerk aan. "tegels" zonder meer in badkamer/toilet → wandtegels en vloertegels; in keuken → spatwand.
 "douche" → inloopdouche. "bad" (niet badkamer) → bad. "laminaat"/"pvc vloer" → legvloer. "spots/stopcontacten" → elektra. "afzuiging" → ventilatie.
 "geen X"/"zonder X" → X in uit. "big bags" → container in uit. Container: maat in m³/kuub (3, 6, 10, 15) en soort (gemengd, puin, hout, grond).
-Maten in meter (cm omrekenen). "tegels tot plafond" → tegelhoogte "plafond". Laat velden weg die niet genoemd worden. Verzin niets.`
+Maten in meter (cm omrekenen); "240 hoog" = plafondhoogte 2.4. "tegels tot plafond" → tegelhoogte "plafond".
+Tegelformaten (in cm, bijv. "60 bij 60 vloer", "30 bij 60 wandtegels") ALTIJD in wandtegel/vloertegel zetten, nooit alleen in notitie; zet dan ook wandtegels/vloertegels aan.
+Noemt men één formaat voor "tegels" zonder wand/vloer, zet het in beide.
+Let op fouten van spraakherkenning (Android): Engelse woorden ("floor" = vloer, "wall" = wand, "tiles" = tegels) en aan elkaar geplakte maten ("3060" = 30 bij 60, "6060" = 60 bij 60, "60120" = 60 bij 120, "3030" = 30 bij 30) in de buurt van tegels.
+De ruimtematen in meter (bijv. "2 bij 3") zijn iets anders dan tegelmaten in cm (bijv. "60 bij 60").
+Laat velden weg die niet genoemd worden. Verzin niets.`
 
 const recent = new Map<string, number[]>()
 function teVaak(ip: string) {

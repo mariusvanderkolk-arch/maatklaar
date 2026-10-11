@@ -30,6 +30,8 @@ export function samenvattingInspraak(r: Inspraak, type: ProjectType): string[] {
   if (uit.length) regels.push(`Uit: ${uit.map(naam).join(', ')}`)
   const genegeerd = [...r.aan, ...r.uit].filter((k) => !toegestaan.has(k))
   if (genegeerd.length) regels.push(`Niet van toepassing bij ${ruimte(t).label.toLowerCase()}: ${genegeerd.map((k) => SCOPE_BASIS[k].label).join(', ')}`)
+  if (r.wandtegel) regels.push(`Wandtegels: ${nl(r.wandtegel.breedte)} × ${nl(r.wandtegel.lengte)} cm`)
+  if (r.vloertegel) regels.push(`Vloertegels: ${nl(r.vloertegel.breedte)} × ${nl(r.vloertegel.lengte)} cm`)
   if (r.container) regels.push(`Container: ${r.container.maat ? `${r.container.maat} m³` : 'maat automatisch'}${r.container.soort ? `, ${AFVAL_SOORTEN[r.container.soort].naam.toLowerCase()}` : ''}`)
   if (r.klant) regels.push(`Klant: ${r.klant}`)
   if (r.notitie) regels.push(`Notitie: ${r.notitie}`)
