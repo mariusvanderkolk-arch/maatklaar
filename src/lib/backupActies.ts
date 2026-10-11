@@ -1,6 +1,7 @@
 /** Browserkant van de back-up: verzamelen uit localStorage/IndexedDB en terugzetten. */
 import { maakLokaleStore } from './lokaal'
-import { backupBestandsnaam, combineerBedrijf, combineerFacturen, combineerProjecten, maakBackup, type Backup, type BackupFoto, type ImportModus } from './backup'
+import { eigenArtikelStore } from './eigenArtikelen'
+import { backupBestandsnaam, combineerArtikelen, combineerBedrijf, combineerFacturen, combineerProjecten, maakBackup, type Backup, type BackupFoto, type ImportModus } from './backup'
 import { projectStore } from './store'
 import { prijsStore } from './prijsStore'
 import { bedrijfStore } from './bedrijf'
@@ -40,7 +41,7 @@ export async function verzamelBackup(): Promise<{ backup: Backup; ontbrekend: nu
     if (blob) fotos.push({ id, dataUrl: await naarDataUrl(blob) })
     else ontbrekend++
   }
-  const backup = maakBackup({ projecten, fotos, prijzen: prijsStore.alle(), bedrijf: bedrijfStore.get(), ai: aiStore.get(), facturen: factuurStore.get(), ontwerpen: ontwerpStore.get() })
+  const backup = maakBackup({ projecten, fotos, prijzen: prijsStore.alle(), bedrijf: bedrijfStore.get(), ai: aiStore.get(), facturen: factuurStore.get(), ontwerpen: ontwerpStore.get(), artikelen: eigenArtikelStore.alle() })
   return { backup, ontbrekend }
 }
 
@@ -58,6 +59,7 @@ export async function importeerBackup(b: Backup, modus: ImportModus): Promise<vo
   for (const f of b.fotos) await bewaarFoto(f.id, await naarBlob(f.dataUrl))
   const projecten = combineerProjecten(projectStore.alle(), b.projecten, modus)
   if (!projectStore.vervangAlles(projecten)) throw new Error('De projecten konden niet worden opgeslagen: de opslag van je browser is vol.')
+  eigenArtikelStore.vervang(combineerArtikelen(eigenArtikelStore.alle(), b.artikelen, modus))
   prijsStore.vervang(modus === 'vervangen' ? b.prijzen : voegSamen(prijsStore.alle(), b.prijzen))
   if (b.bedrijf) bedrijfStore.set(combineerBedrijf(bedrijfStore.get(), b.bedrijf))
   if (!factuurStore.set(combineerFacturen(factuurStore.get(), b.facturen, modus))) throw new Error('De facturen konden niet worden opgeslagen: de opslag van je browser is vol.')

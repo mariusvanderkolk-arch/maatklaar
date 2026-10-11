@@ -1,3 +1,4 @@
+import { normaliseerArtikelen, type EigenArtikel } from './eigenArtikelen'
 /**
  * Volledige back-up: alle projecten, foto's (als data-URL), eigen prijzen, bedrijfsprofiel en
  * AI-voorkeuren. API-sleutels gaan er bewust NIET in.
@@ -31,14 +32,16 @@ export interface Backup {
   ai?: Omit<AiInstellingen, 'sleutels'>
   /** ruimte-ontwerpen per project-id (sinds 1.1) */
   ontwerpen?: Record<string, unknown>
+  /** eigen artikelen (sinds 1.3) */
+  artikelen?: EigenArtikel[]
 }
 
 export function maakBackup(
-  d: { projecten: Project[]; fotos: BackupFoto[]; prijzen: EigenPrijzen; bedrijf?: Bedrijf; ai?: AiInstellingen; facturen?: Factuur[]; ontwerpen?: Record<string, unknown> },
+  d: { projecten: Project[]; fotos: BackupFoto[]; prijzen: EigenPrijzen; bedrijf?: Bedrijf; ai?: AiInstellingen; facturen?: Factuur[]; ontwerpen?: Record<string, unknown>; artikelen?: EigenArtikel[] },
   nu = new Date(),
 ): Backup {
   const ai = d.ai ? { provider: d.ai.provider, modellen: d.ai.modellen, baseUrl: d.ai.baseUrl } : undefined
-  return { app: 'slimmer-wonen', type: 'backup', versie: BACKUP_VERSIE, gemaakt: nu.toISOString(), projecten: d.projecten, fotos: d.fotos, prijzen: d.prijzen, bedrijf: d.bedrijf, facturen: d.facturen ?? [], ai, ...(d.ontwerpen && Object.keys(d.ontwerpen).length ? { ontwerpen: d.ontwerpen } : {}) }
+  return { app: 'slimmer-wonen', type: 'backup', versie: BACKUP_VERSIE, gemaakt: nu.toISOString(), projecten: d.projecten, fotos: d.fotos, prijzen: d.prijzen, bedrijf: d.bedrijf, facturen: d.facturen ?? [], ai, ...(d.ontwerpen && Object.keys(d.ontwerpen).length ? { ontwerpen: d.ontwerpen } : {}), ...(d.artikelen?.length ? { artikelen: d.artikelen } : {}) }
 }
 
 const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x)
@@ -82,7 +85,16 @@ export function leesBackup(tekst: string): Backup {
     facturen: (Array.isArray(j.facturen) ? j.facturen : []).map(normaliseerFactuur).filter((f): f is Factuur => f != null),
     ai,
     ...(isObj(j.ontwerpen) ? { ontwerpen: j.ontwerpen as Record<string, unknown> } : {}),
+    ...(Array.isArray(j.artikelen) ? { artikelen: normaliseerArtikelen(j.artikelen) } : {}),
   }
+}
+
+/** Eigen artikelen samenvoegen (op id, bestand wint) of vervangen. */
+export function combineerArtikelen(huidig: EigenArtikel[], uitBestand: EigenArtikel[] | undefined, modus: ImportModus): EigenArtikel[] {
+  if (!uitBestand) return huidig // oudere back-up zonder eigen artikelen: niets weggooien
+  if (modus === 'vervangen') return uitBestand
+  const ids = new Set(uitBestand.map((a) => a.id))
+  return [...huidig.filter((a) => !ids.has(a.id)), ...uitBestand]
 }
 
 /** Facturen samenvoegen (op id, bestand wint) of vervangen. */
@@ -114,7 +126,7 @@ export function combineerBedrijf(huidig: Bedrijf, uitBestand: Bedrijf | undefine
 export function samenvatting(b: Backup) {
   const eigen = b.projecten.filter((p) => !p.voorbeeld).length
   const prijzen = telEigenPrijzen(b.prijzen)
-  return { projecten: b.projecten.length, eigen, fotos: b.fotos.length, prijzen, bedrijf: !!b.bedrijf?.naam, facturen: b.facturen.length }
+  return { projecten: b.projecten.length, eigen, fotos: b.fotos.length, prijzen, bedrijf: !!b.bedrijf?.naam, facturen: b.facturen.length, artikelen: b.artikelen?.length ?? 0 }
 }
 
 export const backupBestandsnaam = (nu = new Date()) => `maatklaar-backup-${nu.toISOString().slice(0, 10)}.json`

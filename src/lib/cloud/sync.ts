@@ -1,3 +1,4 @@
+import { eigenArtikelStore, normaliseerArtikelen, type EigenArtikel } from '../eigenArtikelen'
 /**
  * Cloud-sync (optioneel). Lokaal blijft leidend: zonder account werkt alles zoals altijd.
  * Met account worden projecten, ontwerpen, facturen, eigen prijzen en het bedrijfsprofiel als documenten
@@ -92,6 +93,7 @@ function lokaleDocs(): Doc[] {
   const pt = laatstBijgewerkt(prijzen)
   docs.push({ soort: 'prijzen', id: PRIJZEN_ID, data: prijzen, tijd: pt ? Date.parse(pt) : undefined })
   docs.push({ soort: 'bedrijf', id: BEDRIJF_ID, data: bedrijfStore.get() })
+  for (const a of eigenArtikelStore.alle()) docs.push({ soort: 'artikel', id: a.id, data: a, tijd: Date.parse(a.bijgewerkt) || undefined })
   return docs
 }
 
@@ -101,7 +103,8 @@ export function lokaleSamenvatting() {
   const facturen = factuurStore.get().length
   const prijzen = telEigenPrijzen(prijsStore.alle())
   const bedrijf = Boolean(bedrijfStore.get().naam?.trim())
-  return { projecten, facturen, prijzen, bedrijf, iets: projecten + facturen + prijzen > 0 || bedrijf }
+  const artikelen = eigenArtikelStore.alle().length
+  return { projecten, facturen, prijzen, bedrijf, artikelen, iets: projecten + facturen + prijzen + artikelen > 0 || bedrijf }
 }
 
 const VOORTGANG: Record<string, number> = { concept: 0, verzonden: 1, betaald: 2 }
@@ -115,6 +118,7 @@ function samenvoegen(soort: Soort, lokaal: unknown, remote: unknown): unknown {
     return { ...basis, factuurVolgnummer: Math.max(l?.factuurVolgnummer ?? 1, r?.factuurVolgnummer ?? 1) }
   }
   if (soort === 'project') return ((lokaal as Project).updatedAt ?? 0) >= ((remote as Project)?.updatedAt ?? 0) ? lokaal : remote
+  if (soort === 'artikel') return Date.parse((lokaal as EigenArtikel)?.bijgewerkt ?? '') >= Date.parse((remote as EigenArtikel)?.bijgewerkt ?? '') ? lokaal : remote
   if (soort === 'design') return ((lokaal as Ontwerp)?.bijgewerkt ?? 0) >= ((remote as Ontwerp)?.bijgewerkt ?? 0) ? lokaal : remote
   const lf = lokaal as Factuur
   const rf = remote as Factuur
@@ -175,6 +179,15 @@ function pasToe(acties: Actie[], samengevoegd: Set<string>) {
         }
       }
       ontwerpStore.set(alle)
+    }
+    const aa = per('artikel')
+    if (aa.length) {
+      let lijst = [...eigenArtikelStore.alle()]
+      for (const a of aa) {
+        lijst = lijst.filter((x) => x.id !== a.id)
+        if (a.type !== 'verwijder') lijst.push(...normaliseerArtikelen([{ ...(waarde(a) as object), id: a.id }]))
+      }
+      eigenArtikelStore.vervang(lijst)
     }
     for (const a of per('prijzen')) if (a.type !== 'verwijder') prijsStore.vervang((waarde(a) ?? {}) as EigenPrijzen)
     for (const a of per('bedrijf')) {
@@ -303,6 +316,7 @@ function koppelLuisteraars() {
   bedrijfStore.abonneer(opWijziging)
   factuurStore.abonneer(opWijziging)
   ontwerpStore.abonneer(opWijziging)
+  eigenArtikelStore.abonneer(opWijziging)
   window.addEventListener('online', () => plan(500))
   window.addEventListener('offline', () => staat.gebruiker && zet({ status: 'offline', melding: 'Geen verbinding. Wijzigingen worden verstuurd zodra je weer online bent.' }))
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && plan(300))

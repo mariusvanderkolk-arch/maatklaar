@@ -1,3 +1,5 @@
+import { normaliseerArtikelen, type EigenArtikel } from './eigenArtikelen'
+import { GROEPEN } from './calc'
 /**
  * Eigen prijslijst: één prijs per artikel (eigen inkoopprijs), met optionele leverancier.
  * Eigen prijzen gaan voor de voorbeeldprijzen. Alles in dit bestand is puur (geen opslag), zodat het goed te testen is.
@@ -241,16 +243,20 @@ export interface PrijzenExport {
   versie: 2
   geexporteerd: string
   prijzen: EigenPrijzen
+  /** eigen artikelen (naam, eenheid, prijs, leverancier, categorie) */
+  artikelen?: EigenArtikel[]
 }
 
-export function naarJson(eigen: EigenPrijzen, nu = new Date()): string {
-  const data: PrijzenExport = { app: 'slimmer-wonen', type: 'prijzen', versie: 2, geexporteerd: nu.toISOString(), prijzen: eigen }
+export function naarJson(eigen: EigenPrijzen, nu = new Date(), artikelen: EigenArtikel[] = []): string {
+  const data: PrijzenExport = { app: 'slimmer-wonen', type: 'prijzen', versie: 2, geexporteerd: nu.toISOString(), prijzen: eigen, ...(artikelen.length ? { artikelen } : {}) }
   return JSON.stringify(data, null, 2)
 }
 
 /** Resultaat van een import: de prijzen, plus info als het een oud bestand per winkel was. */
 export interface ImportResultaat {
   prijzen: EigenPrijzen
+  /** eigen artikelen uit het bestand */
+  artikelen?: EigenArtikel[]
   oud?: { winkels: { id: OudeWinkelId; naam: string; aantal: number }[]; gekozen: OudeWinkelId | null; uitAndere: number; meerdere: number }
 }
 
@@ -272,16 +278,18 @@ export function vanJson(tekst: string, winkel?: OudeWinkelId | null, nu = new Da
   if (!bron || typeof bron !== 'object' || Array.isArray(bron)) throw new Error('Geen prijzen gevonden in dit bestand.')
   if (isOudFormaat(bron)) return leesOud(bron, winkel, nu)
   const prijzen = normaliseerPrijzen(bron)
-  if (!Object.keys(prijzen).length) throw new Error('Geen geldige prijzen gevonden in dit bestand.')
-  return { prijzen }
+  const artikelen = normaliseerArtikelen(obj?.artikelen)
+  if (!Object.keys(prijzen).length && !artikelen.length) throw new Error('Geen geldige prijzen gevonden in dit bestand.')
+  return { prijzen, ...(artikelen.length ? { artikelen } : {}) }
 }
 
-const CSV_KOPPEN = ['product_id', 'artikel', 'prijs_incl_btw', 'eenheid', 'leverancier', 'inhoud', 'productnaam', 'link', 'bron', 'bijgewerkt']
+const groepNaam = (g: string) => GROEPEN.find((x) => x.id === g)?.naam ?? g
+const CSV_KOPPEN = ['product_id', 'artikel', 'prijs_incl_btw', 'eenheid', 'leverancier', 'inhoud', 'productnaam', 'link', 'bron', 'bijgewerkt', 'categorie']
 const csvVeld = (v: string) => (/[;"\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
 const csvGetal = (n: number | null | undefined) => (n == null ? '' : String(n).replace('.', ','))
 
 /** CSV (puntkomma, decimale komma — opent direct in Nederlandse Excel): één regel per artikel. */
-export function naarCsv(eigen: EigenPrijzen, basis: PrijsBron): string {
+export function naarCsv(eigen: EigenPrijzen, basis: PrijsBron, artikelen: EigenArtikel[] = []): string {
   const regels = [CSV_KOPPEN.join(';')]
   for (const item of CATALOGUS) {
     const e = eigen[item.id]
@@ -299,11 +307,15 @@ export function naarCsv(eigen: EigenPrijzen, basis: PrijsBron): string {
         e?.link ?? '',
         isEigen ? 'eigen' : 'voorbeeld',
         isEigen || e ? (e?.bijgewerkt ?? '') : basis.peildatum,
+        groepNaam(item.groep),
       ]
         .map((v) => csvVeld(String(v)))
         .join(';'),
     )
   }
+  // eigen artikelen: product_id 'eigen-…', bron 'eigen artikel'. Een nieuwe regel met lege product_id + artikel + categorie wordt bij import een nieuw eigen artikel.
+  for (const a of artikelen)
+    regels.push([a.id, a.naam, csvGetal(a.prijs ?? null), a.eenheid, a.leverancier ?? '', '', '', '', 'eigen artikel', a.bijgewerkt, groepNaam(a.groep)].map((v) => csvVeld(String(v))).join(';'))
   return '\uFEFF' + regels.join('\r\n') + '\r\n'
 }
 
@@ -375,8 +387,20 @@ export function vanCsv(tekst: string, basis: PrijsBron, winkel?: OudeWinkelId | 
     return leesOud(oud, winkel, nu)
   }
   let uit: EigenPrijzen = {}
+  const artikelen: EigenArtikel[] = []
   for (const r of rijen.slice(1)) {
     const p = (r[iP] ?? '').trim()
+    const naam = waarde(r, 'artikel')
+    if ((p.startsWith('eigen-') || (!p && naam)) && naam) {
+      const cat = waarde(r, 'categorie').toLowerCase()
+      const groep = GROEPEN.find((g) => g.id === cat || g.naam.toLowerCase() === cat)?.id ?? 'afwerking'
+      artikelen.push(
+        ...normaliseerArtikelen([
+          { id: p || `eigen-csv${artikelen.length}${nu.getTime().toString(36)}`, groep, naam, eenheid: waarde(r, 'eenheid') || 'per stuk', prijs: getal(r[iPrijs] ?? ''), leverancier: waarde(r, 'leverancier'), bijgewerkt: waarde(r, 'bijgewerkt') || nu.toISOString() },
+        ]),
+      )
+      continue
+    }
     if (!isProduct(p)) continue
     const prijs = getal(r[iPrijs] ?? '')
     const inhoud = getal(waarde(r, 'inhoud'))
@@ -392,7 +416,7 @@ export function vanCsv(tekst: string, basis: PrijsBron, winkel?: OudeWinkelId | 
     const eigenPrijs = bron === 'voorbeeld' && !prijsAnders ? null : prijs
     uit = zetEigenPrijs(uit, p, { prijs: eigenPrijs, inhoud: eigenPrijs != null ? inhoud : null, leverancier, productNaam, link }, new Date(datum(waarde(r, 'bijgewerkt') || undefined, nu.toISOString())))
   }
-  return { prijzen: uit }
+  return { prijzen: uit, ...(artikelen.length ? { artikelen } : {}) }
 }
 
 /** Herkent het bestandstype op inhoud (JSON begint met { ). */

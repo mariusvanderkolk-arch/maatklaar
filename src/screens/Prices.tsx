@@ -1,5 +1,6 @@
 import { EigenArtikelDialoog } from '../components/Artikelen'
-import { useEigenArtikelen, type EigenArtikel } from '../lib/eigenArtikelen'
+import { eigenArtikelStore, useEigenArtikelen, type EigenArtikel } from '../lib/eigenArtikelen'
+import { combineerArtikelen } from '../lib/backup'
 import { useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Archive, Download, ExternalLink, FileJson, FileSpreadsheet, Percent, Plus, RotateCcw, Search, Sparkles, SlidersHorizontal, Upload, X } from 'lucide-react'
 import { Badge, Button, Card, Dialog, LeegStaat, Notice, PageTitle } from '../components/ui'
@@ -61,7 +62,9 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
   function verwerk(res: ImportResultaat, naam: string) {
     prijsStore.importeer(res.prijzen)
     const n = telEigenPrijzen(res.prijzen)
-    toast(`${n} ${n === 1 ? 'prijs' : 'prijzen'} geïmporteerd uit ${naam}`)
+    const a = res.artikelen?.length ?? 0
+    if (a) eigenArtikelStore.vervang(combineerArtikelen(eigenArtikelStore.alle(), res.artikelen, 'samenvoegen'))
+    toast(`${n} ${n === 1 ? 'prijs' : 'prijzen'}${a ? ` en ${a} eigen ${a === 1 ? 'artikel' : 'artikelen'}` : ''} geïmporteerd uit ${naam}`)
   }
 
   async function importeer(file?: File) {
@@ -403,7 +406,7 @@ function ExportKnop({ eigen }: { eigen: EigenPrijzen }) {
             variant="secondary"
             icon={<FileSpreadsheet className="h-4 w-4" />}
             onClick={() => {
-              downloadBestand(`maatklaar-prijslijst-${vandaagIso()}.csv`, naarCsv(eigen, voorbeeldPrijsBron), 'text/csv;charset=utf-8')
+              downloadBestand(`maatklaar-prijslijst-${vandaagIso()}.csv`, naarCsv(eigen, voorbeeldPrijsBron, eigenArtikelStore.alle()), 'text/csv;charset=utf-8')
               setOpen(false)
             }}
           >
@@ -413,7 +416,7 @@ function ExportKnop({ eigen }: { eigen: EigenPrijzen }) {
             variant="secondary"
             icon={<FileJson className="h-4 w-4" />}
             onClick={() => {
-              downloadBestand(`maatklaar-prijslijst-${vandaagIso()}.json`, naarJson(eigen), 'application/json')
+              downloadBestand(`maatklaar-prijslijst-${vandaagIso()}.json`, naarJson(eigen, new Date(), eigenArtikelStore.alle()), 'application/json')
               setOpen(false)
             }}
           >

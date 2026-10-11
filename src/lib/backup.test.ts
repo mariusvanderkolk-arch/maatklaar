@@ -31,7 +31,7 @@ describe('back-up maken en lezen', () => {
     expect(terug.fotos).toEqual([foto])
     expect(terug.bedrijf?.naam).toBe('Van der Kolk')
     expect(terug.ai?.modellen.gemini).toBe('gemini-2.5-flash')
-    expect(samenvatting(terug)).toEqual({ projecten: 2, eigen: 2, fotos: 1, prijzen: 1, bedrijf: true, facturen: 1 })
+    expect(samenvatting(terug)).toEqual({ projecten: 2, eigen: 2, fotos: 1, prijzen: 1, bedrijf: true, facturen: 1, artikelen: 0 })
     expect(terug.facturen[0].nummer).toBe('F-2026-004')
   })
   it('weigert verkeerde bestanden met duidelijke melding', () => {
