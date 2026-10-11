@@ -47,11 +47,11 @@ describe('eigen prijslijst', () => {
 
   it('voorbeeld overnemen en bijvullen', () => {
     const alles = voorbeeldAlsEigen(voorbeeldPrijsBron, NU)
-    expect(telEigenPrijzen(alles)).toBe(CATALOGUS.length)
+    expect(telEigenPrijzen(alles)).toBe(CATALOGUS.filter((c) => !c.oud).length)
     const deel = zetEigenPrijs({}, 'kit', { prijs: 1 }, NU)
     const bij = vulVoorbeeldenAan(deel, voorbeeldPrijsBron, NU)
     expect(bij.kit?.prijs).toBe(1)
-    expect(telEigenPrijzen(bij)).toBe(CATALOGUS.length)
+    expect(telEigenPrijzen(bij)).toBe(CATALOGUS.filter((c) => !c.oud).length)
   })
 
   it('percentage per categorie en leverancier', () => {
