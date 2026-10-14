@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CircleCheck, Clock, PenLine, Share2 } from 'lucide-react'
+import { CircleCheck, Clock, MessageCircle, PenLine, ReceiptText, Share2 } from 'lucide-react'
 import { Badge, Button, Card } from './ui'
 import { toast } from './Toast'
 import { codeerOfferte, type OfferteData } from '../lib/offerte'
@@ -7,6 +7,9 @@ import { deelVoorOndertekening, FOUT_TEKST, haalTekenStatus, tekenLink } from '.
 import { kopieer } from '../lib/share'
 import { projectStore } from '../lib/store'
 import { track } from '../lib/analytics'
+import { openWhatsapp, whatsappTekst, whatsappUrl } from '../lib/whatsapp'
+import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
+import { ga } from '../lib/router'
 import type { OfferteStatus, Project } from '../lib/types'
 
 type Teken = NonNullable<OfferteStatus['teken']>
@@ -55,14 +58,44 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t?.token, t?.getekend])
 
-  const nieuw = async () => {
+  const facturen = useFacturen().filter((f) => f.projectId === p.id)
+  const bruikbaar = !!t && !t.getekend && !gewijzigd
+
+  /** Maakt een nieuwe tekenlink; geeft de url terug (of null bij een fout). */
+  const maakLink = async (): Promise<string | null> => {
     setBezig(true)
     const r = await deelVoorOndertekening(d)
     setBezig(false)
-    if (!r.ok) return toast(r.fout === 'niet-beschikbaar' ? 'Digitaal tekenen is nog niet beschikbaar. Deel voorlopig de gewone offerte-link.' : FOUT_TEKST[r.fout], 'fout')
+    if (!r.ok) {
+      toast(r.fout === 'niet-beschikbaar' ? 'Digitaal tekenen is nog niet beschikbaar. Deel voorlopig de gewone offerte-link.' : FOUT_TEKST[r.fout], 'fout')
+      return null
+    }
     zet({ token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), getekend: undefined })
+    return tekenLink(r.data.token)
+  }
+
+  const viaWhatsapp = async () => {
+    // venster meteen openen (binnen de tik), anders blokkeren browsers het na het wachten op de link
+    const venster = bruikbaar ? null : window.open('', '_blank')
+    const link = bruikbaar ? tekenLink(t!.token) : await maakLink()
+    if (!link) return venster?.close()
+    track('offerte_shared', { detail: 'whatsapp' })
+    openWhatsapp(whatsappUrl(whatsappTekst(p.klant, p.naam, link)), venster)
+  }
+
+  const maakFactuur = () => {
+    const f = factuurVanOfferte(d, p.id)
+    if (!f) return toast('Factuur opslaan mislukt: opslag vol.', 'fout')
+    track('factuur_created', { detail: 'na_tekenen' })
+    toast(`Factuur ${f.nummer} aangemaakt`)
+    ga(`/factuur/${f.id}`)
+  }
+
+  const nieuw = async () => {
+    const link = await maakLink()
+    if (!link) return
     track('offerte_shared')
-    await deelLink(tekenLink(r.data.token), `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`)
+    await deelLink(link, `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`)
   }
 
   return (
@@ -98,13 +131,30 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
         </p>
       )}
 
+      {t?.getekend && (
+        <Button variant="gold" size="lg" className="mt-4 w-full whitespace-normal" icon={<ReceiptText className="h-4 w-4" />} onClick={facturen.length ? () => ga(`/factuur/${facturen[0].id}`) : maakFactuur} data-testid="maak-factuur">
+          {facturen.length ? `Klant heeft getekend ✅ — Bekijk factuur ${facturen[0].nummer}` : 'Klant heeft getekend ✅ — Maak factuur'}
+        </Button>
+      )}
+
       <div className="mt-4 grid gap-2">
+        {!t?.getekend && (
+          <button
+            type="button"
+            onClick={viaWhatsapp}
+            disabled={bezig}
+            data-testid="deel-whatsapp"
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#1ebe5a] active:scale-[.98] disabled:opacity-45"
+          >
+            <MessageCircle className="h-5 w-5" /> {bezig ? 'Link maken…' : 'Deel via WhatsApp'}
+          </button>
+        )}
         {t && !t.getekend && !gewijzigd ? (
           <Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => deelLink(tekenLink(t.token), `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`)}>
             Tekenlink opnieuw delen
           </Button>
         ) : (
-          <Button icon={<PenLine className="h-4 w-4" />} disabled={bezig} onClick={nieuw}>
+          <Button variant="secondary" icon={<PenLine className="h-4 w-4" />} disabled={bezig} onClick={nieuw}>
             {bezig ? 'Link maken…' : t ? 'Nieuwe tekenlink delen' : 'Tekenlink delen'}
           </Button>
         )}
