@@ -78,7 +78,7 @@ export function voorbeeldProjecten(): Project[] {
       voorbeeldId: 'compleet-jansen',
       naam: 'Voorbeeld: badkamer Jansen (alle onderdelen)',
       klant: 'Fam. Jansen',
-      adres: 'Lindenlaan 12, Amersfoort',
+      adres: '',
       createdAt: nu - 6 * dag,
       updatedAt: nu - 1 * dag,
       voorbeeld: true,
@@ -123,6 +123,9 @@ export function voorbeeldProjecten(): Project[] {
 }
 
 /** Vult ontbrekende velden aan (oudere projecten, back-ups) zodat de app er veilig mee kan rekenen. */
+/** Adressen die vroeger in de voorbeelden stonden; bestaande kopieën worden hiervan ontdaan. */
+const OUDE_VOORBEELD_ADRESSEN = ['Lindenlaan 12, Amersfoort', 'Havenstraat 4, Zwolle', 'Kerkweg 31, Utrecht', 'Molenstraat 8, Deventer']
+
 export function normaliseerProject(ruw: Partial<Project> & { id: string }): Project {
   const type: ProjectType = ruw.type && ['badkamer', 'toilet', 'keuken', 'vloer'].includes(ruw.type) ? ruw.type : 'badkamer'
   const basis = nieuwProject({ type })
@@ -135,6 +138,7 @@ export function normaliseerProject(ruw: Partial<Project> & { id: string }): Proj
     afmetingen: { ...basis.afmetingen, ...ruw.afmetingen, openingen: ruw.afmetingen?.openingen ?? basis.afmetingen.openingen },
     legvloer: { ...basis.legvloer, ...ruw.legvloer },
     fotos: ruw.fotos ?? [],
+    ...(ruw.voorbeeld && OUDE_VOORBEELD_ADRESSEN.includes(String(ruw.adres ?? '').trim()) ? { adres: '' } : {}),
     afgevinkt: ruw.afgevinkt ?? {},
     notities: ruw.notities ?? '',
   }
