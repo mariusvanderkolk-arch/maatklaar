@@ -14,17 +14,22 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
   {
     titel: 'Waar staat het?',
     tekst:
-      'De accountgegevens en gesynchroniseerde gegevens worden opgeslagen bij Supabase (een database- en inlogdienst). Alleen jij kunt je eigen gegevens lezen en wijzigen; dat is in de database afgedwongen per account.',
+      'Je projecten staan alleen op je eigen apparaat; Maatklaar kan ze niet inzien. Gedeelde offertes (om te laten tekenen) en optionele cloud-back-ups via een account worden opgeslagen in een beveiligde database van Supabase in de EU (Ierland). Andere bezoekers kunnen er niet bij: de toegang is per account en per offerte-link afgeschermd. De gegevens zijn versleuteld tijdens verzending (HTTPS) en bij opslag.',
+  },
+  {
+    titel: 'Wie kijkt er mee?',
+    tekst:
+      'De beheerder van Maatklaar bekijkt de inhoud van gedeelde offertes of back-ups niet, tenzij dat nodig is om een storing op te lossen of als jij daarom vraagt.',
   },
   {
     titel: 'Andere diensten',
     tekst:
-      'De app staat op GitHub Pages. Kies je zelf voor AI-fotoanalyse, dan gaan alleen de foto’s die jij laat analyseren naar de AI-dienst die je instelt, met je eigen sleutel. Een offerte-link bevat de offertegegevens in de link zelf; wie de link heeft, kan de offerte zien.',
+      'De app staat op GitHub Pages. Kies je zelf voor AI-fotoanalyse, dan gaan alleen de foto’s die jij laat analyseren naar de AI-dienst die je instelt, met je eigen sleutel. Wie een offerte-link heeft, kan die offerte zien. Offerte-links verlopen: niet getekend na 90 dagen, getekend na 365 dagen; daarna worden ze gewist.',
   },
   {
     titel: 'Verwijderen en meenemen',
     tekst:
-      'Onder Account kun je je cloudgegevens of je hele account verwijderen. Met Back-up exporteer je al je gegevens als bestand. Lokale gegevens wis je via de instellingen van je browser.',
+      'Onder Account kun je je cloudgegevens of je hele account verwijderen. Met Back-up exporteer je al je gegevens als bestand. Lokale gegevens wis je via de instellingen van je browser. Wil je dat een gedeelde offerte of andere opgeslagen gegevens eerder worden verwijderd? Vraag het ons, dan wissen we het.',
   },
   {
     titel: 'Anonieme gebruikscijfers, geen cookies',
