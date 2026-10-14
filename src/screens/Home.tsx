@@ -94,6 +94,20 @@ export function Home() {
           </ol>
         </section>
 
+        {/* Privacybelofte */}
+        <section className="mt-8" data-vertrouwen>
+          <div className="flex items-start gap-3 rounded-2xl border border-gold-200 bg-gold-100/40 px-5 py-4 sm:px-6">
+            <span aria-hidden className="mt-0.5 text-lg">🔒</span>
+            <div className="min-w-0 text-sm leading-relaxed">
+              <p className="font-semibold text-ink">Jouw projecten blijven op jouw eigen apparaat. Wij zien je klanten en prijzen niet.</p>
+              <p className="mt-1 text-ink-soft">
+                Deel je een offerte, dan staat die veilig en afgeschermd in een versleutelde EU-database en verloopt de link vanzelf.{' '}
+                <a href="#/privacy" className="font-medium text-gold-700 underline underline-offset-2 hover:text-ink">Lees de privacyverklaring</a>
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Nieuw in deze versie */}
         <section className="mt-10">
           <div className="card overflow-hidden">
