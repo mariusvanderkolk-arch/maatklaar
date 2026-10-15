@@ -103,3 +103,30 @@ describe('ontwerp-model', () => {
     expect(uitCompact({ k: 'x' })).toBeNull()
   })
 })
+
+import { deurCode as dc, normaliseerOntwerp as no2, compact as co2, uitCompact as uc2, kamerVan as kv2 } from './model'
+import { describe as d2, it as i2, expect as e2 } from 'vitest'
+d2('deur draairichting en scharnier', () => {
+  const deur = { id: 'd', type: 'deur', x: 100, y: 220, w: 83, d: 10, rot: 180 }
+  i2('bestaande deuren blijven naar binnen, scharnier links', () => {
+    const it = no2({ items: [deur] }, 'badkamer').items[0]
+    e2(it.draai).toBeUndefined()
+    e2(it.scharnier).toBeUndefined()
+    e2(dc(it)).toBe(0)
+  })
+  i2('keuze blijft bewaard en onzin wordt genegeerd', () => {
+    const [a, b, c] = no2({ items: [{ ...deur, draai: 'buiten', scharnier: 'rechts' }, { ...deur, id: 'e', draai: 'raar' }, { ...deur, id: 'f', type: 'raam', d: 10, draai: 'buiten' }] }, 'badkamer').items
+    e2([a.draai, a.scharnier]).toEqual(['buiten', 'rechts'])
+    e2(b.draai).toBeUndefined()
+    e2(c.draai).toBeUndefined()
+  })
+  i2('gaat mee in de compacte offerte-link (en oude links zonder code werken nog)', () => {
+    const o = no2({ items: [{ ...deur, draai: 'buiten' }, { ...deur, id: 'g', scharnier: 'rechts' }, deur] }, 'badkamer')
+    const k = { L: 280, B: 220, H: 260, tegelH: 260, type: 'badkamer' as const }
+    const c = co2(o, k)
+    e2(c.i.map((t) => t.length)).toEqual([7, 7, 6])
+    const terug = uc2(JSON.parse(JSON.stringify(c)))!.ontwerp.items
+    e2(terug.map(dc)).toEqual([1, 2, 0])
+    void kv2
+  })
+})

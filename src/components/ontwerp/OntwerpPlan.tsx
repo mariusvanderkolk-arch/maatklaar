@@ -91,7 +91,7 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
     >
       {/* ruimer raakvlak voor vingers */}
       {interactief && <rect x={-it.w / 2 - 4} y={-it.d / 2 - 4} width={it.w + 8} height={it.d + 8} fill="transparent" />}
-      <Symbool type={it.type} w={it.w} d={it.d} />
+      <Symbool type={it.type} w={it.w} d={it.d} buiten={it.draai === 'buiten'} rechts={it.scharnier === 'rechts'} />
     </g>
   )
 

@@ -89,7 +89,18 @@ export interface OntwerpItem {
   w: number
   d: number
   rot: number
+  /** alleen deuren: draairichting (standaard naar binnen) */
+  draai?: DeurDraai
+  /** alleen deuren: kant van de scharnieren, gezien vanuit de kamer (standaard links) */
+  scharnier?: DeurScharnier
 }
+
+export type DeurDraai = 'binnen' | 'buiten'
+export type DeurScharnier = 'links' | 'rechts'
+export const deurDraai = (it: Pick<OntwerpItem, 'draai'>): DeurDraai => (it.draai === 'buiten' ? 'buiten' : 'binnen')
+export const deurScharnier = (it: Pick<OntwerpItem, 'scharnier'>): DeurScharnier => (it.scharnier === 'rechts' ? 'rechts' : 'links')
+/** Compacte code voor de offerte-link: bit 1 = naar buiten, bit 2 = scharnier rechts. */
+export const deurCode = (it: Pick<OntwerpItem, 'draai' | 'scharnier'>) => (deurDraai(it) === 'buiten' ? 1 : 0) + (deurScharnier(it) === 'rechts' ? 2 : 0)
 
 // ——— afwerking (tegels) ————————————————————————————————————————————
 
@@ -402,6 +413,8 @@ function normItem(x: unknown): OntwerpItem | null {
     w: Math.min(def.max[0], Math.max(def.min[0], x.w as number)),
     d: Math.min(def.max[1], Math.max(def.min[1], x.d as number)),
     rot: isNum(x.rot) ? norm(x.rot) : 0,
+    ...(x.type === 'deur' && x.draai === 'buiten' ? { draai: 'buiten' as const } : {}),
+    ...(x.type === 'deur' && x.scharnier === 'rechts' ? { scharnier: 'rechts' as const } : {}),
   }
 }
 
@@ -422,7 +435,7 @@ export function normaliseerOntwerp(x: unknown, type: ProjectType): Ontwerp {
 export interface CompactOntwerp {
   k: [number, number, number, number]
   t: ProjectType
-  i: [ItemType, number, number, number, number, number][]
+  i: ([ItemType, number, number, number, number, number] | [ItemType, number, number, number, number, number, number])[]
   v: [string, string, Verband]
   w: [string, string, Verband]
 }
@@ -432,7 +445,10 @@ export function compact(o: Ontwerp, k: Kamer): CompactOntwerp {
   return {
     k: [k.L, k.B, k.H, k.tegelH],
     t: k.type,
-    i: o.items.map((it) => [it.type, n(it.x), n(it.y), n(it.w), n(it.d), n(it.rot)]),
+    i: o.items.map((it) => {
+      const t: [ItemType, number, number, number, number, number] = [it.type, n(it.x), n(it.y), n(it.w), n(it.d), n(it.rot)]
+      return it.type === 'deur' && deurCode(it) ? [...t, deurCode(it)] : t
+    }),
     v: [o.vloer.kleur, o.vloer.formaat, o.vloer.verband],
     w: [o.wand.kleur, o.wand.formaat, o.wand.verband],
   }
@@ -452,7 +468,7 @@ export function uitCompact(c: unknown): { ontwerp: Ontwerp; kamer: Kamer } | nul
   }
   const items = (c.i as unknown[])
     .slice(0, 80)
-    .map((t, i) => (Array.isArray(t) ? normItem({ id: `i${i}`, type: t[0], x: t[1], y: t[2], w: t[3], d: t[4], rot: t[5] }) : null))
+    .map((t, i) => (Array.isArray(t) ? normItem({ id: `i${i}`, type: t[0], x: t[1], y: t[2], w: t[3], d: t[4], rot: t[5], draai: t[6] & 1 ? 'buiten' : 'binnen', scharnier: t[6] & 2 ? 'rechts' : 'links' }) : null))
     .filter((i): i is OntwerpItem => i != null)
   const af = (x: unknown) => (Array.isArray(x) ? { kleur: x[0], formaat: x[1], verband: x[2] } : null)
   const basis = leegOntwerp(type)

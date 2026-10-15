@@ -61,7 +61,7 @@ function Kast({ w, d, blad = KLEUR.blad, verdeling = 60 }: { w: number; d: numbe
 }
 
 /** Tekent het symbool voor een type, gecentreerd, w × d cm. */
-export function Symbool({ type, w, d }: { type: ItemType; w: number; d: number }) {
+export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: ItemType; w: number; d: number; buiten?: boolean; rechts?: boolean }) {
   const x0 = -w / 2
   const y0 = -d / 2
   switch (type) {
@@ -163,9 +163,9 @@ export function Symbool({ type, w, d }: { type: ItemType; w: number; d: number }
       )
     }
     case 'deur':
-      // in de wand: kamerzijde is +y (lokaal). Scharnier links.
+      // in de wand: kamerzijde is +y (lokaal). Standaard scharnier links en naar binnen; spiegelen voor rechts/buiten.
       return (
-        <g>
+        <g transform={buiten || rechts ? `scale(${rechts ? -1 : 1} ${buiten ? -1 : 1})` : undefined} data-deur={`${buiten ? 'buiten' : 'binnen'}-${rechts ? 'rechts' : 'links'}`}>
           <rect x={x0} y={y0} width={w} height={d} fill="#E9E1D3" />
           <line x1={x0} y1={y0} x2={x0} y2={d / 2} {...sw} />
           <line x1={w / 2} y1={y0} x2={w / 2} y2={d / 2} {...sw} />
@@ -226,7 +226,7 @@ export function Symbool({ type, w, d }: { type: ItemType; w: number; d: number }
 }
 
 /** Kleine voorbeeldweergave voor de bibliotheek. */
-export function SymboolIcoon({ type, w, d, size = 44 }: { type: ItemType; w: number; d: number; size?: number }) {
+export function SymboolIcoon({ type, w, d, size = 44, buiten, rechts }: { type: ItemType; w: number; d: number; size?: number; buiten?: boolean; rechts?: boolean }) {
   const m = Math.max(w, d) * 1.18
   return (
     <svg viewBox={`${-m / 2} ${-m / 2} ${m} ${m}`} width={size} height={size} aria-hidden>
@@ -234,7 +234,7 @@ export function SymboolIcoon({ type, w, d, size = 44 }: { type: ItemType; w: num
         <SymboolDefs />
       </defs>
       <g filter="url(#sw-schaduw)">
-        <Symbool type={type} w={w} d={d} />
+        <Symbool type={type} w={w} d={d} buiten={buiten} rechts={rechts} />
       </g>
     </svg>
   )

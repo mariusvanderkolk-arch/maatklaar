@@ -560,6 +560,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
             onWissel={(t) => werkBij((it) => wisselType(it, t, kamer))}
             onMaat={(w, d) => werkBij((it) => snap({ ...it, w, d }, kamer, { wandAfstand: 2 }))}
             onDraai={draai}
+            onDeur={(patch) => werkBij((it) => ({ ...it, ...patch }))}
             onDupliceer={dupliceer}
             onVerwijder={verwijder}
           />
@@ -653,6 +654,7 @@ function ItemPaneel({
   onWissel,
   onMaat,
   onDraai,
+  onDeur,
   onDupliceer,
   onVerwijder,
 }: {
@@ -660,6 +662,7 @@ function ItemPaneel({
   onWissel: (t: ItemType) => void
   onMaat: (w: number, d: number) => void
   onDraai: (g: number) => void
+  onDeur: (patch: Pick<OntwerpItem, 'draai' | 'scharnier'>) => void
   onDupliceer: () => void
   onVerwijder: () => void
 }) {
@@ -671,7 +674,7 @@ function ItemPaneel({
     <Card className="p-5">
       <div className="flex items-start gap-3">
         <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sand-50 ring-1 ring-sand-200">
-          <SymboolIcoon type={it.type} w={it.w} d={opening ? 30 : it.d} size={40} />
+          <SymboolIcoon type={it.type} w={it.w} d={opening ? 30 : it.d} size={40} buiten={it.draai === 'buiten'} rechts={it.scharnier === 'rechts'} />
         </span>
         <div className="min-w-0">
           <p className="text-[0.98rem] font-semibold">{def.naam}</p>
@@ -702,6 +705,28 @@ function ItemPaneel({
       <p className="mt-1.5 text-[0.72rem] text-ink-muted">
         {def.min[0]}–{def.max[0]} cm breed{opening ? '' : `, ${def.min[1]}–${def.max[1]} cm diep`}
       </p>
+      {it.type === 'deur' && (
+        <div className="mt-4 grid gap-3" data-testid="deur-opties">
+          <Segment
+            label="Draairichting"
+            waarde={it.draai === 'buiten' ? 'buiten' : 'binnen'}
+            opties={[
+              ['binnen', 'Naar binnen draaiend'],
+              ['buiten', 'Naar buiten draaiend'],
+            ]}
+            onKies={(v) => onDeur({ draai: v as 'binnen' | 'buiten' })}
+          />
+          <Segment
+            label="Scharnieren (gezien vanuit de ruimte)"
+            waarde={it.scharnier === 'rechts' ? 'rechts' : 'links'}
+            opties={[
+              ['links', 'Links'],
+              ['rechts', 'Rechts'],
+            ]}
+            onKies={(v) => onDeur({ scharnier: v as 'links' | 'rechts' })}
+          />
+        </div>
+      )}
       <div className="mt-4 grid grid-cols-2 gap-2">
         {!opening && (
           <>
@@ -783,6 +808,28 @@ function AfwerkingKiezer({ titel, a, onChange }: { titel: string; a: Afwerking; 
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function Segment({ label, waarde, opties, onKies }: { label: string; waarde: string; opties: [string, string][]; onKies: (v: string) => void }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[0.8rem] font-medium text-ink-soft">{label}</p>
+      <div role="radiogroup" aria-label={label} className="grid grid-cols-2 gap-1 rounded-xl bg-sand-50 p-1 ring-1 ring-sand-200">
+        {opties.map(([v, tekst]) => (
+          <button
+            key={v}
+            type="button"
+            role="radio"
+            aria-checked={waarde === v}
+            onClick={() => onKies(v)}
+            className={`min-h-9 rounded-lg px-2 py-1.5 text-[0.8rem] font-medium leading-tight transition ${waarde === v ? 'bg-ink text-sand-50 shadow-sm' : 'text-ink-soft hover:bg-paper'}`}
+          >
+            {tekst}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
