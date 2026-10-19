@@ -67,11 +67,11 @@ const BASIS_PRIJZEN: Record<BasisId, number> = {
   'vv-mat': 43.99,
   'vv-thermostaat': 89.99,
   isolatieplaat: 6.49,
-  designradiator: 249,
+  designradiator: 329,
   radiatoraansluitset: 39.95,
   // tegels & vloer
-  wandtegel: 23.99,
-  vloertegel: 32.99,
+  wandtegel: 45,
+  vloertegel: 49.95,
   laminaat: 16.99,
   pvc: 29.99,
   ondervloer: 23.99,
@@ -87,18 +87,18 @@ const BASIS_PRIJZEN: Record<BasisId, number> = {
   pleister: 17.99,
   verf: 39.49,
   // sanitair
-  glaswand: 249,
-  douchegoot: 114.95,
-  regendouche: 189,
+  glaswand: 299,
+  douchegoot: 199,
+  regendouche: 389,
   ligbad: 299,
   badkraan: 149,
   badafvoer: 34.95,
-  inbouwreservoir: 209,
-  hangtoilet: 179,
-  bedieningsplaat: 37.95,
-  wastafelmeubel: 389,
-  wastafelkraan: 69.99,
-  spiegel: 89.99,
+  inbouwreservoir: 229,
+  hangtoilet: 365,
+  bedieningsplaat: 65,
+  wastafelmeubel: 549,
+  wastafelkraan: 115,
+  spiegel: 139,
   sifon: 19.99,
   fontein: 109,
   // deur, dorpel & plafond
@@ -114,7 +114,7 @@ export const VOORBEELD_PRIJZEN: Partial<Record<ProductId, number>> = {
   ...Object.fromEntries(DETAIL_ARTIKELEN.map(([id, , , , prijs]) => [id, prijs])),
 }
 
-export const VOORBEELD_PEILDATUM = '2026-10-01'
+export const VOORBEELD_PEILDATUM = '2026-10-19'
 
 export const voorbeeldPrijsBron: PrijsBron = {
   id: 'voorbeeld',

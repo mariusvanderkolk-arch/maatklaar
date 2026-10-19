@@ -823,7 +823,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     add({ id, groep: 'sanitair', naam, spec, nodig: 1, nodigEenheid: 'stuk', aantal: 1, verpakking: 'stuk', prijsAantal: 1, toelichting })
   if (s.inloopdouche) {
     const goot = Math.max(0.3, Math.round((p.afmetingen.douche.breedte - 0.1) * 10) / 10)
-    stuk('glaswand', 'Inloopdouche glaswand', '8 mm helder glas · 200 cm hoog', 'Eén wand voor de douchezone')
+    stuk('glaswand', 'Inloopdouche glaswand', '10 mm veiligheidsglas, anti-kalk · 200 cm hoog', 'Eén wand voor de douchezone')
     stuk('douchegoot', 'Douchegoot RVS', `${nl(goot * 100, 0)} cm`, `Doucheruimte ${nl(p.afmetingen.douche.breedte * 100, 0)} cm − 10 cm`)
     stuk('regendouche', 'Thermostatische regendoucheset (incl. kraan)', 'opbouw', 'Eén set per douche')
   }
@@ -835,7 +835,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   if (s.wastafelmeubel) {
     stuk('wastafelmeubel', 'Wastafelmeubel met wastafel', '80 cm', 'Vast per badkamer')
     stuk('wastafelkraan', 'Wastafelkraan', 'eengreeps', 'Vast per wastafel')
-    stuk('spiegel', 'Spiegel met verlichting', '80 cm', 'Vast per wastafel')
+    stuk('spiegel', 'LED-spiegel met verlichting', '80 cm', 'Vast per wastafel')
     stuk('sifon', 'Sifon & afvoerset', 'design', 'Vast per wastafel')
   }
   if (s.fontein) {

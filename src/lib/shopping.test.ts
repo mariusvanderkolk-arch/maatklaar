@@ -20,7 +20,7 @@ describe('inkooplijst', () => {
 
   it('tegels worden per m² geprijsd (dozen × m² per doos)', () => {
     const r = lijst.regels.find((x) => x.id === 'wandtegel')!
-    expect(r.totaal).toBeCloseTo(23.99 * r.aantal * p.wandtegel.m2PerDoos, 2)
+    expect(r.totaal).toBeCloseTo(45 * r.aantal * p.wandtegel.m2PerDoos, 2)
   })
 
   it('eigen verpakkingsgrootte rekent het aantal om', () => {

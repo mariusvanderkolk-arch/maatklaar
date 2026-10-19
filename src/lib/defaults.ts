@@ -46,7 +46,7 @@ export function nieuwProject(velden: Partial<Project> = {}): Project {
     vloertegel: standaardVloertegel(),
     legvloer: standaardLegvloer(),
     snijverlies: ruimte(type).snijverlies,
-    uurtarief: 60,
+    uurtarief: 72.5,
     onvoorzien: 5,
     fotos: [],
     afgevinkt: {},
