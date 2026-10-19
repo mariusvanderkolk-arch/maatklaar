@@ -17,6 +17,8 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return
+  // video's niet via de service worker (range-requests, groot bestand)
+  if (new URL(req.url).pathname.endsWith('.mp4')) return
   if (req.mode === 'navigate') {
     // netwerk eerst, val terug op de cache
     e.respondWith(

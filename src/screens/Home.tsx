@@ -108,6 +108,29 @@ export function Home() {
           </div>
         </section>
 
+        {/* Uitlegvideo */}
+        <section className="mt-10" aria-labelledby="zo-werkt-titel" data-uitlegvideo>
+          <div className="card overflow-hidden">
+            <div className="px-5 pt-5 sm:px-8 sm:pt-6">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Uitleg in 76 seconden</p>
+              <h2 id="zo-werkt-titel" className="mt-1 text-xl font-semibold text-ink">Zo werkt Maatklaar</h2>
+              <p className="mt-1 text-sm text-ink-soft">Van project aanmaken en opmeten tot offerte met je eigen logo, laten tekenen en factuur.</p>
+            </div>
+            <div className="p-3 sm:p-5">
+              <video
+                className="aspect-video w-full rounded-xl bg-sand-100 ring-1 ring-sand-200"
+                controls
+                playsInline
+                preload="none"
+                poster={`${import.meta.env.BASE_URL}uitleg-poster.jpg`}
+              >
+                <source src={`${import.meta.env.BASE_URL}uitleg.mp4`} type="video/mp4" />
+                Je browser kan deze video niet afspelen.
+              </video>
+            </div>
+          </div>
+        </section>
+
         {/* Nieuw in deze versie */}
         <section className="mt-10">
           <div className="card overflow-hidden">
