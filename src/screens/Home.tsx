@@ -76,7 +76,7 @@ export function Home() {
               )}
             </div>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.13] lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200 lg:opacity-100">
-              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-center lg:object-cover" />
+              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full origin-left translate-x-2 scale-[1.22] object-contain object-center lg:translate-x-0 lg:scale-100 lg:object-cover" />
               {groot && (
               <video
                 className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
