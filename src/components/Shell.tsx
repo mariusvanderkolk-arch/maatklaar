@@ -17,7 +17,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   const cloud = useCloud()
   const syncKleur = !cloud.gebruiker || !cloud.syncAan ? null : cloud.status === 'ok' ? 'bg-sage' : cloud.status === 'bezig' ? 'bg-gold-400' : cloud.status === 'offline' ? 'bg-sand-400' : 'bg-rust'
   const link = (actief: boolean) =>
-    `rounded-lg px-1 py-2 text-[0.85rem] font-medium whitespace-nowrap transition sm:px-3 sm:text-sm ${actief ? 'text-ink' : 'text-ink-muted hover:text-ink'}`
+    `rounded-lg px-1.5 py-3 text-[0.85rem] sm:py-2 font-medium whitespace-nowrap transition sm:px-3 sm:text-sm ${actief ? 'text-ink' : 'text-ink-muted hover:text-ink'}`
   return (
     <div className="flex min-h-dvh flex-col">
       <a href="#inhoud" onClick={(e) => { e.preventDefault(); document.getElementById('inhoud')?.focus() }} className="sr-only z-50 rounded-lg bg-ink px-4 py-2 text-sand-50 focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
@@ -54,7 +54,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
               aria-label="Instellingen"
               title="Instellingen"
               aria-current={route.naam === 'instellingen' ? 'page' : undefined}
-              className={`relative grid h-10 w-8 place-items-center rounded-lg transition sm:w-10 ${route.naam === 'instellingen' ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
+              className={`relative grid h-11 w-11 place-items-center rounded-lg transition sm:h-10 sm:w-10 ${route.naam === 'instellingen' ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
             >
               <Settings className="h-[1.15rem] w-[1.15rem]" />
               {syncKleur && (
@@ -72,7 +72,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
               type="button"
               aria-label="Nieuw project"
               onClick={() => ga('/nieuw')}
-              className="ml-0.5 grid h-10 w-10 place-items-center rounded-xl bg-ink text-sand-50 shadow-[0_6px_18px_-10px_rgba(43,38,32,.7)] active:scale-95 sm:hidden"
+              className="ml-0.5 grid h-11 w-11 place-items-center rounded-xl bg-ink text-sand-50 shadow-[0_6px_18px_-10px_rgba(43,38,32,.7)] active:scale-95 sm:hidden"
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -88,27 +88,27 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
             © 2026 Maatklaar – alle rechten voorbehouden · {TEST_MODUS ? 'testversie' : `versie ${APP_VERSIE_KORT}`} ·{' '}
-            <a href="#/over" className="underline underline-offset-2 hover:text-ink">
+            <a href="#/over" className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
               Over de app
             </a>{' '}
             ·{' '}
-            <button type="button" onClick={reviewDialoog.open} className="underline underline-offset-2 hover:text-ink">
+            <button type="button" onClick={reviewDialoog.open} className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
               Beoordeel Maatklaar
             </button>{' '}
             ·{' '}
-            <a href="#/account" className="underline underline-offset-2 hover:text-ink">
+            <a href="#/account" className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
               {cloud.gebruiker ? `Account${cloud.syncAan ? ` (${STATUS_TEKST[cloud.status].toLowerCase()})` : ''}` : 'Inloggen'}
             </a>{' '}
             ·{' '}
-            <a href="#/privacy" className="underline underline-offset-2 hover:text-ink">
+            <a href="#/privacy" className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
               Privacy
             </a>{' '}
             ·{' '}
-            <a href="#/voorwaarden" className="underline underline-offset-2 hover:text-ink">
+            <a href="#/voorwaarden" className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
               Voorwaarden
             </a>
           </p>
-          <p>{TEST_MODUS ? 'Voorbeeldprijzen, tenzij je eigen prijzen invult · gegevens blijven op dit apparaat' : 'Nu gratis · vul je eigen prijzen in · gegevens blijven op dit apparaat'}</p>
+          <p>{TEST_MODUS ? 'Voorbeeldprijzen, tenzij je eigen prijzen invult · gegevens blijven op dit apparaat' : 'Gratis · vul je eigen prijzen in · gegevens blijven op dit apparaat'}</p>
         </div>
       </footer>
     </div>

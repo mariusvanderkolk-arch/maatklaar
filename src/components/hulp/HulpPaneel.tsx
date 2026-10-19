@@ -147,7 +147,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
           <h2 id="hulp-titel" className="font-display text-[1.25rem] leading-none font-semibold">
             Maatklaar-hulp
           </h2>
-          <p className="mt-1 text-[0.72rem] text-ink-muted">{ai ? 'Offline hulp · AI-antwoord mogelijk' : 'Werkt offline · gratis'}</p>
+          <p className="mt-1 text-[0.75rem] text-ink-muted">{ai ? 'Offline hulp · AI-antwoord mogelijk' : 'Werkt offline · gratis'}</p>
         </div>
         {berichten.length > 0 && (
           <button type="button" onClick={() => setBerichten([])} className="grid h-9 w-9 place-items-center rounded-full text-ink-muted hover:bg-sand-100 hover:text-ink" aria-label="Gesprek wissen" title="Gesprek wissen">
@@ -172,7 +172,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
         </div>
         {berichten.length === 0 && tips.length > 0 && (
           <div className="rounded-2xl border border-gold-200 bg-gold-100/40 p-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-gold-700">Tips voor dit scherm</p>
+            <p className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-gold-700">Tips voor dit scherm</p>
             <ul className="mt-1.5 space-y-1">
               {tips.map((t) => (
                 <li key={t.id}>
@@ -188,7 +188,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
         {berichten.map((b, i) => (
           <Ballon key={i} van={b.van}>
             {b.ai && (
-              <p className="mb-1 inline-flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-gold-700">
+              <p className="mb-1 inline-flex items-center gap-1 text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-gold-700">
                 <Sparkles className="h-3 w-3" /> AI-antwoord · controleer zelf
               </p>
             )}
@@ -261,7 +261,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
         </button>
       </form>
       {!ai && (
-        <p className="border-t border-sand-200 bg-sand-50 px-4 pb-2.5 text-[0.7rem] leading-snug text-ink-muted max-sm:hidden">
+        <p className="border-t border-sand-200 bg-sand-50 px-4 pb-2.5 text-[0.75rem] leading-snug text-ink-muted max-sm:hidden">
           Slimmere antwoorden? Zet een eigen AI-sleutel bij{' '}
           <button type="button" className="underline" onClick={() => volg({ label: '', pad: '/instellingen/ai' })}>
             Instellingen → AI

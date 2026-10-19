@@ -95,7 +95,7 @@ export function Onboarding() {
               </span>
             ))}
           </div>
-          <p className="absolute top-4 left-5 text-[0.7rem] font-semibold tracking-[0.2em] text-gold-700 uppercase">
+          <p className="absolute top-4 left-5 text-[0.75rem] font-semibold tracking-[0.2em] text-gold-700 uppercase">
             Versie {APP_VERSIE_KORT} · stap {i + 1} van {SCHERMEN.length}
           </p>
           <button type="button" onClick={sluit} className="absolute top-2.5 right-3 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-ink-soft hover:bg-sand-200/60 hover:text-ink">

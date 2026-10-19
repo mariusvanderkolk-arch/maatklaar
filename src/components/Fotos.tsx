@@ -101,7 +101,7 @@ function Thumb({ foto, onClick }: { foto: PhotoRef; onClick: () => void }) {
       className="group relative block aspect-square w-full overflow-hidden rounded-xl bg-sand-200 ring-1 ring-sand-300 transition hover:ring-2 hover:ring-gold-400"
     >
       {url && <img src={url} alt={foto.naam} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
-      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/60 to-transparent px-2 pt-5 pb-1.5 text-left text-[0.65rem] font-medium text-white">
+      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/60 to-transparent px-2 pt-5 pb-1.5 text-left text-[0.75rem] font-medium text-white">
         {kortDatum(foto.createdAt)}
       </span>
     </button>

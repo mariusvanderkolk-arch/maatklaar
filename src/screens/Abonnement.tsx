@@ -82,7 +82,7 @@ export function AbonnementScherm({ preview, terug }: { preview?: string; terug?:
               <Crown className="h-5.5 w-5.5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-ink-muted">Jouw abonnement</p>
+              <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-ink-muted">Jouw abonnement</p>
               <p className="mt-1 font-display text-[1.6rem] leading-tight font-semibold">{statusTekst(abo)}</p>
               {abo?.status === 'trial' && dagen > 0 && (
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-sand-200" aria-hidden="true">
@@ -123,11 +123,11 @@ export function AbonnementScherm({ preview, terug }: { preview?: string; terug?:
                   className={`card relative p-5 text-left transition sm:p-6 ${gekozen ? 'ring-2 ring-gold-500' : 'hover:ring-1 hover:ring-gold-300'}`}
                 >
                   {pl === 'jaar' && (
-                    <span className="absolute -top-2.5 right-5 rounded-full bg-ink px-2.5 py-1 text-[0.68rem] font-semibold tracking-wide text-paper">
+                    <span className="absolute -top-2.5 right-5 rounded-full bg-ink px-2.5 py-1 text-[0.75rem] font-semibold tracking-wide text-paper">
                       {jaarBesparing()} maanden gratis
                     </span>
                   )}
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">{pl === 'maand' ? 'Maandelijks' : 'Jaarlijks'}</p>
+                  <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">{pl === 'maand' ? 'Maandelijks' : 'Jaarlijks'}</p>
                   <p className="mt-2 flex items-baseline gap-1.5">
                     <span className="font-display text-[2.4rem] leading-none font-semibold">{l.bedrag}</span>
                     <span className="text-sm text-ink-muted">{l.per}</span>

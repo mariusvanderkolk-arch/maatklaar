@@ -21,7 +21,7 @@ export function Button({
   children,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: 'sm' | 'md' | 'lg'; icon?: ReactNode }) {
-  const s = size === 'sm' ? 'h-9 px-3.5 text-sm gap-1.5' : size === 'lg' ? 'h-13 px-6 text-[0.95rem] gap-2.5' : 'h-11 px-5 text-sm gap-2'
+  const s = size === 'sm' ? 'h-11 sm:h-9 px-3.5 text-sm gap-1.5' : size === 'lg' ? 'h-13 px-6 text-[0.95rem] gap-2.5' : 'h-11 px-5 text-sm gap-2'
   return (
     <button
       type="button"
@@ -67,7 +67,7 @@ export function CardHeader({
 
 export function Eyebrow({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <p className={`text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-gold-600 ${className}`}>{children}</p>
+    <p className={`text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-gold-600 ${className}`}>{children}</p>
   )
 }
 
@@ -281,7 +281,7 @@ export function Tip({ tekst, label }: { tekst: string; label?: string }) {
         onClick={() => setOpen((o) => !o)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        className="grid h-5 w-5 place-items-center rounded-full text-ink-muted hover:text-gold-700"
+        className="relative grid h-5 w-5 place-items-center rounded-full text-ink-muted before:absolute before:-inset-3 before:content-[''] hover:text-gold-700"
       >
         <Info className="h-3.5 w-3.5" />
       </button>
@@ -318,7 +318,7 @@ export function Badge({ children, tone = 'sand', className = '' }: { children: R
     ink: 'bg-ink text-sand-50 ring-ink',
   }[tone]
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[0.7rem] font-semibold whitespace-nowrap ring-1 ring-inset ${t} ${className}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[0.75rem] font-semibold whitespace-nowrap ring-1 ring-inset ${t} ${className}`}>
       {children}
     </span>
   )
@@ -356,7 +356,7 @@ export function Notice({
 export function Stat({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {
   return (
     <div className="min-w-0">
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</p>
+      <p className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</p>
       <p className="tabnum mt-1 font-display text-[1.9rem] leading-none font-semibold text-ink">{value}</p>
       {sub && <p className="mt-1.5 text-xs text-ink-muted">{sub}</p>}
     </div>
@@ -443,7 +443,7 @@ export function Dialog({
             </h2>
             {sub && <p className="mt-0.5 text-[0.82rem] text-ink-muted">{sub}</p>}
           </div>
-          <button type="button" aria-label="Sluiten" onClick={onClose} className="-mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-sand-100 hover:text-ink">
+          <button type="button" aria-label="Sluiten" onClick={onClose} className="-mr-1 grid h-11 w-11 sm:h-9 sm:w-9 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-sand-100 hover:text-ink">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -468,7 +468,7 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-gold-500' : 'bg-sand-300'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] ${checked ? 'bg-gold-500' : 'bg-sand-300'}`}
     >
       <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition ${checked ? 'translate-x-5' : ''}`} />
     </button>

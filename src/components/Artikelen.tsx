@@ -154,7 +154,7 @@ function ArtikelToevoegenDialoog({ p, onClose }: { p: Project; onClose: () => vo
                 <button type="button" onClick={() => setGekozen(k)} className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left hover:bg-sand-50">
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[0.88rem] font-medium text-ink">{k.naam}</span>
-                    <span className="block text-[0.72rem] text-ink-muted">{groepNaam(k.groep)} · {k.eenheid}</span>
+                    <span className="block text-[0.75rem] text-ink-muted">{groepNaam(k.groep)} · {k.eenheid}</span>
                   </span>
                   {k.eigen && <Badge tone="gold">Eigen</Badge>}
                   <span className="tabnum shrink-0 text-[0.82rem] text-ink-soft">{k.prijs != null ? euro(k.prijs) : '—'}</span>

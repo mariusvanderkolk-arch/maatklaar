@@ -12,7 +12,7 @@ export function Betaalmuur({ aantal, proefMogelijk = true }: { aantal: number; p
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gold-200/80 text-gold-700 ring-1 ring-gold-300">
             <Sparkles className="h-5.5 w-5.5" />
           </span>
-          <p className="mt-5 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Gratis limiet bereikt</p>
+          <p className="mt-5 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Gratis limiet bereikt</p>
           <h1 className="mt-1.5 text-[2rem] leading-[1.05] font-semibold sm:text-[2.4rem]">Klaar voor meer klussen?</h1>
           <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
             Je hebt {aantal} van de {GRATIS_MAX_PROJECTEN} gratis projecten in gebruik. Met <strong className="font-semibold text-ink">Maatklaar Pro</strong> maak je

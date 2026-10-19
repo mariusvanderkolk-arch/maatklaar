@@ -130,7 +130,7 @@ export function ProjectForm({ id }: { id?: string }) {
                     <Icon className="h-5.5 w-5.5" />
                   </span>
                   <span className="text-sm font-semibold text-ink">{r.label}</span>
-                  <span className="text-[0.72rem] leading-snug text-ink-muted">{r.omschrijving}</span>
+                  <span className="text-[0.75rem] leading-snug text-ink-muted">{r.omschrijving}</span>
                   {actief && (
                     <span className="absolute top-2 right-2 grid h-5 w-5 place-items-center rounded-full bg-gold-500 text-white">
                       <Check className="h-3 w-3" strokeWidth={3} />
@@ -164,7 +164,7 @@ export function ProjectForm({ id }: { id?: string }) {
           <div className="space-y-4 p-4 sm:p-6">
             {scopePerFase(type).map((g) => (
             <div key={g.fase}>
-            <p className="text-[0.68rem] font-semibold tracking-[0.14em] text-gold-700 uppercase">{g.naam}</p>
+            <p className="text-[0.75rem] font-semibold tracking-[0.14em] text-gold-700 uppercase">{g.naam}</p>
             <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
             {g.items.map((item) => {
               const aan = scope[item.key]
@@ -190,7 +190,7 @@ export function ProjectForm({ id }: { id?: string }) {
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2 text-[0.92rem] font-semibold text-ink">
                       {item.label}
-                      {item.optioneel && <span className="text-[0.7rem] font-medium text-ink-muted">optioneel</span>}
+                      {item.optioneel && <span className="text-[0.75rem] font-medium text-ink-muted">optioneel</span>}
                     </span>
                     <span className="block truncate text-xs text-ink-muted">{item.omschrijving}</span>
                   </span>
@@ -236,7 +236,7 @@ export function ProjectForm({ id }: { id?: string }) {
                     ))}
                   </select>
                 </label>
-                <p className="text-[0.72rem] leading-snug text-ink-muted sm:col-span-2">
+                <p className="text-[0.75rem] leading-snug text-ink-muted sm:col-span-2">
                   Huur en stortkosten staan als aparte regels in de inkooplijst. Puin en grond zijn zwaar: maximaal {MAX_ZWAAR_M3} m³ per container. Staat “Huur container” uit, dan rekent de app met big bags.
                 </p>
               </div>

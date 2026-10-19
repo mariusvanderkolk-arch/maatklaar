@@ -126,7 +126,7 @@ export function PlanningScherm({ p }: { p: Project }) {
                   return (
                     <li key={d.datum} className={`flex gap-4 px-5 py-3 sm:px-6 ${gat ? 'border-t-2 border-t-sand-300' : ''}`}>
                       <div className="w-16 shrink-0">
-                        <p className="text-[0.7rem] font-semibold uppercase tracking-wider text-gold-700">{dagLabel(d.datum, { weekday: 'short' })}</p>
+                        <p className="text-[0.75rem] font-semibold uppercase tracking-wider text-gold-700">{dagLabel(d.datum, { weekday: 'short' })}</p>
                         <p className="tabnum text-[0.95rem] font-semibold text-ink">{dagLabel(d.datum, { day: 'numeric', month: 'short' })}</p>
                       </div>
                       <div className="flex min-w-0 flex-1 flex-wrap content-center gap-1.5">
@@ -220,7 +220,7 @@ function BudgetTegel({ titel, regel, sub, nadruk }: { titel: string; regel: Budg
   const over = regel.werkelijk > regel.begroot + 0.5
   return (
     <div className={`px-5 py-4 sm:px-6 ${nadruk ? 'bg-sand-50' : 'bg-paper'}`}>
-      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">{titel}</p>
+      <p className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">{titel}</p>
       <div className="mt-1.5 flex items-baseline justify-between gap-3">
         <p className="tabnum font-display text-[1.75rem] leading-none font-semibold text-ink">{euro(regel.werkelijk)}</p>
         <p className="tabnum text-right text-[0.78rem] text-ink-muted">
@@ -283,7 +283,7 @@ function UrenKaart({
       </form>
       {perTaak.length > 0 && (
         <div className="border-b border-sand-200 px-5 py-4 sm:px-6">
-          <p className="mb-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">Uren per taak · werkelijk / begroot</p>
+          <p className="mb-2.5 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">Uren per taak · werkelijk / begroot</p>
           <ul className="space-y-2.5">
             {perTaak.map((t) => {
               const pct = t.begroot > 0 ? t.werkelijk / t.begroot : 0
@@ -367,7 +367,7 @@ function KostenKaart({ pl, upd }: { pl: Planning; upd: (f: (x: Planning) => Plan
               <span className="tabnum w-14 shrink-0 text-[0.78rem] text-ink-muted">{dagLabel(k.datum, { day: 'numeric', month: 'short' })}</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[0.86rem] font-medium text-ink">{k.omschrijving}</span>
-                <span className="block text-[0.74rem] text-ink-muted">{KOST_SOORTEN.find((s) => s.value === k.soort)?.label}</span>
+                <span className="block text-[0.75rem] text-ink-muted">{KOST_SOORTEN.find((s) => s.value === k.soort)?.label}</span>
               </span>
               <span className="tabnum shrink-0 text-sm font-semibold">{euro(k.bedrag)}</span>
               <button type="button" aria-label="Kosten verwijderen" onClick={() => upd((x) => ({ ...x, kosten: x.kosten.filter((y) => y.id !== k.id) }))} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-rust/10 hover:text-rust">

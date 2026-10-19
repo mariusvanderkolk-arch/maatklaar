@@ -1,5 +1,5 @@
 import { HuisIllustratie } from '../components/HuisIllustratie'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
@@ -23,8 +23,21 @@ const STAPPEN = [
 ]
 
 
+function useGrootScherm() {
+  const [groot, zet] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(min-width: 1024px)').matches)
+  useEffect(() => {
+    const m = window.matchMedia?.('(min-width: 1024px)')
+    if (!m) return
+    const h = () => zet(m.matches)
+    m.addEventListener?.('change', h)
+    return () => m.removeEventListener?.('change', h)
+  }, [])
+  return groot
+}
+
 export function Home() {
   const projecten = useProjecten()
+  const groot = useGrootScherm()
   const gesorteerd = [...projecten].sort((a, b) => b.updatedAt - a.updatedAt)
   const bk = backupStatus.use()
   const [vraagReview, setVraagReview] = useState(() => reviewStatus.moetVragen())
@@ -63,7 +76,8 @@ export function Home() {
               )}
             </div>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.13] lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200 lg:opacity-100">
-              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.jpg`} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              {groot && (
               <video
                 className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
                 autoPlay
@@ -76,6 +90,7 @@ export function Home() {
                 <source src={`${import.meta.env.BASE_URL}hero-loop.webm`} type="video/webm" />
                 <source src={`${import.meta.env.BASE_URL}hero-loop.mp4`} type="video/mp4" />
               </video>
+              )}
             </div>
           </div>
           <ol className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-sand-200 px-6 py-6 sm:px-10 md:grid-cols-4">
@@ -114,7 +129,7 @@ export function Home() {
         <section className="mt-10" aria-labelledby="zo-werkt-titel" data-uitlegvideo>
           <div className="card overflow-hidden">
             <div className="px-5 pt-5 sm:px-8 sm:pt-6">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Uitleg in 76 seconden</p>
+              <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Uitleg in 76 seconden</p>
               <h2 id="zo-werkt-titel" className="mt-1 text-xl font-semibold text-ink">Zo werkt Maatklaar</h2>
               <p className="mt-1 text-sm text-ink-soft">Van project aanmaken en opmeten tot offerte met je eigen logo, laten tekenen en factuur.</p>
             </div>
@@ -124,7 +139,7 @@ export function Home() {
                 controls
                 playsInline
                 preload="none"
-                poster={`${import.meta.env.BASE_URL}uitleg-poster.jpg`}
+                poster={`${import.meta.env.BASE_URL}uitleg-poster-960.jpg`}
               >
                 <source src={`${import.meta.env.BASE_URL}uitleg.mp4`} type="video/mp4" />
                 Je browser kan deze video niet afspelen.
@@ -141,7 +156,7 @@ export function Home() {
                 <Sparkles className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Nieuw in versie {APP_VERSIE_KORT}</p>
+                <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Nieuw in versie {APP_VERSIE_KORT}</p>
                 <p className="mt-1 text-[0.95rem] leading-relaxed text-ink-soft">
                   <strong className="font-semibold text-ink">Inspreken</strong>: tik op de microfoon, zeg bijvoorbeeld “badkamer 2 bij 3 meter, tegels tot plafond,
                   inloopdouche, container 6 kuub” en Maatklaar vult ruimte, maten en onderdelen in. Je controleert alles eerst. Bekijk ook het voorbeeldproject
@@ -277,15 +292,15 @@ function ProjectKaart({ p }: { p: Project }) {
       </div>
       <dl className="mt-5 grid grid-cols-3 gap-3 rounded-xl bg-sand-50 px-4 py-3.5 ring-1 ring-sand-200">
         <div>
-          <dt className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Vloer</dt>
+          <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">Vloer</dt>
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{getal(o.vloer, 1)} m²</dd>
         </div>
         <div>
-          <dt className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">{p.type === 'vloer' ? 'Plinten' : p.type === 'keuken' ? 'Spatwand' : 'Wand'}</dt>
+          <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">{p.type === 'vloer' ? 'Plinten' : p.type === 'keuken' ? 'Spatwand' : 'Wand'}</dt>
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{p.type === 'vloer' ? `${getal(o.plintLengte, 1)} m` : `${getal(o.wandNetto, 1)} m²`}</dd>
         </div>
         <div>
-          <dt className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">Richtprijs</dt>
+          <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">Richtprijs</dt>
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{euro(Math.round(inkoop.totaal))}</dd>
         </div>
       </dl>

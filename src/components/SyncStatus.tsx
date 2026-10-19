@@ -20,7 +20,7 @@ export function SyncStatus({ status, klein = false }: { status: CloudStatus; kle
         ? 'bg-rust/10 text-rust ring-rust/20'
         : 'bg-sand-100 text-ink-soft ring-sand-300'
   return (
-    <span role="status" className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ring-1 ring-inset ${klein ? 'text-[0.72rem]' : 'text-[0.8rem]'} ${kleur}`}>
+    <span role="status" className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ring-1 ring-inset ${klein ? 'text-[0.75rem]' : 'text-[0.8rem]'} ${kleur}`}>
       <Icon className={`h-3.5 w-3.5 ${status === 'bezig' ? 'animate-spin' : ''}`} aria-hidden />
       {STATUS_TEKST[status]}
     </span>

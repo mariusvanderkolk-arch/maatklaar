@@ -35,7 +35,7 @@ function Chip({ actief, children, onClick }: { actief?: boolean; children: React
       type="button"
       aria-pressed={!!actief}
       onClick={onClick}
-      className={`tabnum h-8 rounded-full px-3 text-[0.8rem] font-medium ring-1 ring-inset transition ${
+      className={`tabnum h-11 rounded-full px-3.5 sm:h-8 sm:px-3 text-[0.8rem] font-medium ring-1 ring-inset transition ${
         actief ? 'bg-ink text-sand-50 ring-ink' : 'bg-white/70 text-ink-soft ring-sand-300 hover:ring-gold-400'
       }`}
     >
@@ -93,7 +93,7 @@ export function Measure({ p }: { p: Project }) {
               <div className="flex flex-wrap justify-end gap-2">
               <InsprekenKnop type={type} onToepassen={(r) => (upd((x) => pasInspraakToe(x, r)), toast('Overgenomen uit je inspraak'))} />
               <Button size="sm" variant="secondary" icon={<ScanLine className="h-4 w-4" />} onClick={() => setAr('open')} title="Meten met de camera via WebXR (beta)">
-                AR <span className="text-[0.65rem] font-semibold tracking-wide text-gold-700 uppercase">beta</span>
+                AR <span className="text-[0.75rem] font-semibold tracking-wide text-gold-700 uppercase">beta</span>
               </Button>
               </div>
             }
@@ -216,7 +216,7 @@ export function Measure({ p }: { p: Project }) {
                       type="button"
                       aria-label="Opening verwijderen"
                       onClick={() => setA({ openingen: a.openingen.filter((x) => x.id !== op.id) })}
-                      className="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-rust/10 hover:text-rust"
+                      className="grid h-11 w-11 place-items-center rounded-lg text-ink-muted sm:h-8 sm:w-8 hover:bg-rust/10 hover:text-rust"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -340,7 +340,7 @@ export function Measure({ p }: { p: Project }) {
                   ]
             ).map(([k, v]) => (
               <div key={k} className="bg-paper px-5 py-3.5">
-                <dt className="text-[0.68rem] font-semibold uppercase tracking-wider text-ink-muted">{k}</dt>
+                <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">{k}</dt>
                 <dd className="tabnum mt-0.5 text-[1.05rem] font-semibold text-ink">{v}</dd>
               </div>
             ))}

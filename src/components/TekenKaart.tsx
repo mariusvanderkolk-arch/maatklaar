@@ -159,7 +159,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
           </Button>
         )}
       </div>
-      <p className="mt-2 text-[0.72rem] leading-relaxed text-ink-muted">
+      <p className="mt-2 text-[0.75rem] leading-relaxed text-ink-muted">
         De offerte wordt als vaste versie op de server bewaard onder een geheime link. Alleen wie de link heeft kan hem openen en één keer tekenen.
       </p>
     </Card>

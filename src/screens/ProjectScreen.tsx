@@ -73,12 +73,12 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
                     <a
                       href={`#/project/${p.id}/${s.id}`}
                       aria-current={actief ? 'step' : undefined}
-                      className={`relative flex flex-col items-center justify-center gap-1 px-0.5 pt-2 pb-3 text-[0.72rem] font-medium transition sm:flex-row sm:justify-start sm:gap-2 sm:px-3.5 sm:pb-3.5 sm:text-sm ${
+                      className={`relative flex flex-col items-center justify-center gap-1 px-0.5 pt-2 pb-3 text-[0.75rem] font-medium transition sm:flex-row sm:justify-start sm:gap-2 sm:px-3.5 sm:pb-3.5 sm:text-sm ${
                         actief ? 'text-ink' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
                       <span
-                        className={`grid h-6 w-6 place-items-center rounded-full text-[0.72rem] font-semibold ring-1 transition ${
+                        className={`grid h-6 w-6 place-items-center rounded-full text-[0.75rem] font-semibold ring-1 transition ${
                           actief
                             ? 'bg-ink text-sand-50 ring-ink'
                             : klaar

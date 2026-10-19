@@ -87,7 +87,7 @@ function BedrijfSectie() {
         <div className="p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-4 rounded-xl bg-sand-50 p-4 ring-1 ring-sand-200">
             <div className="grid h-16 w-28 place-items-center overflow-hidden rounded-lg bg-white ring-1 ring-sand-300">
-              {b.logo ? <img src={b.logo} alt="Je logo" className="max-h-14 max-w-24 object-contain" /> : <span className="text-[0.72rem] text-ink-muted">Geen logo</span>}
+              {b.logo ? <img src={b.logo} alt="Je logo" className="max-h-14 max-w-24 object-contain" /> : <span className="text-[0.75rem] text-ink-muted">Geen logo</span>}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink">Logo</p>
@@ -222,9 +222,9 @@ function AiSectie() {
                         </span>
                       )}
                     </span>
-                    <span className={`text-[0.72rem] font-semibold ${x.id === 'gemini' ? 'text-[#4c6547]' : 'text-gold-700'}`}>{x.label}</span>
+                    <span className={`text-[0.75rem] font-semibold ${x.id === 'gemini' ? 'text-[#4c6547]' : 'text-gold-700'}`}>{x.label}</span>
                     <span className="text-[0.78rem] leading-snug text-ink-muted">{x.notitie}</span>
-                    {inst.sleutels[x.id] && <span className="text-[0.72rem] font-medium text-ink-soft">✓ Sleutel ingesteld</span>}
+                    {inst.sleutels[x.id] && <span className="text-[0.75rem] font-medium text-ink-soft">✓ Sleutel ingesteld</span>}
                   </label>
                 )
               })}

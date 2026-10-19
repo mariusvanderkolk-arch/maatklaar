@@ -106,7 +106,7 @@ export function Calculation({ p }: { p: Project }) {
                 const Icon = GROEP_ICONS[g.id]
                 return (
                   <section key={g.id} className="px-5 py-4 sm:px-6">
-                    <h3 className="mb-2 flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700">
+                    <h3 className="mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">
                       <Icon className="h-3.5 w-3.5" /> {g.naam}
                     </h3>
                     <ul>
@@ -121,7 +121,7 @@ export function Calculation({ p }: { p: Project }) {
                           </div>
                           <div className="shrink-0 text-right">
                             <p className="tabnum text-[1.05rem] font-semibold text-ink">{r.aantal}×</p>
-                            <p className="text-[0.72rem] whitespace-nowrap text-ink-muted">{r.verpakking}</p>
+                            <p className="text-[0.75rem] whitespace-nowrap text-ink-muted">{r.verpakking}</p>
                           </div>
                         </li>
                       ))}

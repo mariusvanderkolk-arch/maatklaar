@@ -166,7 +166,7 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
             <div className="px-5 py-5 sm:px-6">
               <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
                 <div>
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">Eigen prijzen</p>
+                  <p className="text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-ink-muted">Eigen prijzen</p>
                   <p className="tabnum mt-1 font-display text-[2.2rem] leading-none font-semibold">
                     {aantalEigen}
                     <span className="ml-1.5 font-sans text-sm font-medium text-ink-muted">van {TOTAAL} artikelen</span>
@@ -276,7 +276,7 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
                 const Icon = GROEP_ICONS[g.id]
                 return (
                   <section key={g.id}>
-                    <h2 className="flex items-center gap-2 bg-sand-50/80 px-5 py-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-gold-700 sm:px-6">
+                    <h2 className="flex items-center gap-2 bg-sand-50/80 px-5 py-2.5 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700 sm:px-6">
                       <Icon className="h-3.5 w-3.5" /> {g.naam}
                       <span className="ml-auto font-medium tracking-normal normal-case text-ink-muted">
                         {g.items.filter((i) => heeftEigen(eigen[i.id])).length}/{g.items.length} eigen
@@ -469,7 +469,7 @@ function PrijsRij({ item, e, toonLev, onDetail }: { item: CatalogusItem; e?: Eig
         <div className="w-[130px]">
           <PrijsInvoer label={`Prijs ${item.naam}`} waarde={e?.prijs} placeholder={vb != null ? prijsTekst(vb) : '—'} onChange={(v) => prijsStore.zet(item.id, { prijs: v })} />
         </div>
-        <span className="hidden w-6 text-[0.7rem] text-ink-muted md:inline">/{prijsEenheid(item.id)}</span>
+        <span className="hidden w-6 text-[0.75rem] text-ink-muted md:inline">/{prijsEenheid(item.id)}</span>
       </div>
       <button
         type="button"

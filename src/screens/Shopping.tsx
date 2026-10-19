@@ -90,7 +90,7 @@ export function Shopping({ p }: { p: Project }) {
                   const Icon = GROEP_ICONS[g.id]
                   return (
                     <section key={g.id} className="py-2">
-                      <h3 className="flex items-center gap-2 px-5 pt-3 pb-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-700 sm:px-6">
+                      <h3 className="flex items-center gap-2 px-5 pt-3 pb-1 text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700 sm:px-6">
                         <Icon className="h-3.5 w-3.5" /> <span className="flex-1">{g.naam}</span>
                         <span className="tabnum tracking-normal normal-case text-ink-soft">{euro(g.totaal)}</span>
                       </h3>
@@ -153,12 +153,12 @@ export function Shopping({ p }: { p: Project }) {
                                     <>
                                       <span className="tabnum block text-[0.92rem] font-semibold text-ink">{euro(r.totaal)}</span>
                                       <span className="mt-0.5 inline-flex flex-col items-end gap-0.5">
-                                        <span className="text-[0.72rem] text-ink-muted">
+                                        <span className="text-[0.75rem] text-ink-muted">
                                           {euro(r.prijs ?? 0)}/{prijsEenheid(r.id)}
                                         </span>
                                         {toonLev && r.leverancier && <Badge tone="sand">{r.leverancier}</Badge>}
                                         {inkoop.prijsStatus.eigen > 0 && inkoop.prijsStatus.voorbeeld > 0 && (
-                                          <span className={`text-[0.66rem] ${r.bron === 'eigen' ? 'font-semibold text-gold-700' : 'text-ink-muted'}`}>
+                                          <span className={`text-[0.75rem] ${r.bron === 'eigen' ? 'font-semibold text-gold-700' : 'text-ink-muted'}`}>
                                             {r.bron === 'eigen' ? 'eigen prijs' : 'voorbeeldprijs'}
                                           </span>
                                         )}
@@ -183,7 +183,7 @@ export function Shopping({ p }: { p: Project }) {
                 Vinkjes wissen
               </Button>
               <p className="text-right">
-                <span className="block text-[0.7rem] font-semibold uppercase tracking-wider text-ink-muted">
+                <span className="block text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">
                   Totaal materiaal
                 </span>
                 <span className="tabnum font-display text-[1.6rem] leading-tight font-semibold">{euro(inkoop.totaal)}</span>
@@ -195,7 +195,7 @@ export function Shopping({ p }: { p: Project }) {
         <aside className="order-1 space-y-5 lg:sticky lg:top-24 lg:order-2">
           <Card className="overflow-hidden">
             <div className="bg-ink px-5 py-5 text-sand-50 sm:px-6">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-gold-300">
+              <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-300">
                 {inkoop.prijsStatus.voorbeeld === 0 && inkoop.prijsStatus.eigen > 0 ? 'Totaal materiaal' : 'Richtprijs materiaal'}
               </p>
               <p className="tabnum mt-1.5 font-display text-[2.4rem] leading-none font-semibold">{euro(inkoop.totaal)}</p>
