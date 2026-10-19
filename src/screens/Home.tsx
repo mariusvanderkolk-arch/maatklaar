@@ -61,7 +61,7 @@ export function Home() {
         <Verhuiskaart />
         {/* Hero */}
         <section className="card relative overflow-hidden">
-          <div className="grid lg:grid-cols-[1.15fr_1fr]">
+          <div className="relative grid lg:grid-cols-[1.15fr_1fr]">
             <div className="relative z-10 self-center px-6 pt-8 pb-8 sm:px-10 sm:pt-12 lg:pb-12">
               <div className="flex flex-wrap items-center gap-2">
                 <Eyebrow>Badkamer · toilet · keuken · vloer</Eyebrow>
@@ -88,11 +88,11 @@ export function Home() {
                 </button>
               )}
             </div>
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.13] lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200 lg:opacity-100">
-              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-[center_80%] lg:object-cover" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200">
+              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-bottom opacity-[0.25] [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_55%,black_78%)] lg:[mask-image:none] lg:object-cover lg:opacity-100" />
               <video
                 ref={heroVideo}
-                className="absolute inset-0 h-full w-full object-contain object-[center_80%] motion-reduce:hidden lg:object-cover"
+                className="absolute inset-0 h-full w-full object-contain object-bottom opacity-[0.25] [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_55%,black_78%)] lg:[mask-image:none] motion-reduce:hidden lg:object-cover lg:opacity-100"
                 autoPlay={groot}
                 muted
                 loop
@@ -103,7 +103,7 @@ export function Home() {
                 <source src={`${import.meta.env.BASE_URL}hero-loop.webm`} type="video/webm" />
                 <source src={`${import.meta.env.BASE_URL}hero-loop.mp4`} type="video/mp4" />
               </video>
-              <div className="absolute inset-x-0 top-[22%] px-3 lg:hidden" data-woordmerk>
+              <div className="absolute inset-x-0 top-[22%] px-3 opacity-[0.13] lg:hidden" data-woordmerk>
                 <svg viewBox="0 0 1000 230" className="block w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
                   <text x="500" y="182" textAnchor="middle" textLength="980" lengthAdjust="spacingAndGlyphs" fill="#2b2620" fontFamily="'Cormorant Garamond', Georgia, serif" fontWeight="600" fontSize="250">
                     Maatklaar
