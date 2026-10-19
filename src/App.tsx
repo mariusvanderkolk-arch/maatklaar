@@ -1,4 +1,3 @@
-import Tarieven from './screens/Tarieven'
 import { Suspense, useEffect } from 'react'
 import { padVoor, track } from './lib/analytics'
 import { Shell } from './components/Shell'
@@ -65,7 +64,6 @@ export default function App() {
           {route.naam === 'factuur' && <FactuurScherm id={route.id} />}
           {route.naam === 'account' && <Account />}
           {route.naam === 'privacy' && <Privacy />}
-          {route.naam === 'tarieven' && <Tarieven />}
           {route.naam === 'voorwaarden' && <Voorwaarden />}
           {route.naam === 'abonnement' && <AbonnementScherm preview={route.preview} terug={route.terug} />}
         </Suspense>

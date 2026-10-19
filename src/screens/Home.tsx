@@ -1,4 +1,3 @@
-import { AftelKlok } from '../components/Aftelling'
 import { HuisIllustratie } from '../components/HuisIllustratie'
 import { useState } from 'react'
 import { ReviewsBlok } from '../components/Beoordeel'
@@ -109,17 +108,6 @@ export function Home() {
               </p>
             </div>
           </div>
-        </section>
-
-        {/* Lancering */}
-        <section className="mt-6" data-lancering>
-          <a href="#/tarieven" className="flex flex-col gap-3 rounded-2xl border border-gold-200 bg-gradient-to-r from-gold-100/60 to-paper px-5 py-4 transition hover:border-gold-300 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div className="min-w-0">
-              <p className="font-semibold text-ink">Nu gratis tijdens de lancering</p>
-              <p className="mt-0.5 text-sm text-ink-soft">Meld je vóór 1 januari 2027 aan en krijg daarna nog een half jaar gratis. <span className="font-medium text-gold-700 underline underline-offset-2">Bekijk tarieven</span></p>
-            </div>
-            <AftelKlok klein />
-          </a>
         </section>
 
         {/* Uitlegvideo */}
