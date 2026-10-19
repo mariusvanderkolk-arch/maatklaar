@@ -18,6 +18,7 @@ export type Route =
   | { naam: 'factuur'; id: string }
   | { naam: 'account' }
   | { naam: 'privacy' }
+  | { naam: 'tarieven' }
   | { naam: 'abonnement'; preview?: string; terug?: boolean }
 
 const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning']
@@ -35,6 +36,7 @@ export function parse(hash: string): Route {
   if (delen[0] === 'facturen') return { naam: 'facturen' }
   if (delen[0] === 'account') return { naam: 'account' }
   if (delen[0] === 'privacy') return { naam: 'privacy' }
+  if (delen[0] === 'tarieven') return { naam: 'tarieven' }
   if (delen[0] === 'voorwaarden') return { naam: 'voorwaarden' }
   if (delen[0] === 'offerte-tekenen' && delen[1]) return { naam: 'offerte-tekenen', token: delen[1] }
   if (delen[0] === 'factuur' && delen[1]) return { naam: 'factuur', id: delen[1] }
