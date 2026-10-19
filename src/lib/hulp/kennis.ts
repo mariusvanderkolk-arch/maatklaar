@@ -190,7 +190,7 @@ export const KENNIS: HulpItem[] = [
 
   // — Gratis, privacy, techniek
   { id: 'gratis', vraag: 'Is Maatklaar gratis?', woorden: ['gratis', 'kosten', 'betalen', 'abonnement', 'prijs app', 'pro', 'geld'],
-    antwoord: 'Ja, Maatklaar is op dit moment helemaal gratis en zonder limiet. Er komt mogelijk later een Pro-abonnement; je bestaande projecten blijven dan altijd van jou en bruikbaar.',
+    antwoord: 'Ja, Maatklaar is gratis en zonder limiet. Je projecten blijven altijd van jou.',
     links: [P('Over de app', '/over')] },
   { id: 'privacy', vraag: 'Wat gebeurt er met mijn gegevens (privacy)?', woorden: ['privacy', 'gegevens', 'avg', 'gdpr', 'veilig', 'server', 'delen', 'wie ziet'],
     antwoord: 'Zonder account blijft alles op je eigen apparaat. Met een account worden je gegevens beveiligd opgeslagen zodat alleen jij ze kunt zien. Foto’s gaan alleen naar een AI-dienst als je dat zelf doet met je eigen sleutel. Een offerte-link kan iedereen lezen die de link heeft.',
