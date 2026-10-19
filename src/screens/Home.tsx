@@ -89,10 +89,11 @@ export function Home() {
               )}
             </div>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200">
-              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-bottom opacity-[0.25] [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_55%,black_78%)] lg:[mask-image:none] lg:object-cover lg:opacity-100" />
+              <div className="absolute inset-0 opacity-[0.15] [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_62%,black_76%,transparent_88%)] lg:opacity-100 lg:[mask-image:none]">
+              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-bottom lg:object-cover" />
               <video
                 ref={heroVideo}
-                className="absolute inset-0 h-full w-full object-contain object-bottom opacity-[0.25] [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_55%,black_78%)] lg:[mask-image:none] motion-reduce:hidden lg:object-cover lg:opacity-100"
+                className="absolute inset-0 h-full w-full object-contain object-bottom motion-reduce:hidden lg:object-cover"
                 autoPlay={groot}
                 muted
                 loop
@@ -103,7 +104,8 @@ export function Home() {
                 <source src={`${import.meta.env.BASE_URL}hero-loop.webm`} type="video/webm" />
                 <source src={`${import.meta.env.BASE_URL}hero-loop.mp4`} type="video/mp4" />
               </video>
-              <div className="absolute inset-x-0 top-[22%] px-3 opacity-[0.13] lg:hidden" data-woordmerk>
+              </div>
+              <div className="absolute inset-x-0 top-[22%] px-3 opacity-[0.06] lg:hidden" data-woordmerk>
                 <svg viewBox="0 0 1000 230" className="block w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
                   <text x="500" y="182" textAnchor="middle" textLength="980" lengthAdjust="spacingAndGlyphs" fill="#2b2620" fontFamily="'Cormorant Garamond', Georgia, serif" fontWeight="600" fontSize="250">
                     Maatklaar
