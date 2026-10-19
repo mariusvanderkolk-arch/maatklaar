@@ -5,7 +5,6 @@ import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
 import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
-import { Plattegrond } from '../components/Plattegrond'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
@@ -14,7 +13,6 @@ import { euro, getal, kortDatum } from '../lib/format'
 import { ga } from '../lib/router'
 import { useProjecten } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
-import { standaardAfmetingen, standaardScope } from '../lib/defaults'
 import { actieveScope, ruimteLabel } from '../lib/ruimtes'
 import type { Project } from '../lib/types'
 
@@ -25,10 +23,6 @@ const STAPPEN = [
   { icon: ShoppingCart, titel: 'Inkooplijst', tekst: 'Met je eigen prijslijst' },
 ]
 
-const heroAfm = { ...standaardAfmetingen(), lengte: 2.8, breedte: 2.2, openingen: [
-  { id: 'd', type: 'deur' as const, breedte: 0.83, hoogte: 2.11, vanafVloer: 0 },
-  { id: 'r', type: 'raam' as const, breedte: 0.6, hoogte: 0.8, vanafVloer: 1.4 },
-] }
 
 export function Home() {
   const projecten = useProjecten()
@@ -69,12 +63,20 @@ export function Home() {
                 </button>
               )}
             </div>
-            <div className="relative hidden h-full min-h-[360px] items-center justify-center border-l border-sand-200 bg-sand-50/80 px-8 py-8 lg:flex">
-              <div className="absolute top-5 left-6 flex items-center gap-2">
-                <Badge tone="gold">Plattegrond</Badge>
-                <span className="text-xs text-ink-muted">wordt live getekend</span>
-              </div>
-              <Plattegrond afmetingen={heroAfm} scope={standaardScope()} className="w-full max-w-[400px]" bg="#F8F4ED" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.13] lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200 lg:opacity-100">
+              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.jpg`} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+              <video
+                className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={`${import.meta.env.BASE_URL}hero-loop-poster.jpg`}
+              >
+                <source src={`${import.meta.env.BASE_URL}hero-loop.webm`} type="video/webm" />
+                <source src={`${import.meta.env.BASE_URL}hero-loop.mp4`} type="video/mp4" />
+              </video>
             </div>
           </div>
           <ol className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-sand-200 px-6 py-6 sm:px-10 md:grid-cols-4">
