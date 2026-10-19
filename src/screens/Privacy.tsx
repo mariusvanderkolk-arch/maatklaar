@@ -39,7 +39,7 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
   {
     titel: 'Beoordelingen',
     tekst:
-      'Als je Maatklaar beoordeelt, bewaren we alleen de sterren, je tekst en (als je die invult) je naam en bedrijf, met datum. Openbaar wordt het pas als jij daar toestemming voor geeft én Marius het heeft gecontroleerd. Wil je je beoordeling laten verwijderen? Stuur Marius een bericht.',
+      'Als je Maatklaar beoordeelt, bewaren we alleen de sterren, je tekst en (als je die invult) je naam en bedrijf, met datum. Openbaar wordt het pas als jij daar toestemming voor geeft én het Maatklaar-team het heeft gecontroleerd. Wil je je beoordeling laten verwijderen? Stuur ons een bericht.',
   },
 ]
 

@@ -60,7 +60,7 @@ function antwoordBericht(vraag: string): Bericht {
   if (a.soort === 'zeker') return { van: 'hulp', tekst: a.item.antwoord, links: a.item.links, opties: a.anders.map((x) => x.id), vraag, contact: a.item.id === 'contact' || a.item.id === 'fout' }
   if (a.opties.length)
     return { van: 'hulp', tekst: 'Weet ik niet zeker. Bedoel je een van deze?', opties: a.opties.map((x) => x.id), vraag, contact: true }
-  return { van: 'hulp', tekst: 'Weet ik niet zeker. Probeer het anders te vragen, kies hieronder een onderwerp, of vraag het Marius.', opties: ['start', 'offerte', 'prijzen'], vraag, contact: true }
+  return { van: 'hulp', tekst: 'Weet ik niet zeker. Probeer het anders te vragen, kies hieronder een onderwerp, of stel je vraag aan het Maatklaar-team.', opties: ['start', 'offerte', 'prijzen'], vraag, contact: true }
 }
 
 export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onClose: () => void; route: Route; hoog: boolean }) {
@@ -219,7 +219,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
             {b.contact && (
               <div className="mt-2.5 flex flex-wrap gap-1.5">
                 <a href={whatsappLink(contactTekst(b.vraag))} target="_blank" rel="noopener" className="inline-flex items-center gap-1 rounded-full bg-[#E6EFE2] px-3 py-1.5 text-[0.78rem] font-medium text-[#2F5A33] ring-1 ring-[#CADBC4]">
-                  <MessageCircle className="h-3.5 w-3.5" /> Vraag Marius via WhatsApp
+                  <MessageCircle className="h-3.5 w-3.5" /> Vraag het Maatklaar-team via WhatsApp
                 </a>
                 <a href={CONTACT_MAIL ? `mailto:${CONTACT_MAIL}?subject=${encodeURIComponent('Vraag over Maatklaar')}&body=${encodeURIComponent(contactTekst(b.vraag))}` : mailtoLink(contactTekst(b.vraag))} className="inline-flex items-center gap-1 rounded-full bg-sand-100 px-3 py-1.5 text-[0.78rem] font-medium text-ink-soft ring-1 ring-sand-300">
                   <Mail className="h-3.5 w-3.5" /> Mail

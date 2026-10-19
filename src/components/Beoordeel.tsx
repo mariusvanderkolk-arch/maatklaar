@@ -53,7 +53,7 @@ export function BeoordeelDialoog() {
       open={open}
       onClose={() => setOpen(false)}
       title="Beoordeel Maatklaar"
-      sub="Hoe bevalt de app? Je beoordeling helpt Marius de app beter te maken."
+      sub="Hoe bevalt de app? Je beoordeling helpt ons de app beter te maken."
       footer={
         <>
           <Button variant="ghost" onClick={() => setOpen(false)}>
@@ -87,9 +87,9 @@ export function BeoordeelDialoog() {
         </div>
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink-soft">
           <input type="checkbox" className="mt-0.5 h-4 w-4 accent-gold-600" checked={toestemming} onChange={(e) => setToestemming(e.target.checked)} />
-          <span>Mijn beoordeling (met naam/bedrijf als ingevuld) mag openbaar op de site worden getoond, na controle door Marius.</span>
+          <span>Mijn beoordeling (met naam/bedrijf als ingevuld) mag openbaar op de site worden getoond, na controle door het Maatklaar-team.</span>
         </label>
-        <p className="text-xs text-ink-muted">Zonder vinkje is je beoordeling alleen zichtbaar voor Marius. Er wordt niets anders van je opgeslagen.</p>
+        <p className="text-xs text-ink-muted">Zonder vinkje is je beoordeling alleen zichtbaar voor het Maatklaar-team. Er wordt niets anders van je opgeslagen.</p>
       </div>
     </Dialog>
   )

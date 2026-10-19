@@ -122,7 +122,7 @@ export const KENNIS: HulpItem[] = [
     antwoord: 'Ja. Bij stap Offerte tik je op "Tekenlink delen" en stuur je de link via WhatsApp of mail. De klant bekijkt de offerte, typt zijn naam, tekent met de vinger en geeft akkoord. Jij ziet daarna "Getekend op …" met de handtekening, en die staat ook op de geprinte offerte/PDF. Wijzig je de offerte daarna, deel dan een nieuwe tekenlink.',
     links: [P('Naar Offerte', 'project:offerte')] },
   { id: 'beoordelen', vraag: 'Hoe kan ik Maatklaar beoordelen?', woorden: ['beoordelen', 'beoordeling', 'review', 'sterren', 'recensie', 'mening', 'waardering'],
-    antwoord: 'Tik onderaan de pagina op "Beoordeel Maatklaar" (of bij Over de app). Geef 1 tot 5 sterren en eventueel een korte reactie, naam en bedrijf. Alleen als je het vinkje zet en Marius het heeft gecontroleerd, wordt je beoordeling openbaar getoond.',
+    antwoord: 'Tik onderaan de pagina op "Beoordeel Maatklaar" (of bij Over de app). Geef 1 tot 5 sterren en eventueel een korte reactie, naam en bedrijf. Alleen als je het vinkje zet en het Maatklaar-team het heeft gecontroleerd, wordt je beoordeling openbaar getoond.',
     links: [P('Over de app', '/over')] },
   { id: 'onvoorzien', vraag: 'Kan ik een post onvoorzien opnemen?', woorden: ['onvoorzien', 'stelpost', 'meerwerk', 'buffer', 'risico', 'marge'],
     antwoord: 'Ja. Bij stap Offerte vul je "Onvoorzien" in als percentage (standaard 5% bij nieuwe projecten). Het bedrag komt als aparte regel op de offerte en in de factuur.',
@@ -205,10 +205,10 @@ export const KENNIS: HulpItem[] = [
     antwoord: 'De offerte rekent met bedragen inclusief 21% btw (ook het uurtarief is incl. btw). Een factuur krijgt een btw-specificatie. Je btw-nummer vul je in bij Instellingen → Bedrijf. Twijfel je over 9% of 21% (bijv. arbeid bij woningrenovatie)? Vraag het je boekhouder.',
     links: [P('Bedrijfsgegevens', '/instellingen/bedrijf')] },
   { id: 'fout', vraag: 'Ik zie een foutmelding of iets werkt niet', woorden: ['fout', 'error', 'bug', 'kapot', 'werkt niet', 'probleem', 'vastgelopen', 'crash'],
-    antwoord: 'Probeer eerst de pagina opnieuw te laden. Werkt het daarna nog niet, open de app dan in Chrome en maak voor de zekerheid een back-up. Laat het Marius weten (knop hieronder) met wat je deed; dan lossen we het op.',
+    antwoord: 'Probeer eerst de pagina opnieuw te laden. Werkt het daarna nog niet, open de app dan in Chrome en maak voor de zekerheid een back-up. Laat het ons weten (knop hieronder) met wat je deed; dan lossen we het op.',
     links: [P('Back-up', '/instellingen/backup')] },
-  { id: 'contact', vraag: 'Hoe neem ik contact op?', woorden: ['contact', 'marius', 'vraag stellen', 'hulp nodig', 'feedback', 'idee', 'suggestie', 'telefoon'],
-    antwoord: 'Stuur Marius een bericht via WhatsApp of mail met de knoppen hieronder. Ideeën en feedback zijn heel welkom!' },
+  { id: 'contact', vraag: 'Hoe neem ik contact op?', woorden: ['contact', 'maatklaar-team', 'vraag stellen', 'hulp nodig', 'feedback', 'idee', 'suggestie', 'telefoon'],
+    antwoord: 'Stuur het Maatklaar-team een bericht via WhatsApp of mail met de knoppen hieronder. Ideeën en feedback zijn heel welkom!' },
 ]
 
 export const kennisVan = (id: string) => KENNIS.find((k) => k.id === id)

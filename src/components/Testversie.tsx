@@ -52,7 +52,7 @@ export function FeedbackDialoog({ open, onClose }: { open: boolean; onClose: () 
       open={open}
       onClose={onClose}
       title="Feedback geven"
-      sub="Vijf korte vragen. Je stuurt het zelf naar Marius via WhatsApp of e-mail."
+      sub="Vijf korte vragen. Je stuurt het zelf naar het Maatklaar-team via WhatsApp of e-mail."
       footer={
         <>
           <Button
@@ -62,7 +62,7 @@ export function FeedbackDialoog({ open, onClose }: { open: boolean; onClose: () 
             disabled={!klaar}
             onClick={async () => {
               const ok = (await kopieer(tekst)) === 'gekopieerd'
-              toast(ok ? 'Feedback gekopieerd – plak het in een bericht aan Marius' : 'Kopiëren lukte niet', ok ? 'ok' : 'fout')
+              toast(ok ? 'Feedback gekopieerd – plak het in een bericht aan het Maatklaar-team' : 'Kopiëren lukte niet', ok ? 'ok' : 'fout')
             }}
           >
             Kopiëren
