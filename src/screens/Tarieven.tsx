@@ -43,7 +43,7 @@ export default function Tarieven() {
             <div className="rounded-2xl bg-paper p-4 ring-1 ring-sand-200">
               <p className="text-xs font-semibold uppercase tracking-wider text-gold-700">Vanaf 1 januari 2027</p>
               <p className="mt-1 text-2xl font-semibold text-ink">€20 <span className="text-base font-normal text-ink-soft">per maand, excl. btw</span></p>
-              <p className="mt-1 text-sm text-ink-soft">Je krijgt eerst bericht; er wordt niets automatisch afgeschreven.</p>
+              <p className="mt-1 text-sm text-ink-soft">Maandelijks opzegbaar.</p>
             </div>
           </div>
           <p className="mt-5 rounded-xl bg-gold-100/70 px-4 py-3 text-sm font-medium text-ink ring-1 ring-gold-200">
