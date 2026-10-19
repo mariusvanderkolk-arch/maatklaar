@@ -8,10 +8,8 @@ describe('billing-vlag', () => {
     expect(BILLING_AAN).toBe(false)
     expect(magNieuwProject({ aan: BILLING_AAN, abo: null, aantal: 999 }).mag).toBe(true)
   })
-  it('verborgen voorbeeldroute', () => {
-    expect(parse('#/abonnement?preview=1')).toEqual({ naam: 'abonnement', preview: 'gratis', terug: false })
-    expect(parse('#/abonnement?preview=trial')).toMatchObject({ preview: 'trial' })
-    expect(parse('#/abonnement?terug=1')).toMatchObject({ preview: undefined, terug: true })
+  it('abonnementsroute is uitgeschakeld (valt terug op home)', () => {
+    expect(parse('#/abonnement?preview=1')).toEqual(parse('#/'))
     expect(parse('#/prijzen')).toEqual({ naam: 'prijzen', terugNaar: undefined })
   })
 })

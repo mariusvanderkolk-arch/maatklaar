@@ -27,7 +27,7 @@ const SCHERMEN = [
     icon: FileSignature,
     bij: [ShieldCheck],
     titel: 'Offerte, akkoord en planning',
-    tekst: 'Stuur de klant een offerte-link, maak een factuur en plan de uren. Vul onder Prijzen je eigen inkoop in. Alles blijft op dit apparaat — de app is nu gratis (versie ' + APP_VERSIE_KORT + '). Maak af en toe een back-up.',
+    tekst: 'Stuur de klant een offerte-link, maak een factuur en plan de uren. Vul onder Prijzen je eigen inkoop in. Alles blijft op dit apparaat — de app is gratis (versie ' + APP_VERSIE_KORT + '). Maak af en toe een back-up.',
   },
 ]
 

@@ -78,7 +78,7 @@ export function About() {
       <PageTitle
         eyebrow="Over de app"
         title="Maatklaar"
-        sub={`Versie ${APP_VERSIE} · nu gratis. Een rekenhulp voor aannemers en klussers bij het renoveren van badkamers, toiletten, keukens en vloeren: van opmeten tot een nette inkooplijst, offerte en factuur.`}
+        sub={`Versie ${APP_VERSIE} · gratis. Een rekenhulp voor aannemers en klussers bij het renoveren van badkamers, toiletten, keukens en vloeren: van opmeten tot een nette inkooplijst, offerte en factuur.`}
       />
       <div className="mt-8 grid gap-4">
         {BLOKKEN.map((b) => (

@@ -39,7 +39,7 @@ export function Home() {
             <div className="relative z-10 self-center px-6 pt-8 pb-8 sm:px-10 sm:pt-12 lg:pb-12">
               <div className="flex flex-wrap items-center gap-2">
                 <Eyebrow>Badkamer · toilet · keuken · vloer</Eyebrow>
-                <Badge tone="gold">Versie {APP_VERSIE_KORT} · nu gratis</Badge>
+                <Badge tone="gold">Versie {APP_VERSIE_KORT} · gratis</Badge>
               </div>
               <h1 className="mt-3 text-[2.5rem] leading-[1.02] font-semibold text-ink sm:text-[3.4rem]">
                 Van opmeten tot offerte, <span className="text-gold-600 italic">helder</span> op de bouw.
