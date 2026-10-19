@@ -1,5 +1,5 @@
 import { HuisIllustratie } from '../components/HuisIllustratie'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
@@ -38,6 +38,19 @@ function useGrootScherm() {
 export function Home() {
   const projecten = useProjecten()
   const groot = useGrootScherm()
+  const heroVideo = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    // Op telefoons: eerst de poster, de video pas starten als de pagina geladen en rustig is.
+    const v = heroVideo.current
+    if (!v || groot || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    let klaar = false
+    const start = () => { if (klaar) return; klaar = true; v.preload = 'auto'; v.play().catch(() => {}) }
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }
+    const naLaden = () => (w.requestIdleCallback ? w.requestIdleCallback(start, { timeout: 2500 }) : setTimeout(start, 1200))
+    if (document.readyState === 'complete') naLaden()
+    else window.addEventListener('load', naLaden, { once: true })
+    return () => window.removeEventListener('load', naLaden)
+  }, [groot])
   const gesorteerd = [...projecten].sort((a, b) => b.updatedAt - a.updatedAt)
   const bk = backupStatus.use()
   const [vraagReview, setVraagReview] = useState(() => reviewStatus.moetVragen())
@@ -76,6 +89,20 @@ export function Home() {
               )}
             </div>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.13] lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200 lg:opacity-100">
+              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-[center_80%] lg:object-cover" />
+              <video
+                ref={heroVideo}
+                className="absolute inset-0 h-full w-full object-contain object-[center_80%] motion-reduce:hidden lg:object-cover"
+                autoPlay={groot}
+                muted
+                loop
+                playsInline
+                preload={groot ? 'metadata' : 'none'}
+                poster={`${import.meta.env.BASE_URL}hero-loop-poster.webp`}
+              >
+                <source src={`${import.meta.env.BASE_URL}hero-loop.webm`} type="video/webm" />
+                <source src={`${import.meta.env.BASE_URL}hero-loop.mp4`} type="video/mp4" />
+              </video>
               <div className="absolute inset-x-0 top-[22%] px-3 lg:hidden" data-woordmerk>
                 <svg viewBox="0 0 1000 230" className="block w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
                   <text x="500" y="182" textAnchor="middle" textLength="980" lengthAdjust="spacingAndGlyphs" fill="#2b2620" fontFamily="'Cormorant Garamond', Georgia, serif" fontWeight="600" fontSize="250">
@@ -83,21 +110,6 @@ export function Home() {
                   </text>
                 </svg>
               </div>
-              <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 hidden h-full w-full object-cover lg:block" />
-              {groot && (
-              <video
-                className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                poster={`${import.meta.env.BASE_URL}hero-loop-poster.jpg`}
-              >
-                <source src={`${import.meta.env.BASE_URL}hero-loop.webm`} type="video/webm" />
-                <source src={`${import.meta.env.BASE_URL}hero-loop.mp4`} type="video/mp4" />
-              </video>
-              )}
             </div>
           </div>
           <ol className="grid grid-cols-2 gap-x-4 gap-y-5 border-t border-sand-200 px-6 py-6 sm:px-10 md:grid-cols-4">
