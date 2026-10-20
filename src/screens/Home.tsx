@@ -1,3 +1,4 @@
+import { VEILIG_PUNTEN } from '../lib/veiligheid'
 import { Welkom } from '../components/Welkom'
 import { HuisIllustratie } from '../components/HuisIllustratie'
 import { useEffect, useRef, useState } from 'react'
@@ -5,7 +6,7 @@ import { OpvolgBadge } from '../components/OpvolgBadge'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
-import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, Plus, ShoppingCart, Sparkles, Tags } from 'lucide-react'
+import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, Plus, ShoppingCart, ShieldCheck, Sparkles, Tags } from 'lucide-react'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
@@ -142,15 +143,36 @@ export function Home() {
         </section>
 
         {/* Privacybelofte */}
-        <section className="mt-8" data-vertrouwen>
-          <div className="flex items-start gap-3 rounded-2xl border border-gold-200 bg-gold-100/40 px-5 py-4 sm:px-6">
-            <span aria-hidden className="mt-0.5 text-lg">🔒</span>
-            <div className="min-w-0 text-sm leading-relaxed">
-              <p className="font-semibold text-ink">Jouw projecten blijven op jouw eigen apparaat. Wij zien je klanten en prijzen niet.</p>
-              <p className="mt-1 text-ink-soft">
-                Deel je een offerte, dan staat die veilig en afgeschermd in een versleutelde EU-database en verloopt de link vanzelf.{' '}
-                <a href="#/privacy" className="font-medium text-gold-700 underline underline-offset-2 hover:text-ink">Lees de privacyverklaring</a>
-              </p>
+        <section className="mt-8" aria-labelledby="veilig-titel" data-vertrouwen>
+          <div className="card overflow-hidden">
+            <div className="grid gap-5 p-5 sm:p-7 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+              <div>
+                <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Veilig &amp; AVG</p>
+                <h2 id="veilig-titel" className="mt-1 text-xl font-semibold text-ink">Jouw gegevens, goed beschermd</h2>
+                <ul className="mt-3 space-y-2 text-sm leading-relaxed text-ink-soft">
+                  {VEILIG_PUNTEN.map((p) => (
+                    <li key={p} className="flex gap-2">
+                      <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a href="#/privacy" className="mt-3 inline-block text-sm font-medium text-gold-700 underline underline-offset-2 hover:text-ink">
+                  Lees de privacyverklaring
+                </a>
+              </div>
+              <video
+                className="aspect-video w-full rounded-xl bg-sand-100 ring-1 ring-sand-200"
+                controls
+                playsInline
+                preload="none"
+                aria-label="Video: Veilig en AVG bij Maatklaar (23 seconden, met ondertiteling)"
+                poster={`${import.meta.env.BASE_URL}veiligheid-poster.jpg`}
+              >
+                <source src={`${import.meta.env.BASE_URL}veiligheid.mp4`} type="video/mp4" />
+                <track kind="captions" srcLang="nl" label="Nederlands" src={`${import.meta.env.BASE_URL}veiligheid.nl.vtt`} />
+                Je browser kan deze video niet afspelen.
+              </video>
             </div>
           </div>
         </section>
