@@ -4,19 +4,21 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 export const MOLLIE = 'https://api.mollie.com/v2'
 
 /** Prijzen exclusief btw; INCL_BTW=true als de bedragen al incl. btw zijn. Zelfde als src/lib/billing/config.ts. */
-export const PRIJZEN: Record<string, number> = { maand: 9.99, jaar: 99 }
+/** Geen prijs in de code: zet PRIJS_MAAND / PRIJS_JAAR als secret. Zonder secret weigert betalen. */
+export const PRIJZEN: Record<string, number> = { maand: Number(Deno.env.get('PRIJS_MAAND') ?? 0), jaar: Number(Deno.env.get('PRIJS_JAAR') ?? 0) }
 export const BTW = 0.21
 export const INTERVAL: Record<string, string> = { maand: '1 month', jaar: '12 months' }
 
 export function bedrag(plan: string): string {
   const p = PRIJZEN[plan]
   if (p == null) throw new Error('Onbekend plan')
+  if (!Number.isFinite(p) || p <= 0) throw new Error('Geen prijs ingesteld')
   const incl = Deno.env.get('PRICES_INCL_VAT') === 'true' ? p : Math.round(p * (1 + BTW) * 100) / 100
   return incl.toFixed(2)
 }
 
 export const cors = {
-  'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
+  'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? 'https://maatklaar.nl',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }

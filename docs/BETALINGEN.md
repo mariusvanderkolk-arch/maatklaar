@@ -14,7 +14,7 @@ Voorbeeldschermen (niets wordt afgesloten):
 |---|---|---|
 | Actieve projecten | 2 (voorbeeldprojecten tellen niet) | onbeperkt |
 | Alle kernfuncties (opmeten, ontwerp, berekening, offerte, factuur) | ja | ja |
-| Prijs | €0 | €9,99 per maand of €99 per jaar |
+| Prijs | €0 | nog niet vastgesteld (in te stellen via VITE_PRIJS_MAAND/JAAR en PRIJS_MAAND/JAAR) |
 | Proefperiode | — | 14 dagen, zonder betaalgegevens, één keer per account |
 
 - Prijzen staan in `src/lib/billing/config.ts` en `supabase/functions/_shared/mollie.ts`. Standaard **exclusief btw**:

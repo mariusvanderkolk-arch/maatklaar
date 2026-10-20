@@ -65,8 +65,13 @@ export function markeerWijzigingen(meta: Meta, docs: Doc[], nu: number): { meta:
       gewijzigd++
     }
   }
+  // Veiligheidsrem: verdwijnt (bijna) alles tegelijk, dan is de lokale opslag waarschijnlijk gewist of kapot.
+  // Dan GEEN verwijderingen naar de cloud sturen; de cloudversie zet het daarna gewoon terug.
+  const levend = Object.entries(uit).filter(([, m]) => !m.weg)
+  const weg = levend.filter(([k]) => !gezien.has(k)).length
+  const verdacht = weg >= 3 && weg >= levend.length * 0.8
   for (const [k, m] of Object.entries(uit)) {
-    if (!gezien.has(k) && !m.weg) {
+    if (!verdacht && !gezien.has(k) && !m.weg) {
       uit[k] = { ...m, weg: true, vuil: true, tijd: Math.max(nu, m.tijd + 1) }
       gewijzigd++
     }

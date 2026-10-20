@@ -208,7 +208,7 @@ export function AbonnementScherm({ preview, terug }: { preview?: string; terug?:
         {vb && abo?.status === 'active' ? (
           <ul className="divide-y divide-sand-200 text-sm">
             {[
-              ['Jaarabonnement Pro', '119,79', -40],
+              ['Jaarabonnement Pro', '0,00', -40],
               ['Proefperiode', '0,00', -54],
             ].map(([w, b, d]) => (
               <li key={String(w)} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">

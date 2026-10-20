@@ -8,7 +8,9 @@ const env = import.meta.env as Record<string, string | undefined>
 export const BILLING_AAN = env.VITE_BILLING_ENABLED === 'true'
 
 /** Prijzen in euro's. Standaard EXCLUSIEF btw (zakelijke klanten). Laat dit nakijken door je boekhouder. */
-export const PRIJZEN = { maand: 9.99, jaar: 99 } as const
+/** Er is nog GEEN prijs vastgesteld. Alleen via build-variabelen (VITE_PRIJS_MAAND / VITE_PRIJS_JAAR) in te stellen; standaard 0. */
+const getal = (v: string | undefined) => (v && Number.isFinite(Number(v)) ? Number(v) : 0)
+export const PRIJZEN: Record<'maand' | 'jaar', number> = { maand: getal(env.VITE_PRIJS_MAAND), jaar: getal(env.VITE_PRIJS_JAAR) }
 export const PRIJS_INCL_BTW = env.VITE_PRICES_INCL_VAT === 'true'
 export const BTW = 0.21
 

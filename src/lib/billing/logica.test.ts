@@ -63,13 +63,18 @@ describe('Pro-rechten', () => {
 
 describe('prijzen', () => {
   it('standaard excl. btw; Mollie rekent incl. 21% btw', () => {
-    expect(teBetalen('maand', false)).toBe(12.09)
-    expect(teBetalen('jaar', false)).toBe(119.79)
-    expect(teBetalen('maand', true)).toBe(9.99)
-    const l = prijsLabel('maand', false)
+    const P = { maand: 10, jaar: 100 }
+    expect(teBetalen('maand', false, P)).toBe(12.1)
+    expect(teBetalen('jaar', false, P)).toBe(121)
+    expect(teBetalen('maand', true, P)).toBe(10)
+    const l = prijsLabel('maand', false, P)
     expect(l.btw).toBe('excl. btw')
-    expect(l.sub).toMatch(/12,09.*incl\. 21% btw/)
-    expect(prijsLabel('jaar', true).btw).toBe('incl. btw')
-    expect(jaarBesparing()).toBe(2)
+    expect(l.sub).toMatch(/12,10.*incl\. 21% btw/)
+    expect(prijsLabel('jaar', true, P).btw).toBe('incl. btw')
+    expect(jaarBesparing(P)).toBe(2)
+  })
+  it('er staat geen prijs in de code (standaard 0)', () => {
+    expect(teBetalen('maand', true)).toBe(0)
+    expect(jaarBesparing()).toBe(0)
   })
 })

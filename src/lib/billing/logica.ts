@@ -71,23 +71,23 @@ export function magNieuwProject(o: { aan: boolean; abo: Abonnement | null; aanta
 const euro = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n)
 
 /** Bedrag dat bij Mollie wordt afgeschreven (altijd incl. btw). */
-export function teBetalen(plan: Plan, inclBtw = PRIJS_INCL_BTW): number {
-  const p = PRIJZEN[plan]
+export function teBetalen(plan: Plan, inclBtw = PRIJS_INCL_BTW, prijzen: Record<Plan, number> = PRIJZEN): number {
+  const p = prijzen[plan]
   return inclBtw ? p : Math.round(p * (1 + BTW) * 100) / 100
 }
 
-export function prijsLabel(plan: Plan, inclBtw = PRIJS_INCL_BTW) {
-  const p = PRIJZEN[plan]
+export function prijsLabel(plan: Plan, inclBtw = PRIJS_INCL_BTW, prijzen: Record<Plan, number> = PRIJZEN) {
+  const p = prijzen[plan]
   return {
     bedrag: euro(p),
     per: plan === 'maand' ? 'per maand' : 'per jaar',
     btw: inclBtw ? 'incl. btw' : 'excl. btw',
-    sub: inclBtw ? `${euro(Math.round((p / (1 + BTW)) * 100) / 100)} excl. btw` : `${euro(teBetalen(plan, false))} incl. ${Math.round(BTW * 100)}% btw`,
+    sub: inclBtw ? `${euro(Math.round((p / (1 + BTW)) * 100) / 100)} excl. btw` : `${euro(teBetalen(plan, false, prijzen))} incl. ${Math.round(BTW * 100)}% btw`,
   }
 }
 
 /** Besparing van jaar t.o.v. 12 × maand, in hele maanden. */
-export const jaarBesparing = () => Math.round((PRIJZEN.maand * 12 - PRIJZEN.jaar) / PRIJZEN.maand)
+export const jaarBesparing = (prijzen: Record<Plan, number> = PRIJZEN) => (prijzen.maand > 0 ? Math.round((prijzen.maand * 12 - prijzen.jaar) / prijzen.maand) : 0)
 
 export function statusTekst(a: Abonnement | null, nu = Date.now()): string {
   if (!a) return 'Gratis'

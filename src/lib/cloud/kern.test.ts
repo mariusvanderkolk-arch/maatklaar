@@ -19,6 +19,16 @@ describe('markeerWijzigingen', () => {
     const { meta: m } = markeerWijzigingen(meta, [], 900)
     expect(m['factuur/f1']).toMatchObject({ weg: true, vuil: true, tijd: 900 })
   })
+
+  it('stuurt geen massale verwijdering als de lokale opslag ineens leeg is', () => {
+    const meta: Meta = {}
+    for (const id of ['a', 'b', 'c', 'd']) meta[`project/${id}`] = { hash: hashVan({ id }), tijd: 1, vuil: false, server: 'x' }
+    const { meta: m, gewijzigd } = markeerWijzigingen(meta, [], 900)
+    expect(gewijzigd).toBe(0)
+    expect(Object.values(m).some((x) => x.weg)).toBe(false)
+    const een = markeerWijzigingen(meta, ['a', 'b', 'c'].map((id) => ({ soort: 'project' as const, id, data: { id } })), 900)
+    expect(een.meta['project/d']).toMatchObject({ weg: true })
+  })
 })
 
 describe('verwerkRemote', () => {
