@@ -286,8 +286,8 @@ export function KlantTekenen({ token }: { token: string }) {
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gold-100 text-gold-700 ring-1 ring-gold-200">
             <FileWarning className="h-6 w-6" />
           </span>
-          <h1 className="mt-5 text-3xl font-semibold">Offerte niet te openen</h1>
-          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{FOUT_TEKST[status.fout]}</p>
+          <h1 className="mt-5 text-3xl font-semibold">{status.fout === 'ingetrokken' ? 'Deze link is niet meer geldig' : 'Offerte niet te openen'}</h1>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted" data-testid="klant-fout">{FOUT_TEKST[status.fout]}</p>
         </div>
       </Kader>
     )

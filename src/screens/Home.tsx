@@ -9,6 +9,10 @@ import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
 import { backupStatus } from '../lib/backupActies'
+import { useCloud } from '../lib/cloud/sync'
+import { opslag } from '../lib/veiligeOpslag'
+import { sleutel } from '../lib/modus'
+import { iosZonderBeginscherm } from '../lib/vasteOpslag'
 import { euro, getal, kortDatum } from '../lib/format'
 import { ga } from '../lib/router'
 import { useProjecten } from '../lib/store'
@@ -54,6 +58,8 @@ export function Home() {
   }, [groot])
   const gesorteerd = [...projecten].sort((a, b) => b.updatedAt - a.updatedAt)
   const bk = backupStatus.use()
+  const cloud = useCloud()
+  const [hintWeg, setHintWeg] = useState(() => Number(opslag.getItem(sleutel('apparaat-hint:v1')) || 0) > Date.now())
   const [vraagReview, setVraagReview] = useState(() => reviewStatus.moetVragen())
   const herinner = backupHerinnering({ projecten, laatsteBackup: bk.laatste, gesnoozed: bk.later })
   return (
@@ -245,6 +251,30 @@ export function Home() {
               }
             >
               Je projecten staan alleen in deze browser. Met een back-upbestand raak je niets kwijt als je browsergegevens wist of van toestel wisselt.
+            </Notice>
+          )}
+          {!herinner && !hintWeg && !cloud.gebruiker && projecten.some((x) => !x.voorbeeld) && (
+            <Notice
+              className="mb-5"
+              title="Je gegevens staan alleen op dit apparaat"
+              action={
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => { opslag.setItem(sleutel('apparaat-hint:v1'), String(Date.now() + 30 * 24 * 3600e3)); setHintWeg(true) }}>
+                    Begrepen
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => ga('/instellingen/backup')}>
+                    Back-up maken
+                  </Button>
+                  <Button size="sm" variant="primary" onClick={() => ga('/account')}>
+                    Inloggen
+                  </Button>
+                </div>
+              }
+            >
+              <span data-testid="apparaat-hint">
+                Projecten en foto's staan nu alleen in deze browser. Wis je je browsergegevens of raak je je telefoon kwijt, dan zijn ze weg. Log in om ze (ook foto's) veilig in je account te bewaren, of maak een back-up.
+                {typeof navigator !== 'undefined' && iosZonderBeginscherm(navigator.userAgent, (navigator as { standalone?: boolean }).standalone === true) && ' Op iPhone: zet de app op je beginscherm, anders kan Safari je gegevens na een tijd wissen.'}
+              </span>
             </Notice>
           )}
           {gesorteerd.length === 0 ? (

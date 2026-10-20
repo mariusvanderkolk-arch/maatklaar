@@ -67,6 +67,21 @@ export const useCloud = () =>
   )
 export const cloudStaat = () => staat
 
+/** Supabase-client als er iemand ingelogd is (anders null; laadt de bibliotheek dan niet). */
+export const ingelogdeClient = (): SupabaseClient | null => (staat.gebruiker && client ? client : null)
+
+/** JWT van de ingelogde gebruiker (voor RPC's die de eigenaar vastleggen), anders null. */
+export async function toegangsToken(): Promise<string | null> {
+  const c = ingelogdeClient()
+  if (!c) return null
+  try {
+    const { data } = await c.auth.getSession()
+    return data.session?.access_token ?? null
+  } catch {
+    return null
+  }
+}
+
 /** Per apparaat: voor welke gebruiker de sync loopt, of er toestemming is, en de meta per document. */
 interface SyncOpslag {
   userId: string | null
@@ -445,6 +460,8 @@ export async function verwijderCloudGegevens() {
 /** Verwijdert het account (en via 'on delete cascade' alle cloudgegevens). Lokaal blijft staan. */
 export async function verwijderAccount() {
   const c = await zekerClient()
+  // foto's in Storage eerst wissen (best effort; de map is alleen voor deze gebruiker)
+  if (staat.gebruiker) await (await import('../fotoCloud')).wisAlleCloudFotos(c, staat.gebruiker.id).catch(() => {})
   const { error } = await c.rpc('delete_my_account')
   if (error) throw error
   await c.auth.signOut({ scope: 'local' }).catch(() => {})

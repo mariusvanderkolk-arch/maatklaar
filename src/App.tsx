@@ -2,6 +2,7 @@ import { Suspense, useEffect } from 'react'
 import { padVoor, track } from './lib/analytics'
 import { Shell } from './components/Shell'
 import { useRoute } from './lib/router'
+import { projectStore } from './lib/store'
 import { Home } from './screens/Home'
 import { Toaster } from './components/Toast'
 import { Foutgrens } from './components/Foutgrens'
@@ -51,9 +52,23 @@ export default function App() {
         }),
       )
     }
+    let fotoLaatst = 0
+    const fotos = () => {
+      if (document.hidden || Date.now() - fotoLaatst < 5 * 60_000) return
+      fotoLaatst = Date.now()
+      void import('./lib/fotoCloud').then((m) => m.fotoSyncNu())
+    }
+    // eerste echte gebruik: browser vragen de opslag niet op te ruimen
+    if (projectStore.alle().some((p) => !p.voorbeeld)) void import('./lib/vasteOpslag').then((m) => m.vraagVasteOpslag())
     kijk()
+    const t = setTimeout(fotos, 4000) // na het starten van de cloud-sync
     document.addEventListener('visibilitychange', kijk)
-    return () => document.removeEventListener('visibilitychange', kijk)
+    document.addEventListener('visibilitychange', fotos)
+    return () => {
+      clearTimeout(t)
+      document.removeEventListener('visibilitychange', kijk)
+      document.removeEventListener('visibilitychange', fotos)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen'])
   if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen')

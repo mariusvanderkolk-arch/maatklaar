@@ -31,7 +31,11 @@ export async function controleerOffertes(o: { gezienId?: string; ophalen?: Ophal
   const nieuw: Project[] = []
   for (const p of teControleren(projectStore.alle())) {
     const r = await ophalen(p.offerte!.teken!.token)
-    if (!r.ok) continue
+    if (!r.ok) {
+      // op een ander apparaat ingetrokken: lokaal ook zo tonen
+      if ((r as { fout?: string }).fout === 'ingetrokken') projectStore.werkBij(p.id, (x) => (x.offerte?.teken ? { ...x, offerte: { ...x.offerte, teken: { ...x.offerte.teken, ingetrokkenOp: new Date().toISOString() } } } : x))
+      continue
+    }
     const huidig = projectStore.alle().find((x) => x.id === p.id)
     if (!huidig) continue
     const v = verwerkStatus(huidig, r.data, huidig.id === o.gezienId)

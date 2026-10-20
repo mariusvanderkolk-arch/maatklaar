@@ -3,6 +3,8 @@ import { Camera, ImagePlus, Images, Trash2, X } from 'lucide-react'
 import { Button, Card, CardHeader, useFocusVal } from './ui'
 import { bewaarFoto, useFotoUrl, verkleinFoto, verwijderFoto } from '../lib/photos'
 import { projectStore } from '../lib/store'
+import { vraagVasteOpslag } from '../lib/vasteOpslag'
+import { useCloud } from '../lib/cloud/sync'
 import { uid } from '../lib/defaults'
 import { kortDatum } from '../lib/format'
 import type { PhotoRef, Project } from '../lib/types'
@@ -13,6 +15,8 @@ export function Fotos({ p }: { p: Project }) {
   const [bezig, setBezig] = useState(false)
   const [fout, setFout] = useState<string>()
   const [open, setOpen] = useState<PhotoRef>()
+  const cloud = useCloud()
+  const inCloud = !!cloud.gebruiker && cloud.syncAan
 
   async function voegToe(files: FileList | null) {
     if (!files?.length) return
@@ -28,6 +32,8 @@ export function Fotos({ p }: { p: Project }) {
         nieuw.push(ref)
       }
       projectStore.werkBij(p.id, (x) => ({ ...x, fotos: [...x.fotos, ...nieuw] }))
+      void vraagVasteOpslag()
+      if (nieuw.length) void import('../lib/fotoCloud').then((m) => m.fotoSyncNu())
     } catch (e) {
       setFout(e instanceof Error && e.message.startsWith('Foto-opslag') ? e.message : 'De foto kon niet worden opgeslagen. Controleer of er genoeg opslagruimte is.')
     } finally {
@@ -39,6 +45,7 @@ export function Fotos({ p }: { p: Project }) {
 
   async function verwijder(f: PhotoRef) {
     await verwijderFoto(f.id).catch(() => {})
+    void import('../lib/fotoCloud').then((m) => m.verwijderFotoOveral(f.id))
     projectStore.werkBij(p.id, (x) => ({ ...x, fotos: x.fotos.filter((y) => y.id !== f.id) }))
     setOpen(undefined)
   }
@@ -69,7 +76,9 @@ export function Fotos({ p }: { p: Project }) {
               <Images className="h-5 w-5" />
             </span>
             <p className="text-sm leading-snug text-ink-muted">
-              Nog geen foto's. Ze worden verkleind en alleen op dit apparaat bewaard. Handig voor later, en voor de optionele AI-analyse hieronder.
+              {inCloud
+                ? "Nog geen foto's. Ze worden verkleind en op dit apparaat bewaard, met een beveiligde kopie in je account. Handig voor later, en voor de optionele AI-analyse hieronder."
+                : "Nog geen foto's. Ze worden verkleind en alleen op dit apparaat bewaard. Log in om ze ook veilig in je account te bewaren. Handig voor later, en voor de optionele AI-analyse hieronder."}
             </p>
           </div>
         ) : (

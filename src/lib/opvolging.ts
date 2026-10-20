@@ -1,7 +1,7 @@
 /** Offerte-opvolging: status, herinneringen en meldingen. Pure functies (getest in opvolging.test.ts). */
 import type { OfferteStatus, Project } from './types'
 
-export type Opvolgstatus = 'concept' | 'verstuurd' | 'bekeken' | 'getekend' | 'verlopen'
+export type Opvolgstatus = 'concept' | 'verstuurd' | 'bekeken' | 'getekend' | 'verlopen' | 'ingetrokken'
 type Teken = NonNullable<OfferteStatus['teken']>
 
 export const OPVOLG_LABEL: Record<Opvolgstatus, string> = {
@@ -10,6 +10,7 @@ export const OPVOLG_LABEL: Record<Opvolgstatus, string> = {
   bekeken: 'Bekeken',
   getekend: 'Getekend',
   verlopen: 'Verlopen',
+  ingetrokken: 'Link ingetrokken',
 }
 
 /** Standaard aantal dagen zonder handtekening voordat de app een herinnering voorstelt. */
@@ -27,13 +28,14 @@ export function opvolgstatus(p: Pick<Project, 'offerte'>, nu = Date.now()): Opvo
   const t = p.offerte?.teken
   if (!t) return p.offerte?.akkoord ? 'getekend' : 'concept'
   if (t.getekend) return 'getekend'
+  if (t.ingetrokkenOp) return 'ingetrokken'
   if (isoDag(nu) > geldigTot(t)) return 'verlopen'
   return t.bekekenOp ? 'bekeken' : 'verstuurd'
 }
 
 /** Moet de app een herinnering voorstellen? Alleen als gedeeld, niet getekend, niet verlopen en X dagen stil. */
 export function herinneringNodig(t: Teken | undefined, nu = Date.now(), naDagen = HERINNER_NA_DAGEN): boolean {
-  if (!t || t.getekend) return false
+  if (!t || t.getekend || t.ingetrokkenOp) return false
   if (isoDag(nu) > geldigTot(t)) return false
   const laatst = Math.max(t.gedeeldOp, t.herinnerdOp ?? 0)
   return nu - laatst >= naDagen * DAG
@@ -54,7 +56,7 @@ export function herinneringTekst(klant: string, project: string, link: string, b
 export function teControleren(projecten: Project[], nu = Date.now()): Project[] {
   return projecten.filter((p) => {
     const t = p.offerte?.teken
-    return !!t && !t.getekend && isoDag(nu) <= geldigTot(t)
+    return !!t && !t.getekend && !t.ingetrokkenOp && isoDag(nu) <= geldigTot(t)
   })
 }
 

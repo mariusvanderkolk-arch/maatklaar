@@ -108,6 +108,8 @@ export const projectStore = {
     return bewaar(nieuw.map(normaliseerProject))
   },
   voegToe(p: Project) {
+    // eerste echte gebruik: browser vragen deze gegevens niet automatisch op te ruimen
+    if (!p.voorbeeld) void import('./vasteOpslag').then((m) => m.vraagVasteOpslag())
     return bewaar([p, ...projecten])
   },
   werkBij(id: string, wijzig: (p: Project) => Project) {

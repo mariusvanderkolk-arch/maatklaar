@@ -148,6 +148,10 @@ export interface OfferteStatus {
     herinnerdOp?: number
     /** getekend, maar de aannemer heeft het nog niet gezien (melding/badge) */
     nieuwGetekend?: boolean
+    /** geheim waarmee (ook zonder account) deze link kan worden ingetrokken; alleen lokaal/in eigen sync */
+    eigenaarGeheim?: string
+    /** link ingetrokken (ISO) */
+    ingetrokkenOp?: string
   }
 }
 

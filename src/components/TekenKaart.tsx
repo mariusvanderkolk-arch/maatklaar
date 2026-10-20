@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, BellRing, Eye, MessageCircle, PenLine, ReceiptText, Share2 } from 'lucide-react'
+import { Bell, BellRing, Eye, Link2Off, MessageCircle, PenLine, ReceiptText, Share2 } from 'lucide-react'
 import { Button, Card } from './ui'
 import { OpvolgBadge } from './OpvolgBadge'
 import { dagenSinds, herinneringNodig, herinneringTekst, opvolgstatus } from '../lib/opvolging'
@@ -8,7 +8,8 @@ import { meldingStand, vraagMeldingen } from '../lib/meldingen'
 import { geldigeTermijnen, TERMIJN_VOORSTELLEN } from '../lib/factuur'
 import { toast } from './Toast'
 import { codeerOfferte, type OfferteData } from '../lib/offerte'
-import { deelVoorOndertekening, FOUT_TEKST, haalTekenStatus, tekenLink } from '../lib/ondertekenen'
+import { deelVoorOndertekening, FOUT_TEKST, haalTekenStatus, tekenLink, trekLinkIn } from '../lib/ondertekenen'
+import { toegangsToken } from '../lib/cloud/sync'
 import { kopieer } from '../lib/share'
 import { projectStore } from '../lib/store'
 import { track } from '../lib/analytics'
@@ -44,11 +45,12 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
 
   // status ophalen en (zolang niet getekend) elke 20 s opnieuw, alleen als het tabblad zichtbaar is
   useEffect(() => {
-    if (!t || t.getekend) return
+    if (!t || t.getekend || t.ingetrokkenOp) return
     let weg = false
     const kijk = async () => {
       if (document.hidden) return
       const r = await haalTekenStatus(t.token)
+      if (!weg && !r.ok && r.fout === 'ingetrokken') zet({ ingetrokkenOp: new Date().toISOString() })
       if (weg || !r.ok) return
       const huidig = projectStore.alle().find((x) => x.id === p.id)
       if (!huidig) return
@@ -63,7 +65,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
       clearInterval(id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t?.token, t?.getekend])
+  }, [t?.token, t?.getekend, t?.ingetrokkenOp])
 
   // getekend gezien: badge "Nieuw" weg
   useEffect(() => {
@@ -76,18 +78,21 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
   const [meldStand, setMeldStand] = useState(meldingStand)
   const herinner = herinneringNodig(t)
   const status = opvolgstatus(p)
-  const bruikbaar = !!t && !t.getekend && !gewijzigd
+  const bruikbaar = !!t && !t.getekend && !gewijzigd && !t.ingetrokkenOp
 
   /** Maakt een nieuwe tekenlink; geeft de url terug (of null bij een fout). */
   const maakLink = async (): Promise<string | null> => {
     setBezig(true)
-    const r = await deelVoorOndertekening(d)
+    const jwt = await toegangsToken()
+    const r = await deelVoorOndertekening(d, fetch, jwt)
     setBezig(false)
     if (!r.ok) {
       toast(r.fout === 'niet-beschikbaar' ? 'Digitaal tekenen is nog niet beschikbaar. Deel voorlopig de gewone offerte-link.' : FOUT_TEKST[r.fout], 'fout')
       return null
     }
-    zet({ token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot, getekend: undefined, bekekenOp: undefined, herinnerdOp: undefined, nieuwGetekend: undefined })
+    zet({ token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot, getekend: undefined, bekekenOp: undefined, herinnerdOp: undefined, nieuwGetekend: undefined, eigenaarGeheim: r.data.owner_secret, ingetrokkenOp: undefined })
+    // de vorige, niet-getekende link vervalt: klant ziet dan "nieuwe versie, vraag de nieuwste link" (stil bij fouten)
+    if (t && !t.getekend && !t.ingetrokkenOp && t.token !== r.data.token) void trekLinkIn(t.token, t.eigenaarGeheim, fetch, jwt)
     return tekenLink(r.data.token)
   }
 
@@ -122,6 +127,23 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
     setTermijnen(pcts.length ? pcts : [100])
   }
 
+  const intrekken = async () => {
+    if (!t || t.getekend) return
+    if (!window.confirm('Link intrekken? De klant kan de offerte dan niet meer openen of tekenen. Je kunt daarna een nieuwe link delen.')) return
+    setBezig(true)
+    const r = await trekLinkIn(t.token, t.eigenaarGeheim, fetch, await toegangsToken())
+    setBezig(false)
+    if (r.ok) {
+      zet({ ingetrokkenOp: r.data.revoked_at || new Date().toISOString() })
+      track('offerte_shared', { detail: 'ingetrokken' })
+      return toast('Link ingetrokken. De klant ziet nu dat hij een nieuwe link moet vragen.')
+    }
+    if (r.fout === 'al-getekend') return toast('De klant heeft net getekend; de link blijft staan.', 'fout')
+    if (r.fout === 'niet-beschikbaar') return toast('Intrekken is nog niet beschikbaar. De link verloopt vanzelf na 90 dagen.', 'fout')
+    if (r.fout === 'netwerk') return toast(FOUT_TEKST.netwerk, 'fout')
+    toast(`${FOUT_TEKST['geen-eigenaar']} Oudere links verlopen vanzelf na 90 dagen.`, 'fout')
+  }
+
   const nieuw = async () => {
     const link = await maakLink()
     if (!link) return
@@ -152,7 +174,9 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
       {t && !t.getekend && (
         <p className="mt-3 text-[0.8rem] text-ink-soft">
           Tekenlink gedeeld op {tijd(new Date(t.gedeeldOp).toISOString())}.{' '}
-          {t.bekekenOp ? (
+          {t.ingetrokkenOp ? (
+            <span className="font-medium text-ink" data-testid="ingetrokken">Je hebt deze link ingetrokken op {tijd(t.ingetrokkenOp)}. De klant ziet een vriendelijke melding; deel een nieuwe tekenlink als dat nodig is.</span>
+          ) : t.bekekenOp ? (
             <span className="inline-flex items-center gap-1 font-medium text-ink">
               <Eye className="h-3.5 w-3.5" aria-hidden="true" /> Door de klant bekeken op {tijd(t.bekekenOp)}.
             </span>
@@ -182,7 +206,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
         </div>
       )}
 
-      {t && !t.getekend && status !== 'verlopen' && (meldStand === 'uit' || meldStand === 'aan') && (
+      {t && !t.getekend && status !== 'verlopen' && status !== 'ingetrokken' && (meldStand === 'uit' || meldStand === 'aan') && (
         <p className="mt-3 flex items-center gap-1.5 text-[0.8rem] text-ink-soft">
           <Bell className="h-3.5 w-3.5" aria-hidden="true" />
           {meldStand === 'aan' ? (
@@ -236,7 +260,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
       )}
 
       <div className="mt-4 grid gap-2">
-        {!t?.getekend && (
+        {!t?.getekend && !t?.ingetrokkenOp && (
           <button
             type="button"
             onClick={viaWhatsapp}
@@ -247,7 +271,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
             <MessageCircle className="h-5 w-5" /> {bezig ? 'Link maken…' : 'Deel via WhatsApp'}
           </button>
         )}
-        {t && !t.getekend && !gewijzigd ? (
+        {t && !t.getekend && !gewijzigd && !t.ingetrokkenOp ? (
           <Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => deelLink(tekenLink(t.token), `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`)}>
             Tekenlink opnieuw delen
           </Button>
@@ -257,6 +281,11 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
           </Button>
         )}
       </div>
+      {t && !t.getekend && !t.ingetrokkenOp && (
+        <button type="button" onClick={intrekken} disabled={bezig} data-testid="link-intrekken" className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-[0.85rem] font-medium text-rust underline-offset-2 hover:underline disabled:opacity-45">
+          <Link2Off className="h-4 w-4" aria-hidden="true" /> Link intrekken
+        </button>
+      )}
       <p className="mt-2 text-[0.75rem] leading-relaxed text-ink-muted">
         De offerte wordt als vaste versie op de server bewaard onder een geheime link. Alleen wie de link heeft kan hem openen en één keer tekenen.
       </p>
