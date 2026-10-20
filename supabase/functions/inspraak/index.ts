@@ -1,6 +1,8 @@
 // Maatklaar – Inspreken: zet een gesproken/getypte omschrijving om naar projectvelden met Google Gemini.
 // POST { tekst } → { resultaat }   (503 zolang GEMINI_API_KEY niet is ingesteld; de app valt dan terug op de eigen regel-parser)
-// Eén bestand, zonder imports: kan zo in het Supabase-dashboard worden geplakt. Zet "Verify JWT" UIT (de app stuurt de publishable key).
+// Eén bestand, zonder imports: kan zo in het Supabase-dashboard worden geplakt.
+// ALLEEN VOOR INGELOGDE GEBRUIKERS: de app stuurt het toegangstoken (JWT) van de gebruiker; de functie controleert dat bij Supabase Auth.
+// Zonder geldige gebruiker (geen token, of alleen de publishable/anon key): 401.
 // Secrets: GEMINI_API_KEY (verplicht), GEMINI_MODEL (optioneel, standaard gemini-flash-latest, met lichtere modellen als terugval), APP_ORIGIN (optioneel, komma-gescheiden).
 
 const toegestaan = () => (Deno.env.get('APP_ORIGIN') ?? 'https://maatklaar.nl').split(',').map((x) => x.trim().replace(/\/$/, '')).filter(Boolean)
@@ -47,7 +49,7 @@ Let op fouten van spraakherkenning (Android): Engelse woorden ("floor" = vloer, 
 De ruimtematen in meter (bijv. "2 bij 3") zijn iets anders dan tegelmaten in cm (bijv. "60 bij 60").
 Laat velden weg die niet genoemd worden. Verzin niets.`
 
-// Eenvoudige limiet per instantie: max 10/min per IP en 60/min in totaal (beperkt misbruik van het gratis Gemini-quotum).
+// Eenvoudige limiet per instantie: max 10/min per gebruiker en 60/min in totaal (beperkt misbruik van het gratis Gemini-quotum).
 const recent = new Map<string, number[]>()
 let totaal: number[] = []
 function teVaak(ip: string) {
@@ -61,15 +63,35 @@ function teVaak(ip: string) {
   return lijst.length > 10 || totaal.length > 60
 }
 
+/** Controleert het token bij Supabase Auth; geeft de gebruikers-id terug of null. */
+async function gebruikerVan(req: Request): Promise<string | null> {
+  const auth = req.headers.get('authorization') ?? ''
+  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : ''
+  if (!token || token.startsWith('sb_')) return null // publishable/secret key is geen gebruiker
+  const url = Deno.env.get('SUPABASE_URL')
+  const anon = Deno.env.get('SUPABASE_ANON_KEY') ?? req.headers.get('apikey') ?? ''
+  if (!url) return null
+  try {
+    const r = await fetch(`${url}/auth/v1/user`, { headers: { apikey: anon, authorization: `Bearer ${token}` } })
+    if (!r.ok) return null
+    const u = (await r.json()) as { id?: string; role?: string; is_anonymous?: boolean }
+    return u?.id && !u.is_anonymous ? u.id : null
+  } catch {
+    return null
+  }
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin') ?? ''
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsVoor(origin) })
   if (req.method !== 'POST') return json(origin, { error: 'Alleen POST.' }, 405)
   // Alleen exact toegestane origins (geen 'begint met': https://maatklaar.nl.evil.example mag niet). Zonder Origin-header: weigeren.
   if (!toegestaan().includes(origin)) return json(origin, { error: 'Niet toegestaan.' }, 403)
+  const gebruiker = await gebruikerVan(req)
+  if (!gebruiker) return json(origin, { error: 'Log in (gratis) om in te spreken.' }, 401)
   const key = Deno.env.get('GEMINI_API_KEY')
   if (!key) return json(origin, { error: 'Geen Gemini-sleutel ingesteld.' }, 503)
-  if (teVaak(req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'onbekend')) return json(origin, { error: 'Even wachten.' }, 429)
+  if (teVaak(gebruiker)) return json(origin, { error: 'Even wachten.' }, 429)
   let tekst = ''
   try {
     const ruw = await req.text()

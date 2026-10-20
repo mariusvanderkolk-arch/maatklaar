@@ -1,3 +1,4 @@
+import { Welkom } from '../components/Welkom'
 import { HuisIllustratie } from '../components/HuisIllustratie'
 import { useEffect, useRef, useState } from 'react'
 import { OpvolgBadge } from '../components/OpvolgBadge'
@@ -66,6 +67,7 @@ export function Home() {
     <div className="bg-grain">
       <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
         <Verhuiskaart />
+        <Welkom />
         {/* Hero */}
         <section className="card relative overflow-hidden">
           <div className="relative grid lg:grid-cols-[1.15fr_1fr]">

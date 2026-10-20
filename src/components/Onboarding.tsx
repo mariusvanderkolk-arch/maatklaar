@@ -7,6 +7,7 @@ import { projectStore } from '../lib/store'
 import { sleutel } from '../lib/modus'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { opslag } from '../lib/veiligeOpslag'
+import { RONDLEIDING_EVENT } from '../lib/welkom'
 
 export const ONBOARDING_SLEUTEL = sleutel('onboarding')
 
@@ -32,14 +33,17 @@ const SCHERMEN = [
 ]
 
 export function Onboarding() {
-  const [open, setOpen] = useState(() => {
-    try {
-      return !opslag.getItem(ONBOARDING_SLEUTEL)
-    } catch {
-      return false
-    }
-  })
+  // Opent niet meer vanzelf: de welkomstkaart biedt de rondleiding aan (geen dubbele pop-up voor nieuwe bezoekers).
+  const [open, setOpen] = useState(false)
   const [i, setI] = useState(0)
+  useEffect(() => {
+    const f = () => {
+      setI(0)
+      setOpen(true)
+    }
+    window.addEventListener(RONDLEIDING_EVENT, f)
+    return () => window.removeEventListener(RONDLEIDING_EVENT, f)
+  }, [])
   const venster = useRef<HTMLDivElement>(null)
   const titelId = useId()
   useFocusVal(venster, open)

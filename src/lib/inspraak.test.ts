@@ -29,12 +29,31 @@ describe('schoon (AI-uitvoer)', () => {
 describe('verwerkInspraak', () => {
   it('gebruikt AI-resultaat als de functie werkt', async () => {
     const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ resultaat: { type: 'keuken', aan: ['spatwand'], uit: [] } }) }) as Response)
-    expect(await verwerkInspraak('keuken', f as unknown as typeof fetch)).toEqual({ r: { type: 'keuken', aan: ['spatwand'], uit: [] }, bron: 'ai' })
+    expect(await verwerkInspraak('keuken', f as unknown as typeof fetch, async () => 'jwt')).toEqual({ r: { type: 'keuken', aan: ['spatwand'], uit: [] }, bron: 'ai' })
   })
   it('valt terug op regels zonder sleutel of offline', async () => {
-    const z = await verwerkInspraak('toilet 1 bij 2', (async () => ({ ok: false, status: 503, json: async () => ({}) })) as unknown as typeof fetch)
+    const z = await verwerkInspraak('toilet 1 bij 2', (async () => ({ ok: false, status: 503, json: async () => ({}) })) as unknown as typeof fetch, async () => 'jwt')
     expect(z).toMatchObject({ bron: 'regels', reden: 'geen-sleutel', r: { type: 'toilet', lengte: 2 } })
-    expect((await verwerkInspraak('toilet', (async () => { throw new Error() }) as unknown as typeof fetch)).reden).toBe('offline')
+    expect((await verwerkInspraak('toilet', (async () => { throw new Error() }) as unknown as typeof fetch, async () => 'jwt')).reden).toBe('offline')
+  })
+})
+
+describe('inspreken alleen ingelogd', () => {
+  it('stuurt het token van de gebruiker mee', async () => {
+    const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ resultaat: { aan: [], uit: [] } }) }) as Response)
+    await verwerkInspraak('toilet', f as unknown as typeof fetch, async () => 'jwt-123')
+    const init = (f.mock.calls[0] as unknown as [string, RequestInit])[1]
+    expect((init.headers as Record<string, string>).authorization).toBe('Bearer jwt-123')
+  })
+  it('roept de server niet aan zonder login', async () => {
+    const f = vi.fn()
+    const z = await verwerkInspraak('toilet 1 bij 2', f as unknown as typeof fetch, async () => null)
+    expect(f).not.toHaveBeenCalled()
+    expect(z).toMatchObject({ bron: 'regels', reden: 'inloggen' })
+  })
+  it('401 van de server → inloggen', async () => {
+    const z = await verwerkInspraak('toilet', (async () => ({ ok: false, status: 401, json: async () => ({}) })) as unknown as typeof fetch, async () => 'oud')
+    expect(z.reden).toBe('inloggen')
   })
 })
 
@@ -82,7 +101,7 @@ describe('AI-uitslag aanvullen', () => {
     const zin = 'badkamer 2 bij 3 tegels tot het plafond ongeveer 240 hoog tegels maat van de tegels worden 60 bij 60 Floor en 3060 wandtegels'
     const ai = { aan: ['wandtegels', 'vloertegels'], uit: [], breedte: 2, hoogte: 2.4, lengte: 3, notitie: 'vloertegels 60x60, wandtegels 30x60', tegelhoogte: 'plafond', type: 'badkamer' }
     const f = (async () => ({ ok: true, status: 200, json: async () => ({ resultaat: ai }) })) as unknown as typeof fetch
-    const { r, bron } = await verwerkInspraak(zin, f)
+    const { r, bron } = await verwerkInspraak(zin, f, async () => 'jwt')
     expect(bron).toBe('ai')
     expect(r).toMatchObject({ wandtegel: { lengte: 60, breedte: 30 }, vloertegel: { lengte: 60, breedte: 60 } })
     expect(r.notitie).toBeUndefined()

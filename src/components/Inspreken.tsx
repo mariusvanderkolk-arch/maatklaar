@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, Info, Mic, MicOff, Sparkles } from 'lucide-react'
 import { Button, Dialog } from './ui'
+import { useCloud } from '../lib/cloud/sync'
+import { ga } from '../lib/router'
 import { AFVAL_SOORTEN } from '../lib/calc'
 import { isAndroid, plakVast, transcriptUit } from '../lib/spraak'
 import { verwerkInspraak, type Inspraak } from '../lib/inspraak'
@@ -52,6 +54,7 @@ export function InsprekenKnop({ type, onToepassen, className = '' }: { type: Pro
 
 function InsprekenDialoog({ type, onClose, onToepassen }: { type: ProjectType; onClose: () => void; onToepassen: (r: Inspraak) => void }) {
   const [tekst, setTekst] = useState('')
+  const cloud = useCloud()
   const [luistert, setLuistert] = useState(false)
   const [micFout, setMicFout] = useState('')
   const [bezig, setBezig] = useState(false)
@@ -155,6 +158,43 @@ function InsprekenDialoog({ type, onClose, onToepassen }: { type: ProjectType; o
           <p className="text-sm text-ink-muted">Er is niets herkend. Ga terug en probeer het met ruimte, maten en onderdelen, bijvoorbeeld: “{VOORBEELD_ZIN}”</p>
         )}
         <p className="mt-3 text-xs text-ink-muted">Bij toepassen worden alleen deze punten aangepast; de rest van je project blijft staan.</p>
+      </Dialog>
+    )
+  }
+
+  if (!cloud.gebruiker) {
+    return (
+      <Dialog
+        open
+        onClose={onClose}
+        title="Inspreken"
+        sub="Vertel wat er moet gebeuren; Maatklaar vult de ruimte, maten en onderdelen voor je in."
+        footer={
+          <>
+            <Button variant="ghost" onClick={onClose}>
+              Later
+            </Button>
+            <Button
+              icon={<Mic className="h-4 w-4" />}
+              onClick={() => {
+                onClose()
+                ga('/account')
+              }}
+            >
+              Inloggen
+            </Button>
+          </>
+        }
+      >
+        <div data-testid="inspraak-inloggen" className="rounded-2xl bg-gold-100/60 px-4 py-4 text-[0.92rem] leading-relaxed text-ink ring-1 ring-gold-300">
+          <p className="font-semibold">Log in (gratis) om in te spreken</p>
+          <p className="mt-1 text-ink-soft">
+            Inspreken gebruikt slimme herkenning op onze server. Met een gratis account werkt het direct.{' '}
+            <a href="#/account" onClick={onClose} className="font-medium text-ink underline underline-offset-4">
+              Inloggen of account maken
+            </a>
+          </p>
+        </div>
       </Dialog>
     )
   }

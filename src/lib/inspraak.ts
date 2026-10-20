@@ -225,13 +225,28 @@ export function regelParser(invoer: string): Inspraak {
 
 export const INSPRAAK_URL = `${SUPABASE_URL}/functions/v1/inspraak`
 
-export async function verwerkInspraak(invoer: string, f: typeof fetch = fetch): Promise<{ r: Inspraak; bron: 'ai' | 'regels'; reden?: string }> {
+/** Haalt het toegangstoken van de ingelogde gebruiker (lazy, zodat de cloudcode alleen laadt als het nodig is). */
+const standaardToken = async (): Promise<string | null> => (await import('./cloud/sync')).toegangsToken()
+
+/** Inspreken via de server mag alleen voor ingelogde gebruikers (beschermt het AI-quotum). */
+export async function verwerkInspraak(
+  invoer: string,
+  f: typeof fetch = fetch,
+  haalToken: () => Promise<string | null> = standaardToken,
+): Promise<{ r: Inspraak; bron: 'ai' | 'regels'; reden?: string }> {
   const t = invoer.trim().slice(0, 600)
   if (!t) return { r: { aan: [], uit: [] }, bron: 'regels' }
+  let token: string | null = null
+  try {
+    token = await haalToken()
+  } catch {
+    token = null
+  }
+  if (!token) return { r: regelParser(t), bron: 'regels', reden: 'inloggen' }
   try {
     const ctl = new AbortController()
     const timer = setTimeout(() => ctl.abort(), 25000)
-    const res = await f(INSPRAAK_URL, { method: 'POST', signal: ctl.signal, headers: { apikey: SUPABASE_KEY, 'content-type': 'application/json' }, body: JSON.stringify({ tekst: normaliseerSpraak(t) }) })
+    const res = await f(INSPRAAK_URL, { method: 'POST', signal: ctl.signal, headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ tekst: normaliseerSpraak(t) }) })
     clearTimeout(timer)
     if (res.ok) {
       const data = (await res.json()) as { resultaat?: unknown }
@@ -244,7 +259,7 @@ export async function verwerkInspraak(invoer: string, f: typeof fetch = fetch): 
         return { r: ai, bron: 'ai' }
       }
     }
-    return { r: regelParser(t), bron: 'regels', reden: res.status === 404 ? 'niet-ingesteld' : res.status === 503 ? 'geen-sleutel' : 'fout' }
+    return { r: regelParser(t), bron: 'regels', reden: res.status === 401 ? 'inloggen' : res.status === 404 ? 'niet-ingesteld' : res.status === 503 ? 'geen-sleutel' : 'fout' }
   } catch {
     return { r: regelParser(t), bron: 'regels', reden: 'offline' }
   }
