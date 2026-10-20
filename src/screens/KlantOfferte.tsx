@@ -1,3 +1,4 @@
+import { MeerwerkDocument } from '../components/MeerwerkDocument'
 import { inVreemdFrame } from '../lib/veiligeUrl'
 import { useEffect, useMemo, useState } from 'react'
 import { HandtekeningVeld } from '../components/Handtekening'
@@ -63,6 +64,21 @@ function Kader({ children, bedrijf }: { children: React.ReactNode; bedrijf?: str
 }
 
 function Weergave({ d }: { d: OfferteData }) {
+  if (d.mw)
+    return (
+      <Kader bedrijf={d.bedrijf.naam}>
+        <div className="mx-auto max-w-3xl space-y-4 px-4 pt-6 pb-16 sm:px-6 sm:pt-8">
+          <MeerwerkDocument d={d} />
+          <Button variant="secondary" className="no-print w-full" icon={<Printer className="h-4 w-4" />} onClick={() => window.print()}>
+            Afdrukken / PDF
+          </Button>
+        </div>
+      </Kader>
+    )
+  return <OfferteWeergave d={d} />
+}
+
+function OfferteWeergave({ d }: { d: OfferteData }) {
   const [akkoord, setAkkoord] = useState<Akkoord | null>(() => {
     try {
       return JSON.parse(opslag.getItem(sleutel(d.nr)) ?? 'null')
@@ -304,7 +320,7 @@ export function KlantTekenen({ token }: { token: string }) {
     if (r.ok) {
       setStatus({ data: { ...s, signed_at: r.data.signed_at, signer_name: r.data.signer_name, signature: png } })
       window.scrollTo({ top: 0, behavior: 'smooth' })
-      toast('Offerte getekend')
+      toast(d.mw ? 'Bon getekend' : 'Offerte getekend')
     } else toast(FOUT_TEKST[r.fout], 'fout')
   }
 
@@ -313,7 +329,7 @@ export function KlantTekenen({ token }: { token: string }) {
       <div className="mx-auto grid max-w-5xl gap-5 px-4 pt-6 pb-16 sm:px-6 sm:pt-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="space-y-4">
           {getekend && (
-            <Notice tone="sage" title="Deze offerte is getekend">
+            <Notice tone="sage" title={d.mw ? 'Deze bon is getekend' : 'Deze offerte is getekend'}>
               Getekend door {getekend.naam} op {new Date(getekend.op).toLocaleString('nl-NL', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Amsterdam' })}. {d.bedrijf.naam || 'De aannemer'} ziet dit direct in de app.
             </Notice>
           )}
@@ -322,14 +338,14 @@ export function KlantTekenen({ token }: { token: string }) {
               De offerte was geldig tot {datumNl(d.geldigTot)}. Neem contact op met {d.bedrijf.naam || 'de aannemer'} voor een actuele offerte.
             </Notice>
           )}
-          <OfferteDocument d={d} interactief3d ondertekening={getekend} />
+          {d.mw ? <MeerwerkDocument d={d} ondertekening={getekend} /> : <OfferteDocument d={d} interactief3d ondertekening={getekend} />}
         </div>
         <aside className="no-print space-y-4 lg:sticky lg:top-6">
           {!getekend && (
             <Card className="p-5">
-              <p className="text-[1.05rem] font-semibold">Offerte tekenen</p>
+              <p className="text-[1.05rem] font-semibold">{d.mw ? (d.mw.soort === 'meer' ? 'Meerwerk akkoord geven' : 'Minderwerk akkoord geven') : 'Offerte tekenen'}</p>
               <p className="mt-1 text-[0.82rem] leading-snug text-ink-muted">
-                Offerte <span className="tabnum font-medium text-ink-soft">{d.nr}</span> · totaal <span className="tabnum font-medium text-ink-soft">{euro(d.totaal)}</span> incl. btw
+                {d.mw ? 'Bon' : 'Offerte'} <span className="tabnum font-medium text-ink-soft">{d.nr}</span> · {d.mw ? (d.mw.soort === 'meer' ? 'prijs + ' : 'prijs − ') : 'totaal '}<span className="tabnum font-medium text-ink-soft">{euro(Math.abs(d.totaal))}</span> incl. btw
               </p>
               <div className="mt-4 space-y-3.5">
                 <TextField label="Je naam" value={naam} onChange={setNaam} placeholder="Voor- en achternaam" autoComplete="name" />
@@ -339,7 +355,7 @@ export function KlantTekenen({ token }: { token: string }) {
                 </div>
                 <button type="button" role="checkbox" aria-checked={eens} onClick={() => setEens(!eens)} className="flex w-full items-start gap-3 rounded-xl bg-sand-50 px-3.5 py-3 text-left ring-1 ring-sand-200">
                   <Checkbox checked={eens} className="mt-0.5" />
-                  <span className="text-[0.82rem] leading-snug text-ink-soft">Akkoord: ik ga akkoord met deze offerte en de voorwaarden.</span>
+                  <span className="text-[0.82rem] leading-snug text-ink-soft">{d.mw ? (d.mw.soort === 'meer' ? `Akkoord: ik geef opdracht voor dit meerwerk en weet dat de prijs ${euro(Math.abs(d.totaal))} hoger wordt.` : 'Akkoord: ik ga akkoord met dit minderwerk.') : 'Akkoord: ik ga akkoord met deze offerte en de voorwaarden.'}</span>
                 </button>
                 <Button className="w-full" disabled={!klaar} onClick={verstuur}>
                   {bezig ? 'Bezig…' : 'Tekenen en akkoord geven'}

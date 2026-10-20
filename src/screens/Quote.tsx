@@ -1,3 +1,6 @@
+import { uid } from '../lib/defaults'
+import { MeerwerkKaart } from '../components/MeerwerkKaart'
+import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
 import { TekenKaart, zelfdeVersie } from '../components/TekenKaart'
 import { reviewStatus } from '../lib/reviews'
@@ -122,6 +125,7 @@ export function Quote({ p }: { p: Project }) {
         </Card>
 
         <TekenKaart p={p} d={data} />
+        <MeerwerkKaart p={p} d={data} />
 
         <Card className="p-5">
           <p className="text-[0.98rem] font-semibold">Offerte-instellingen</p>
@@ -225,7 +229,7 @@ function FactuurKaart({ p, data }: { p: Project; data: OfferteData }) {
         className="mt-4 w-full"
         icon={<ReceiptText className="h-4 w-4" />}
         onClick={() => {
-          const f = factuurVanOfferte(data, p.id)
+          const f = factuurVanOfferte(data, p.id, [100], meerwerkFactuurRegels(p, uid))
           if (!f) return toast('Factuur opslaan mislukt: opslag vol.', 'fout')
           toast(`Factuur ${f.nummer} aangemaakt`)
           ga(`/factuur/${f.id}`)

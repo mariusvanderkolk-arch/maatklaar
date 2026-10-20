@@ -3,7 +3,7 @@ import { track } from './analytics'
 import { maakLokaleStore } from './lokaal'
 import { bedrijfStore } from './bedrijf'
 import { uid } from './defaults'
-import { maakFactuur, maakTermijnen, normaliseerFactuur, volgendFactuurnummer, type Factuur } from './factuur'
+import { maakFactuur, maakTermijnen, normaliseerFactuur, volgendFactuurnummer, type Factuur, type FactuurRegel } from './factuur'
 import type { OfferteData } from './offerte'
 import { vandaag } from './planning'
 import { sleutel } from './modus'
@@ -17,7 +17,8 @@ export const useFacturen = () => factuurStore.use()
  * Maakt in één keer een conceptfactuur van een offerte, of meerdere termijnfacturen (bijv. 30/60/10%).
  * Nummers lopen door in de gewone factuurnummering. Geeft de eerste factuur terug (of null bij opslagfout).
  */
-export function factuurVanOfferte(d: OfferteData, projectId: string, termijnen: number[] = [100]): Factuur | null {
+/** extra: regels (bijv. goedgekeurd meer-/minderwerk) die op de laatste (eind)factuur komen. */
+export function factuurVanOfferte(d: OfferteData, projectId: string, termijnen: number[] = [100], extra: FactuurRegel[] = []): Factuur | null {
   const b = bedrijfStore.get()
   const datum = vandaag()
   const jaar = Number(datum.slice(0, 4))
@@ -32,6 +33,10 @@ export function factuurVanOfferte(d: OfferteData, projectId: string, termijnen: 
   }
   const basis = maakFactuur(d, { id: uid(), nummer: nummers[0], projectId, datum, betaalDagen: b.betaalDagen || 14, nu: Date.now(), uid })
   const lijst = maakTermijnen(basis, termijnen, nummers, uid)
+  if (extra.length) {
+    const l = lijst.length - 1
+    lijst[l] = { ...lijst[l], regels: [...lijst[l].regels, ...extra], notitie: `${lijst[l].notitie}${lijst[l].notitie ? ' ' : ''}Inclusief goedgekeurd meer-/minderwerk.` }
+  }
   if (!factuurStore.set([...lijst, ...factuurStore.get()])) return null
   bedrijfStore.set({ ...bedrijfStore.get(), factuurVolgnummer: teller })
   track('factuur_created', { detail: termijnen.length > 1 ? `termijnen_${termijnen.length}` : undefined })

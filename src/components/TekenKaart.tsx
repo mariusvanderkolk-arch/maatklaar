@@ -1,3 +1,5 @@
+import { meerwerkFactuurRegels } from '../lib/meerwerk'
+import { uid } from '../lib/defaults'
 import { useEffect, useState } from 'react'
 import { Bell, BellRing, Eye, Link2Off, MessageCircle, PenLine, ReceiptText, Share2 } from 'lucide-react'
 import { Button, Card } from './ui'
@@ -107,7 +109,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
 
   const maakFactuur = () => {
     if (!geldigeTermijnen(termijnen)) return toast('De termijnen moeten samen 100% zijn.', 'fout')
-    const f = factuurVanOfferte(d, p.id, termijnen)
+    const f = factuurVanOfferte(d, p.id, termijnen, meerwerkFactuurRegels(p, uid))
     if (!f) return toast('Factuur opslaan mislukt: opslag vol.', 'fout')
     track('factuur_created', { detail: 'na_tekenen' })
     toast(termijnen.length > 1 ? `${termijnen.length} termijnfacturen aangemaakt (vanaf ${f.nummer})` : `Factuur ${f.nummer} aangemaakt`)

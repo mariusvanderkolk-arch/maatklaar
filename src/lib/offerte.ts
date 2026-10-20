@@ -5,6 +5,7 @@
  */
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import { formatDatum, isoDatum } from './format'
+import { leesMeerwerkInfo } from './meerwerk'
 import type { Bedrijf } from './bedrijf'
 import { uitCompact, type CompactOntwerp } from './ontwerp/model'
 
@@ -37,6 +38,8 @@ export interface OfferteData {
   notities: string
   betaaltermijn: string
   prijsTekst: string
+  /** meerwerkbon (alleen bij meer-/minderwerk) */
+  mw?: import('./meerwerk').MeerwerkInfo
   /** ruimte-ontwerp (compact), optioneel */
   ow?: CompactOntwerp
 }
@@ -103,6 +106,7 @@ export function leesOfferte(ruw: unknown): OfferteData {
     betaaltermijn: str(o.betaaltermijn, 400),
     prijsTekst: str(o.prijsTekst, 400),
     ...(uitCompact(o.ow) ? { ow: o.ow as CompactOntwerp } : {}),
+    ...(leesMeerwerkInfo(o.mw) ? { mw: leesMeerwerkInfo(o.mw) } : {}),
   }
 }
 
