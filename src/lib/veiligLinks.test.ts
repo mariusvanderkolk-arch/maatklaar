@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { deelVoorOndertekening, haalTekenStatus, trekLinkIn, FOUT_TEKST } from './ondertekenen'
 import { opvolgstatus, herinneringNodig, teControleren } from './opvolging'
 import type { Project } from './types'
+import sql from '../../supabase/fotos-en-links.sql?raw'
 
 const antwoord = (status: number, body: unknown) => ({ ok: status < 300, status, json: async () => body, text: async () => (typeof body === 'string' ? body : JSON.stringify(body)) }) as Response
 const TOKEN = 'b'.repeat(64)
@@ -52,10 +53,7 @@ describe('eigenaar-gebonden links', () => {
   })
 })
 
-describe('SQL-bestand', async () => {
-  const { readFileSync } = await import('node:fs')
-  const sql = readFileSync(new URL('../../supabase/fotos-en-links.sql', import.meta.url), 'utf8')
-  it('is idempotent en houdt bestaande signaturen', () => {
+describe('SQL-bestand', () => {  it('is idempotent en houdt bestaande signaturen', () => {
     expect(sql).toMatch(/add column if not exists owner_id uuid references auth\.users on delete cascade/)
     expect(sql).toMatch(/create or replace function public\.offerte_delen\(p_snapshot jsonb, p_site text default 'main'\)/)
     expect(sql).toMatch(/on conflict \(id\) do update set public = false/)
