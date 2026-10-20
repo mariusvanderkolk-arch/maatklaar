@@ -1,3 +1,4 @@
+import { VeiligVideo } from '../components/VeiligVideo'
 import { VEILIG_PUNTEN } from '../lib/veiligheid'
 import { Welkom } from '../components/Welkom'
 import { HuisIllustratie } from '../components/HuisIllustratie'
@@ -145,34 +146,25 @@ export function Home() {
         {/* Privacybelofte */}
         <section className="mt-8" aria-labelledby="veilig-titel" data-vertrouwen>
           <div className="card overflow-hidden">
-            <div className="grid gap-5 p-5 sm:p-7 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+            <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-10">
               <div>
                 <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Veilig &amp; AVG</p>
                 <h2 id="veilig-titel" className="mt-1 text-xl font-semibold text-ink">Jouw gegevens, goed beschermd</h2>
-                <ul className="mt-3 space-y-2 text-sm leading-relaxed text-ink-soft">
+                <ul className="mt-4 space-y-3 text-[0.92rem] leading-snug text-ink-soft">
                   {VEILIG_PUNTEN.map((p) => (
-                    <li key={p} className="flex gap-2">
-                      <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
-                      <span>{p}</span>
+                    <li key={p} className="flex items-start gap-3">
+                      <span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gold-100 ring-1 ring-gold-300">
+                        <ShieldCheck className="h-4 w-4 text-gold-700" />
+                      </span>
+                      <span className="pt-1">{p}</span>
                     </li>
                   ))}
                 </ul>
-                <a href="#/privacy" className="mt-3 inline-block text-sm font-medium text-gold-700 underline underline-offset-2 hover:text-ink">
+                <a href="#/privacy" className="mt-5 inline-block text-sm font-medium text-gold-700 underline underline-offset-2 hover:text-ink">
                   Lees de privacyverklaring
                 </a>
               </div>
-              <video
-                className="aspect-video w-full rounded-xl bg-sand-100 ring-1 ring-sand-200"
-                controls
-                playsInline
-                preload="none"
-                aria-label="Video: Veilig en AVG bij Maatklaar (23 seconden, met ondertiteling)"
-                poster={`${import.meta.env.BASE_URL}veiligheid-poster.jpg`}
-              >
-                <source src={`${import.meta.env.BASE_URL}veiligheid.mp4`} type="video/mp4" />
-                <track kind="captions" srcLang="nl" label="Nederlands" src={`${import.meta.env.BASE_URL}veiligheid.nl.vtt`} />
-                Je browser kan deze video niet afspelen.
-              </video>
+              <VeiligVideo />
             </div>
           </div>
         </section>
