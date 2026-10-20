@@ -151,10 +151,11 @@ function KlantVoorbeeld({ d }: { d: ReturnType<typeof demoOfferte> }) {
           </span>
         </div>
         <div className="grid gap-4 p-3 sm:p-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-          <div className="max-h-[52dvh] overflow-auto rounded-2xl lg:max-h-[70dvh]">
+          <div className="min-w-0 rounded-2xl">
             <OfferteDocument d={d} />
           </div>
-          <Card className="p-5">
+          <Card className="scroll-mt-24 p-5 lg:sticky lg:top-20">
+            <div id="demo-akkoord" />
             {getekend ? (
               <div data-testid="demo-getekend">
                 <p className="flex items-center gap-2 font-semibold text-ink">
@@ -198,6 +199,22 @@ function KlantVoorbeeld({ d }: { d: ReturnType<typeof demoOfferte> }) {
           Terug naar de offerte
         </Button>
       </div>
+      {!getekend && (
+        <div className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-sand-300/70 bg-paper/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+          <Button
+            size="lg"
+            className="w-full"
+            data-testid="naar-akkoord"
+            icon={<PenLine className="h-4.5 w-4.5" />}
+            onClick={() => {
+              document.getElementById('demo-akkoord')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              setTimeout(() => document.getElementById('demo-naam')?.focus({ preventScroll: true }), 400)
+            }}
+          >
+            Akkoord geven (demo)
+          </Button>
+        </div>
+      )}
     </section>
   )
 }
