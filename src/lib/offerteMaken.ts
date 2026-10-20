@@ -1,3 +1,4 @@
+import { margeRegels } from './marge'
 /** Stelt de offertegegevens samen uit een project, de berekening en het bedrijfsprofiel. */
 import { effectieveScope } from './calc'
 import type { Bedrijf } from './bedrijf'
@@ -41,7 +42,9 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
   const datum = p.offerte?.datum ?? vandaag()
   const arbTotaal = metArbeid ? Math.round(b.arbeidKosten * 100) / 100 : 0
   const onvPct = Math.max(0, Math.min(50, p.onvoorzien ?? 0))
-  const onvBedrag = Math.round(((b.inkoop.totaal + arbTotaal) * onvPct) / 100 * 100) / 100
+  const mr = margeRegels(p, b.inkoop.regels)
+  const matTotaal = Math.round(mr.reduce((x, r) => x + r.verkoop, 0) * 100) / 100
+  const onvBedrag = Math.round(((matTotaal + arbTotaal) * onvPct) / 100 * 100) / 100
   return {
     v: 1,
     nr: p.offerte?.nummer ?? '—',
@@ -57,18 +60,18 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     maten: `${getal(p.afmetingen.lengte)} × ${getal(p.afmetingen.breedte)}${p.type === 'vloer' ? '' : ` × ${getal(p.afmetingen.hoogte)}`} m`,
     werk: scopeItems(p.type).filter((i) => sc[i.key]).map((i) => [i.label, i.omschrijving]),
     opp: oppervlakRegels(p, b.oppervlakken),
-    mat: b.inkoop.regels.map((r) => [
+    mat: b.inkoop.regels.map((r, i) => [
       `${r.naam}${r.spec ? ` · ${r.spec}` : ''}`,
       `${r.koopAantal} × ${verpakkingKort(r.koopVerpakking)}`,
-      r.totaal,
+      mr[i].verkoop,
       gemengd && r.bron === 'voorbeeld' ? 1 : 0,
     ]),
-    matTotaal: b.inkoop.totaal,
+    matTotaal,
     arb: metArbeid ? b.arbeid.map((a) => [a.omschrijving, a.uren]) : [],
     tarief: p.uurtarief,
     arbTotaal,
     ...(onvPct > 0 ? { onv: [onvPct, onvBedrag] as [number, number] } : {}),
-    totaal: Math.round((b.inkoop.totaal + arbTotaal + onvBedrag) * 100) / 100,
+    totaal: Math.round((matTotaal + arbTotaal + onvBedrag) * 100) / 100,
     notities: p.notities,
     betaaltermijn: bedrijf.betaaltermijn.trim(),
     prijsTekst: prijsTekstVoor(st, datumTekst),

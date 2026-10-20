@@ -1,3 +1,4 @@
+import { standaardMarge } from '../lib/bedrijf'
 import { toast } from '../components/Toast'
 import { InsprekenKnop } from '../components/Inspreken'
 import { pasInspraakToe, type Inspraak } from '../lib/inspraak'
@@ -68,7 +69,8 @@ export function ProjectForm({ id }: { id?: string }) {
       ga(`/project/${bestaand.id}/opmeten`)
     } else {
       const basis = nieuwProject({ type })
-      const p = { ...concept, ...velden, afmetingen: maten(basis.afmetingen), snijverlies: basis.snijverlies, createdAt: Date.now(), updatedAt: Date.now() }
+      const m = standaardMarge()
+      const p = { ...concept, ...velden, afmetingen: maten(basis.afmetingen), snijverlies: basis.snijverlies, ...(m > 0 ? { marge: m } : {}), createdAt: Date.now(), updatedAt: Date.now() }
       projectStore.voegToe(p)
       track('project_created')
       ga(`/project/${p.id}/opmeten`)

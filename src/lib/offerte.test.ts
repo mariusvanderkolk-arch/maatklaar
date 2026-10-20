@@ -92,3 +92,20 @@ describe('akkoord', () => {
     expect(mailtoLink('info@voorbeeld.nl', 'Akkoord offerte', 'a\nb')).toBe('mailto:info@voorbeeld.nl?subject=Akkoord%20offerte&body=a%0Ab')
   })
 })
+
+describe('marge in de offerte', async () => {
+  const { maakOfferteData } = await import('./offerteMaken')
+  const { berekenAlles } = await import('./useCalc')
+  const { voorbeeldPrijsBron } = await import('./prices')
+  const { standaardBedrijf } = await import('./bedrijf')
+  it('verwerkt marge in de materiaalprijzen, niet als aparte regel', () => {
+    const p = voorbeeldProjecten()[0]
+    const b = berekenAlles(p, voorbeeldPrijsBron, [])
+    const zonder = maakOfferteData(p, b, standaardBedrijf(), (x) => x)
+    const met = maakOfferteData({ ...p, marge: 10 }, b, standaardBedrijf(), (x) => x)
+    expect(met.matTotaal).toBeCloseTo(zonder.matTotaal * 1.1, 0)
+    expect(met.mat[0][2]).toBeCloseTo(zonder.mat[0][2] * 1.1, 1)
+    expect(JSON.stringify(met)).not.toMatch(/marge/i)
+    expect(met.totaal - zonder.totaal).toBeCloseTo((met.matTotaal - zonder.matTotaal) * (1 + (p.onvoorzien ?? 0) / 100), 0)
+  })
+})

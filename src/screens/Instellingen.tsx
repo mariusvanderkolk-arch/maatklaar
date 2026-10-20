@@ -160,6 +160,15 @@ function OfferteSectie() {
           <TextField label="Voorvoegsel factuur" value={b.factuurPrefix} onChange={(v) => zet({ factuurPrefix: v.slice(0, 12) })} />
           <NumberField label="Volgend factuurnummer" decimals={0} value={b.factuurVolgnummer} onChange={(v) => zet({ factuurVolgnummer: Math.max(b.factuurVolgnummer, Math.round(v)) })} min={1} hint="Kan alleen omhoog." />
           <NumberField label="Betaaltermijn factuur" decimals={0} unit="dagen" value={b.betaalDagen} onChange={(v) => zet({ betaalDagen: Math.min(120, Math.max(1, Math.round(v))) })} min={1} />
+          <NumberField
+            label="Marge op materiaal (%)"
+            decimals={1}
+            unit="%"
+            value={b.margeMateriaal ?? 0}
+            onChange={(v) => zet({ margeMateriaal: Math.min(200, Math.max(0, v)) })}
+            min={0}
+            hint="Voor nieuwe projecten. 0 = uit. De klant ziet de marge niet apart: die zit in de materiaalprijzen."
+          />
           <div className="sm:col-span-3">
             <TextField label="Betaaltermijn / voorwaarden" value={b.betaaltermijn} onChange={(v) => zet({ betaaltermijn: v })} placeholder="Bijv. 30% bij opdracht, rest binnen 14 dagen na oplevering." />
           </div>

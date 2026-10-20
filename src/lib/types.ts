@@ -175,6 +175,10 @@ export interface Project {
   uurtarief: number
   /** opslag voor onvoorziene kosten in procenten (over materiaal + arbeid); ontbreekt = 0 */
   onvoorzien?: number
+  /** marge op materiaal in procenten (verwerkt in de materiaalprijzen op de offerte); ontbreekt = 0 */
+  marge?: number
+  /** marge per materiaalregel (sleutel → %), gaat voor de projectmarge */
+  margeRegels?: Record<string, number>
   /** keuze bij 'Huur container': maat (m³, of auto) en afvalsoort */
   container?: ContainerKeuze
   fotos: PhotoRef[]

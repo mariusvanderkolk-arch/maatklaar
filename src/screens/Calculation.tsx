@@ -1,3 +1,4 @@
+import { MargeKaart } from '../components/MargeKaart'
 import { Calculator, ChevronDown, Ruler, ListChecks } from 'lucide-react'
 import { Card, CardHeader, Stat, LeegStaat, Button } from '../components/ui'
 import { ga } from '../lib/router'
@@ -8,7 +9,8 @@ import { useBerekening } from '../lib/useCalc'
 import type { Project } from '../lib/types'
 
 export function Calculation({ p }: { p: Project }) {
-  const { oppervlakken: o, materialen } = useBerekening(p)
+  const ber = useBerekening(p)
+  const { oppervlakken: o, materialen } = ber
   const groepen = GROEPEN.map((g) => ({ ...g, regels: materialen.filter((m) => m.groep === g.id) })).filter((g) => g.regels.length)
   const sc = effectieveScope(p)
   const type = p.type
@@ -64,6 +66,7 @@ export function Calculation({ p }: { p: Project }) {
               ))}
             </dl>
           </Card>
+          <MargeKaart p={p} b={ber} />
           <details className="card group overflow-hidden">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 sm:px-6 [&::-webkit-details-marker]:hidden">
               <span>

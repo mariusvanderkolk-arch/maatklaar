@@ -3,6 +3,8 @@ import { maakLokaleStore } from './lokaal'
 import { sleutel } from './modus'
 
 export interface Bedrijf {
+  /** standaard marge op materiaal (%) voor nieuwe projecten; 0 = uit */
+  margeMateriaal?: number
   naam: string
   contactpersoon: string
   telefoon: string
@@ -45,6 +47,7 @@ export const standaardBedrijf = (): Bedrijf => ({
   factuurPrefix: 'F-',
   factuurVolgnummer: 1,
   betaalDagen: 14,
+  margeMateriaal: 0,
 })
 
 export const bedrijfStore = maakLokaleStore<Bedrijf>(sleutel('bedrijf:v1'), standaardBedrijf)
@@ -88,3 +91,9 @@ export const emailGeldig = (e: string) => !e.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]
 export const kvkGeldig = (k: string) => !k.trim() || /^\d{8}$/.test(k.replace(/\s/g, ''))
 /** NL-btw-nummer: NL + 9 cijfers + B + 2 cijfers (bijv. NL123456789B01). */
 export const btwGeldig = (b: string) => !b.trim() || /^NL\d{9}B\d{2}$/i.test(b.replace(/[\s.]/g, ''))
+
+/** Standaardmarge voor nieuwe projecten (0 = uit). */
+export const standaardMarge = (): number => {
+  const m = bedrijfStore.get().margeMateriaal
+  return typeof m === 'number' && Number.isFinite(m) ? Math.min(200, Math.max(0, m)) : 0
+}
