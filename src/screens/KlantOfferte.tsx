@@ -1,7 +1,7 @@
 import { inVreemdFrame } from '../lib/veiligeUrl'
 import { useEffect, useMemo, useState } from 'react'
 import { HandtekeningVeld } from '../components/Handtekening'
-import { FOUT_TEKST, haalTekenStatus, teken, type Fout, type TekenStatus } from '../lib/ondertekenen'
+import { FOUT_TEKST, haalTekenStatus, meldBekeken, teken, type Fout, type TekenStatus } from '../lib/ondertekenen'
 import { ArrowLeft, CircleCheck, Copy, FileWarning, Mail, MessageCircle, Printer, ShieldCheck } from 'lucide-react'
 import { OfferteDocument } from '../components/OfferteDocument'
 import { Button, Card, Checkbox, Notice, TextField } from '../components/ui'
@@ -233,6 +233,19 @@ function Bevestiging({ d, a, terug }: { d: OfferteData; a: Akkoord; terug: () =>
   )
 }
 
+/** Staat dit token in een project op dit apparaat? Dan is het de aannemer zelf. */
+function eigenLink(token: string): boolean {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) ?? ''
+      if (k.endsWith(':projecten:v1') && (localStorage.getItem(k) ?? '').includes(token)) return true
+    }
+  } catch {
+    /* geen opslag: dan is het niet de aannemer */
+  }
+  return false
+}
+
 /** Offerte via een tekenlink: de klant leest, vult naam in, tekent en geeft akkoord (vastgelegd op de server). */
 export function KlantTekenen({ token }: { token: string }) {
   const [status, setStatus] = useState<{ laden: true } | { fout: Fout } | { data: TekenStatus }>({ laden: true })
@@ -242,7 +255,12 @@ export function KlantTekenen({ token }: { token: string }) {
   const [bezig, setBezig] = useState(false)
   useEffect(() => {
     let weg = false
-    haalTekenStatus(token).then((r) => !weg && setStatus(r.ok ? { data: r.data } : { fout: r.fout }))
+    haalTekenStatus(token).then((r) => {
+      if (weg) return
+      setStatus(r.ok ? { data: r.data } : { fout: r.fout })
+      // "Bekeken" voor de aannemer vastleggen — niet als de aannemer zijn eigen link op dit apparaat opent
+      if (r.ok && !r.data.signed_at && !eigenLink(token)) void meldBekeken(token)
+    })
     return () => {
       weg = true
     }

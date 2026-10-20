@@ -1,5 +1,6 @@
 import { HuisIllustratie } from '../components/HuisIllustratie'
 import { useEffect, useRef, useState } from 'react'
+import { OpvolgBadge } from '../components/OpvolgBadge'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
@@ -294,6 +295,7 @@ function ProjectKaart({ p }: { p: Project }) {
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
             <Badge tone="gold">{ruimteLabel(p.type)}</Badge>
             {p.voorbeeld && <Badge>Voorbeeld</Badge>}
+            <OpvolgBadge p={p} />
           </div>
           <h3 className="truncate text-[1.6rem] leading-tight font-semibold text-ink">{p.naam || 'Naamloos project'}</h3>
           <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-ink-muted">

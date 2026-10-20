@@ -133,7 +133,22 @@ export interface OfferteStatus {
   /** handmatig vastgelegd akkoord van de klant */
   akkoord?: { naam: string; datum: string }
   /** digitale ondertekening: deellink-token en (na tekenen) de handtekening */
-  teken?: { token: string; hash: string; nr: string; code: string; gedeeldOp: number; getekend?: { naam: string; op: string; handtekening: string } }
+  teken?: {
+    token: string
+    hash: string
+    nr: string
+    code: string
+    gedeeldOp: number
+    getekend?: { naam: string; op: string; handtekening: string }
+    /** offerte geldig tot (YYYY-MM-DD), vastgelegd bij het delen */
+    geldigTot?: string
+    /** eerste keer dat de klant de link opende (ISO), van de server */
+    bekekenOp?: string
+    /** laatste keer dat de aannemer een herinnering opende/sloot (ms) */
+    herinnerdOp?: number
+    /** getekend, maar de aannemer heeft het nog niet gezien (melding/badge) */
+    nieuwGetekend?: boolean
+  }
 }
 
 export interface Project {

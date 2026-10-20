@@ -47,3 +47,16 @@ self.addEventListener('fetch', (e) => {
     ),
   )
 })
+
+// Melding "offerte getekend": tik opent (of focust) de app op de juiste offerte
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  const doel = new URL(e.notification.data?.url || './', self.registration.scope).href
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((lijst) => {
+      const open = lijst.find((c) => c.url.startsWith(self.registration.scope))
+      if (open) return open.navigate(doel).then((c) => (c || open).focus())
+      return self.clients.openWindow(doel)
+    }),
+  )
+})

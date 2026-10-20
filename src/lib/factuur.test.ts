@@ -111,3 +111,31 @@ describe('vervaldatum en status', () => {
     expect(f.vervaldatum).toBe('2026-10-15')
   })
 })
+
+import { geldigeTermijnen, maakTermijnen } from './factuur'
+describe('termijnen', () => {
+  const d = { nr: 'OF-9', klant: 'K', adres: '', project: 'P', tarief: 50, bedrijf: {}, mat: [['A', '1', 100, 0]], arb: [['T', 3.333]] } as unknown as OfferteData
+  let n = 0
+  const basis = maakFactuur(d, { id: 'b', nummer: 'X', projectId: 'p', datum: '2026-10-01', betaalDagen: 14, nu: 0, uid: () => `u${n++}` })
+  it('validatie', () => {
+    expect(geldigeTermijnen([100])).toBe(true)
+    expect(geldigeTermijnen([30, 60, 10])).toBe(true)
+    expect(geldigeTermijnen([50, 40])).toBe(false)
+    expect(geldigeTermijnen([0, 100])).toBe(false)
+    expect(geldigeTermijnen([])).toBe(false)
+    expect(geldigeTermijnen(Array(7).fill(100 / 7))).toBe(false)
+  })
+  it('30/60/10: nummers, som exact gelijk, per btw-tarief', () => {
+    const fs = maakTermijnen(basis, [30, 60, 10], ['F-1', 'F-2', 'F-3'], () => `t${n++}`)
+    expect(fs.map((f) => f.nummer)).toEqual(['F-1', 'F-2', 'F-3'])
+    expect(fs[0].id).toBe('b')
+    const tot = (fs2: typeof fs) => fs2.reduce((s, f) => s + btwOverzicht(f.regels).totaalExcl, 0)
+    expect(tot(fs)).toBeCloseTo(btwOverzicht(basis.regels).totaalExcl, 2)
+    expect(fs[0].regels[0].omschrijving).toContain('Termijn 1 van 3')
+    expect(fs[0].notitie).toContain('OF-9')
+  })
+  it('100% = gewone factuur', () => {
+    expect(maakTermijnen(basis, [100], ['F-1'], () => 'x')[0].regels).toEqual(basis.regels)
+  })
+  it('fout bij ongeldige invoer', () => expect(() => maakTermijnen(basis, [50, 40], ['a', 'b'], () => 'x')).toThrow())
+})

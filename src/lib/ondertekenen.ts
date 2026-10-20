@@ -14,6 +14,8 @@ export interface TekenStatus {
   signed_at: string | null
   signer_name: string | null
   signature: string | null
+  /** eerste keer geopend door de klant (na supabase/opvolging.sql) */
+  viewed_at?: string | null
 }
 export type Fout = 'niet-beschikbaar' | 'niet-gevonden' | 'al-getekend' | 'gewijzigd' | 'ongeldig' | 'netwerk'
 
@@ -58,6 +60,16 @@ export async function teken(token: string, naam: string, handtekening: string, h
   if (naam.trim().length < 2) return { ok: false as const, fout: 'ongeldig' as Fout }
   if (!handtekening.startsWith('data:image/png;base64,') || handtekening.length > 150000) return { ok: false as const, fout: 'ongeldig' as Fout }
   return rpc<{ signed_at: string; signer_name: string }>('offerte_tekenen', { p_token: token, p_naam: naam.trim().slice(0, 100), p_handtekening: handtekening, p_hash: hash }, f)
+}
+
+/**
+ * Klant opent de tekenlink: "bekeken" vastleggen. Stil bij fouten (bijv. SQL nog niet gedraaid of offline);
+ * het tekenen zelf hangt hier nooit van af.
+ */
+export async function meldBekeken(token: string, f: typeof fetch = fetch): Promise<boolean> {
+  if (!TOKEN_RE.test(token)) return false
+  const r = await rpc<{ viewed_at: string | null }>('offerte_bekeken', { p_token: token }, f)
+  return r.ok
 }
 
 export const tekenLink = (token: string, basis = `${location.origin}${location.pathname}`) => `${basis}#/offerte-tekenen/${token}`

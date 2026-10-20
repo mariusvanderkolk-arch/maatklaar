@@ -10,6 +10,7 @@ import { laadLater } from './lib/lazy'
 import { CloudToestemming } from './components/CloudToestemming'
 import { InAppBanner } from './components/InAppBanner'
 import { HulpKnop } from './components/hulp/HulpKnop'
+import { toast } from './components/Toast'
 
 const ProjectForm = laadLater(() => import('./screens/ProjectForm').then((m) => m.ProjectForm))
 const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m) => m.ProjectScreen))
@@ -37,6 +38,24 @@ export default function App() {
   const route = useRoute()
   const pad = padVoor(route as { naam: string; stap?: string; sectie?: string })
   useEffect(() => track('page_view', { path: pad }), [pad])
+  // Offerte-opvolging: bij openen en bij terugkeren naar de app de status van gedeelde offertes ophalen
+  useEffect(() => {
+    if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen') return
+    let laatst = 0
+    const kijk = () => {
+      if (document.hidden || Date.now() - laatst < 60_000) return
+      laatst = Date.now()
+      void import('./lib/opvolgingSync').then(({ controleerOffertes }) =>
+        controleerOffertes().then((nieuw) => {
+          for (const p of nieuw) toast(`Offerte getekend door ${p.offerte?.teken?.getekend?.naam || p.klant || 'de klant'} — ${p.naam || 'project'}`)
+        }),
+      )
+    }
+    kijk()
+    document.addEventListener('visibilitychange', kijk)
+    return () => document.removeEventListener('visibilitychange', kijk)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen'])
   if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen')
     return (
       <Foutgrens>

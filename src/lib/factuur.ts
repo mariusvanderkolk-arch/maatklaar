@@ -201,3 +201,47 @@ export function factuurTekst(f: Factuur): string {
     .filter((r): r is string => typeof r === 'string')
     .join('\n')
 }
+
+/** Termijnen: percentages die samen 100 zijn, elk groter dan 0 (max. 6 termijnen). */
+export function geldigeTermijnen(pcts: number[]): boolean {
+  if (pcts.length < 1 || pcts.length > 6) return false
+  if (pcts.some((p) => !Number.isFinite(p) || p <= 0)) return false
+  return Math.abs(pcts.reduce((s, p) => s + p, 0) - 100) < 0.001
+}
+
+export const TERMIJN_VOORSTELLEN: { label: string; pcts: number[] }[] = [
+  { label: 'In één keer', pcts: [100] },
+  { label: '30 / 60 / 10%', pcts: [30, 60, 10] },
+  { label: '50 / 50%', pcts: [50, 50] },
+  { label: '40 / 40 / 20%', pcts: [40, 40, 20] },
+]
+
+const pctTekst = (p: number) => `${String(Math.round(p * 100) / 100).replace('.', ',')}%`
+
+/**
+ * Splitst een volledige factuur in termijnfacturen. Per termijn één regel per btw-tarief;
+ * afrondingsverschillen gaan naar de laatste termijn, zodat de som precies gelijk is aan het geheel.
+ */
+export function maakTermijnen(basis: Factuur, pcts: number[], nummers: string[], uid: () => string): Factuur[] {
+  if (!geldigeTermijnen(pcts) || nummers.length !== pcts.length) throw new Error('Ongeldige termijnen')
+  if (pcts.length === 1) return [{ ...basis, nummer: nummers[0] }]
+  const tarieven = ([21, 9] as BtwTarief[]).filter((t) => basis.regels.some((r) => r.btw === t))
+  const totaal = Object.fromEntries(tarieven.map((t) => [t, cent(basis.regels.filter((r) => r.btw === t).reduce((s, r) => s + r.excl, 0))])) as Record<BtwTarief, number>
+  const gehad = Object.fromEntries(tarieven.map((t) => [t, 0])) as Record<BtwTarief, number>
+  return pcts.map((p, i) => {
+    const laatste = i === pcts.length - 1
+    const regels: FactuurRegel[] = tarieven.map((t) => {
+      const excl = laatste ? cent(totaal[t] - gehad[t]) : cent((totaal[t] * p) / 100)
+      gehad[t] = cent(gehad[t] + excl)
+      return {
+        id: uid(),
+        soort: 'materiaal' as const,
+        omschrijving: `Termijn ${i + 1} van ${pcts.length} (${pctTekst(p)}) – offerte ${basis.offerteNummer}${tarieven.length > 1 ? ` · ${t}% btw` : ''}`,
+        detail: `${pctTekst(p)} van € ${totaal[t].toFixed(2).replace('.', ',')} excl. btw`,
+        excl,
+        btw: t,
+      }
+    })
+    return { ...basis, id: i === 0 ? basis.id : uid(), nummer: nummers[i], regels, notitie: `Termijn ${i + 1} van ${pcts.length} van offerte ${basis.offerteNummer}.` }
+  })
+}
