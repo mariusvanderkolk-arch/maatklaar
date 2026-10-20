@@ -17,6 +17,7 @@ const ProjectForm = laadLater(() => import('./screens/ProjectForm').then((m) => 
 const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m) => m.ProjectScreen))
 const About = laadLater(() => import('./screens/About').then((m) => m.About))
 const Prices = laadLater(() => import('./screens/Prices').then((m) => m.Prices))
+const Demo = laadLater(() => import('./screens/Demo').then((m) => m.Demo))
 const KlantOfferte = laadLater(() => import('./screens/KlantOfferte').then((m) => m.KlantOfferte))
 const KlantTekenen = laadLater(() => import('./screens/KlantOfferte').then((m) => m.KlantTekenen))
 const Voorwaarden = laadLater(() => import('./screens/Voorwaarden').then((m) => m.Voorwaarden))
@@ -98,11 +99,12 @@ export default function App() {
           {route.naam === 'account' && <Account />}
           {route.naam === 'privacy' && <Privacy />}
           {route.naam === 'voorwaarden' && <Voorwaarden />}
+          {route.naam === 'demo' && <Demo stap={route.stap} />}
         </Suspense>
       </Foutgrens>
       {route.naam === 'home' && <Onboarding />}
       <CloudToestemming />
-      <HulpKnop route={route} />
+      {route.naam !== 'demo' && <HulpKnop route={route} />}
       <Toaster />
     </Shell>
   )

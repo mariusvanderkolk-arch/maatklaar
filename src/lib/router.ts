@@ -18,12 +18,17 @@ export type Route =
   | { naam: 'factuur'; id: string }
   | { naam: 'account' }
   | { naam: 'privacy' }
+  | { naam: 'demo'; stap: 'maten' | 'offerte' | 'klant' | 'klaar' }
 
 const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning']
 
 export function parse(hash: string): Route {
   const [pad] = hash.replace(/^#\/?/, '').split('?')
   const delen = pad.split('/').filter(Boolean)
+  if (delen[0] === 'demo') {
+    const st = (['maten', 'offerte', 'klant', 'klaar'] as const).find((x) => x === delen[1]) ?? 'maten'
+    return { naam: 'demo', stap: st }
+  }
   if (delen[0] === 'nieuw') return { naam: 'nieuw' }
   if (delen[0] === 'over') return { naam: 'over' }
   if (delen[0] === 'facturen') return { naam: 'facturen' }

@@ -132,6 +132,7 @@ export function flush() {
 /** Route → pad zonder ID's of offerte-inhoud. */
 export function padVoor(r: { naam: string; stap?: string; sectie?: string }): string {
   if (r.naam === 'project') return `/project/${r.stap ?? ''}`
+  if (r.naam === 'demo') return `/demo/${r.stap ?? 'maten'}`
   if (r.naam === 'instellingen') return `/instellingen/${r.sectie ?? ''}`.replace(/\/$/, '')
   if (r.naam === 'home') return '/'
   return `/${r.naam}`

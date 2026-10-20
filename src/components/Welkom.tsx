@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Hand, Plus, Route, X } from 'lucide-react'
+import { Hand, PlayCircle, Plus, Route, X } from 'lucide-react'
 import { Button } from './ui'
 import { ga } from '../lib/router'
 import { useCloud } from '../lib/cloud/sync'
@@ -51,6 +51,18 @@ export function Welkom() {
           }}
         >
           Start direct
+        </Button>
+        <Button
+          size="lg"
+          variant="gold"
+          className="w-full sm:w-auto"
+          icon={<PlayCircle className="h-4.5 w-4.5" />}
+          onClick={() => {
+            klaar()
+            ga('/demo')
+          }}
+        >
+          Probeer de demo (30 sec)
         </Button>
         <Button
           size="lg"

@@ -7,7 +7,7 @@ import { OpvolgBadge } from '../components/OpvolgBadge'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
-import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, Plus, ShoppingCart, ShieldCheck, Sparkles, Tags } from 'lucide-react'
+import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, PlayCircle, Plus, ShoppingCart, ShieldCheck, Sparkles, Tags } from 'lucide-react'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
@@ -88,6 +88,9 @@ export function Home() {
               <div className="mt-7 flex flex-wrap gap-2.5">
                 <Button size="lg" className="w-full sm:w-auto" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>
                   Nieuw project
+                </Button>
+                <Button size="lg" variant="gold" className="w-full sm:w-auto" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
+                  Probeer de demo (30 sec)
                 </Button>
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<Tags className="h-4.5 w-4.5" />} onClick={() => ga('/prijzen')}>
                   Prijzen beheren
