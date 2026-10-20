@@ -231,7 +231,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
 
       {t?.getekend && (
         <Button variant="gold" size="lg" className="mt-4 w-full whitespace-normal" icon={<ReceiptText className="h-4 w-4" />} onClick={facturen.length ? () => ga(facturen.length > 1 ? '/facturen' : `/factuur/${facturen[0].id}`) : maakFactuur} data-testid="maak-factuur">
-          {facturen.length ? `Klant heeft getekend ✅ — Bekijk factuur ${facturen[facturen.length - 1].nummer}${facturen.length > 1 ? ` (+${facturen.length - 1})` : ''}` : termijnen.length > 1 ? `Klant heeft getekend ✅ — Maak ${termijnen.length} termijnfacturen` : 'Klant heeft getekend ✅ — Maak factuur'}
+          {facturen.length ? `Klant heeft getekend ✅ — Bekijk factuur ${facturen[facturen.length - 1].nummer}${facturen.length > 1 ? ` (+${facturen.length - 1})` : ''}` : termijnen.length > 1 ? `Getekend ✅ — Maak ${termijnen.length} termijnfacturen` : 'Klant heeft getekend ✅ — Maak factuur'}
         </Button>
       )}
 
