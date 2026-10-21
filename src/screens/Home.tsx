@@ -7,7 +7,7 @@ import { OpvolgBadge } from '../components/OpvolgBadge'
 import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
-import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, MapPin, PlayCircle, Plus, ShoppingCart, ShieldCheck, Sparkles, Tags } from 'lucide-react'
+import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FileText, MapPin, PenLine, Ruler, PlayCircle, Plus, ShoppingCart, ShieldCheck, Sparkles } from 'lucide-react'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
@@ -22,6 +22,12 @@ import { useProjecten } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
 import { actieveScope, ruimteLabel } from '../lib/ruimtes'
 import type { Project } from '../lib/types'
+
+const HERO_STAPPEN = [
+  { icon: Ruler, titel: 'Meet op', tekst: 'bij de klant, typ of spreek de maten in' },
+  { icon: FileText, titel: 'Offerte klaar', tekst: 'materialen en werk automatisch berekend' },
+  { icon: PenLine, titel: 'Klant tekent', tekst: 'via WhatsApp, op zijn eigen telefoon' },
+]
 
 const STAPPEN = [
   { icon: ClipboardList, titel: 'Project', tekst: 'Klant en werkzaamheden vastleggen' },
@@ -68,32 +74,35 @@ export function Home() {
   return (
     <div className="bg-grain">
       <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-10">
-        <Verhuiskaart />
-        <Welkom />
         {/* Hero */}
         <section className="card relative overflow-hidden">
           <div className="relative grid lg:grid-cols-[1.15fr_1fr]">
             <div className="relative z-10 self-center px-6 pt-8 pb-8 sm:px-10 sm:pt-12 lg:pb-12">
-              <div className="flex flex-wrap items-center gap-2">
-                <Eyebrow>Badkamer · toilet · keuken · vloer</Eyebrow>
-                <Badge tone="gold">Versie {APP_VERSIE_KORT} · gratis</Badge>
-              </div>
-              <h1 className="mt-3 text-[2.5rem] leading-[1.02] font-semibold text-ink sm:text-[3.4rem]">
-                Van opmeten tot offerte, <span className="text-gold-600 italic">helder</span> op de bouw.
+              <Eyebrow>Offerte-app voor aannemers en vakmensen</Eyebrow>
+              <h1 className="mt-3 text-[2rem] leading-[1.08] font-semibold text-ink sm:text-[3rem]">
+                Maak bij de klant een offerte in <span className="text-gold-600 italic">5 minuten</span> en laat hem direct tekenen via WhatsApp.
               </h1>
-              <p className="mt-4 max-w-md text-[0.98rem] leading-relaxed text-ink-soft">
-                Voor aannemers: meet de ruimte in, reken materialen en uren uit, vul je eigen inkoopprijzen in en stuur
-                de klant een nette offerte — alles op je telefoon, zonder abonnement.
+              <p className="mt-3 max-w-md text-[0.98rem] leading-relaxed text-ink-soft" data-testid="hero-flow">
+                Opmeten <span aria-hidden="true">→</span> berekening <span aria-hidden="true">→</span> offerte <span aria-hidden="true">→</span> handtekening. Alles op je telefoon.
               </p>
-              <div className="mt-7 flex flex-wrap gap-2.5">
-                <Button size="lg" className="w-full sm:w-auto" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>
-                  Nieuw project
+              <ol className="mt-5 grid gap-2.5" aria-label="Zo werkt het">
+                {HERO_STAPPEN.map((st, i) => (
+                  <li key={st.titel} className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold-100 text-gold-700 ring-1 ring-gold-200">
+                      <st.icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-[0.95rem] leading-snug text-ink">
+                      <strong className="font-semibold">{i + 1}. {st.titel}</strong> <span className="text-ink-soft">{st.tekst}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <Button size="lg" className="w-full sm:w-auto" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
+                  Bekijk hoe het werkt
                 </Button>
-                <Button size="lg" variant="gold" className="w-full sm:w-auto" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
-                  Probeer de demo (30 sec)
-                </Button>
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<Tags className="h-4.5 w-4.5" />} onClick={() => ga('/prijzen')}>
-                  Prijzen beheren
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>
+                  Start gratis
                 </Button>
               </div>
               {gesorteerd[0] && (
@@ -145,6 +154,10 @@ export function Home() {
             ))}
           </ol>
         </section>
+        <div className="mt-6 empty:hidden">
+          <Verhuiskaart />
+          <Welkom />
+        </div>
 
         {/* Privacybelofte */}
         <section className="mt-8" aria-labelledby="veilig-titel" data-vertrouwen>
