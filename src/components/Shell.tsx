@@ -100,6 +100,10 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
               {cloud.gebruiker ? `Account${cloud.syncAan ? ` (${STATUS_TEKST[cloud.status].toLowerCase()})` : ''}` : 'Inloggen'}
             </a>{' '}
             ·{' '}
+            <a href={`${import.meta.env.BASE_URL}offerte-maken/`} className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
+              Offerte maken: tips &amp; regio's
+            </a>{' '}
+            ·{' '}
             <a href="#/privacy" className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
               Privacy
             </a>{' '}
