@@ -71,7 +71,7 @@ export function seoPaginas() {
     pad: 'offerte-maken/', titel: 'Offerte maken: gidsen en tips per regio | Maatklaar',
     meta: 'Gidsen voor vakmensen: badkamer, keuken, tegelwerk, meerwerk en calculatie, plus lokale aandachtspunten voor alle provincies en grote steden in Nederland.',
     h1: 'Offerte maken: gidsen en tips per regio', kruimel: [['Per regio']],
-    inhoud: '<p class="lead">Het Maatklaar-team verzamelt hier praktische gidsen voor vakmensen, en lokale aandachtspunten voor heel Nederland: van bevingsschade in Groningen tot houten funderingen in de Zaanstreek.</p>',
+    inhoud: '<p class="lead">Het Maatklaar-team verzamelt hier praktische gidsen voor vakmensen, en lokale aandachtspunten voor heel Nederland: van jaren-30 woningen in Groningen tot houten funderingen in de Zaanstreek.</p>',
     faq: [['Voor wie zijn deze gidsen?', 'Voor aannemers, tegelzetters, installateurs, keukenmonteurs en klusbedrijven die sneller en duidelijker offertes willen maken.']],
     links: [['Gidsen', ondLinks], ['Provincies', provincies.map((p) => [`offerte-maken/provincie-${p.slug}/`, p.naam])], ['Steden', [...steden].sort((a, b) => a.naam.localeCompare(b.naam, 'nl')).map((s) => [`offerte-maken/${s.slug}/`, s.naam])]],
   })
