@@ -167,6 +167,8 @@ export interface Ontwerp {
   bijgewerkt: number
   /** uiterlijk werkblad (keuken), afgeleid uit de keukenkeuze; niet opgeslagen */
   blad?: { kleur: string; ruw: number; metaal?: number }
+  /** uiterlijk achterwand (keuken), alleen weergave */
+  achterwand?: { kleur: string; formaat: string; verband: string; glans?: boolean; metaal?: boolean }
 }
 
 export const kleurVan = (id: string): Kleur => KLEUREN.find((k) => k.id === id) ?? KLEUREN[0]

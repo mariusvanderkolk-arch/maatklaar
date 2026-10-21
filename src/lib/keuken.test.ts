@@ -110,3 +110,35 @@ describe('audit: aanvullingen per ruimte', () => {
     expect(berekenMaterialen(v).find((r) => r.id === 'vloer-overgang')?.aantal).toBeGreaterThan(0)
   })
 })
+
+describe('achterwand', () => {
+  const met = (achterwand: string, extra = {}) => keuken({ keuken: { ...standaardKeuken(3), achterwand, ...extra } })
+  it('twaalf soorten met prijs per m² in de catalogus', async () => {
+    const { ACHTERWANDEN } = await import('./keuken')
+    expect(ACHTERWANDEN.length).toBe(12)
+    for (const a of ACHTERWANDEN) expect(VOORBEELD_PRIJZEN[`achterwand-${a.id}` as never]).toBe(a.prijs)
+  })
+  it('oud project zonder keuze rekent als voorheen met wandtegels', () => {
+    expect(ids(keuken())).toContain('wandtegel')
+  })
+  it('glas: paneel op maat, uitsparingen door leverancier, geen tegellijm', () => {
+    const m = berekenMaterialen(met('glas', { glasKleur: 'salie' }))
+    const r = m.find((x) => x.id === 'achterwand-glas')!
+    expect(r.aantal).toBeCloseTo(3 * 0.6 * 1.05, 2)
+    expect(r.spec).toBe('Saliegroen')
+    expect(m.find((x) => x.id === 'achterwand-uitsparing')?.aantal).toBe(3)
+    expect(m.some((x) => x.id === 'wandtegel' || x.id === 'achterwand-metro')).toBe(false)
+    const u = berekenArbeid(met('glas')).find((x) => x.scope === 'spatwand')!
+    expect(u.omschrijving).toContain('glazen achterwand')
+    expect(u.uren).toBeCloseTo(1.8 * 0.6 + 1.5, 1)
+  })
+  it('HPL: zelf uitsparen kost uren', () => {
+    const u = berekenArbeid(met('hpl')).find((x) => x.scope === 'spatwand')!
+    expect(u.uren).toBeCloseTo(1.8 * 0.6 + 1.5 + 3 * 0.3, 1)
+  })
+  it('metro: tegelen met eigen artikel en tegelmaat', () => {
+    const r = berekenMaterialen(met('metro')).find((x) => x.id === 'achterwand-metro')!
+    expect(r.spec).toContain('15')
+    expect(berekenArbeid(met('metro')).find((x) => x.scope === 'spatwand')!.omschrijving).toBe('Achterwand tegelen')
+  })
+})

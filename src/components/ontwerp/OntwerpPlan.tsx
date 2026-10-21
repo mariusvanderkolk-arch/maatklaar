@@ -92,6 +92,9 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
     >
       {/* ruimer raakvlak voor vingers */}
       {interactief && <rect x={-it.w / 2 - 4} y={-it.d / 2 - 4} width={it.w + 8} height={it.d + 8} fill="transparent" />}
+      {ontwerp.achterwand && ITEMS[it.type].groep === 'keuken' && it.type !== 'bovenkast' && (
+        <rect x={-it.w / 2} y={-it.d / 2 - 2.5} width={it.w} height={2.5} fill={ontwerp.achterwand.metaal ? '#B9BFC4' : kleurVan(ontwerp.achterwand.kleur).basis} stroke={ontwerp.achterwand.metaal ? '#8E959B' : kleurVan(ontwerp.achterwand.kleur).voeg} strokeWidth={0.4} data-achterwand />
+      )}
       <Symbool type={it.type} w={it.w} d={it.d} buiten={it.draai === 'buiten'} rechts={it.scharnier === 'rechts'} />
     </g>
   )

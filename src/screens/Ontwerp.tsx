@@ -5,7 +5,7 @@ import { Badge, Button, Card, CardHeader, Notice, NumberField, Switch } from '..
 import { toast } from '../components/Toast'
 import { OntwerpPlan, PLAN_MARGE, planNaarPng } from '../components/ontwerp/OntwerpPlan'
 import { SymboolIcoon } from '../components/ontwerp/symbolen'
-import { keukenVan, werkbladBeeld } from '../lib/keuken'
+import { achterwandBeeld, keukenVan, werkbladBeeld } from '../lib/keuken'
 import type { Api3D } from '../components/ontwerp/Ontwerp3D'
 import { laadLater } from '../lib/lazy'
 import { track } from '../lib/analytics'
@@ -72,7 +72,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
   const [concept, setConcept] = useState<Ontwerp | null>(null)
   const ontwerp = concept ?? opgeslagen
   // keuken: werkblad uit de keukenkeuze tonen in 2D en 3D (alleen weergave, niet opgeslagen)
-  const beeld = useMemo(() => (p.type === 'keuken' ? { ...ontwerp, blad: werkbladBeeld(keukenVan(p)) } : ontwerp), [ontwerp, p])
+  const beeld = useMemo(() => (p.type === 'keuken' ? { ...ontwerp, blad: werkbladBeeld(keukenVan(p)), ...(keukenVan(p).achterwand ? { achterwand: achterwandBeeld(keukenVan(p)), wand: { kleur: achterwandBeeld(keukenVan(p)).kleur, formaat: achterwandBeeld(keukenVan(p)).formaat, verband: achterwandBeeld(keukenVan(p)).verband } as typeof ontwerp.wand } : {}) } : ontwerp), [ontwerp, p])
   const [hist, setHist] = useState<{ terug: Ontwerp[]; vooruit: Ontwerp[] }>({ terug: [], vooruit: [] })
   const [sel, setSel] = useState<string | null>(null)
   const [weergave, setWeergave] = useState<'2d' | '3d'>('2d')

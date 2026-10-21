@@ -17,7 +17,7 @@
  */
 import { ruimte } from './ruimtes'
 import { DETAIL_ARTIKELEN, type DetailId } from './artikelen'
-import { aantalUitsparingen, keukenArbeid, keukenVan, werkbladInfo, werkbladPrijs } from './keuken'
+import { aantalStopcontacten, aantalUitsparingen, achterwandInfo, achterwandUren, GLAS_KLEUREN, keukenArbeid, keukenVan, werkbladInfo, werkbladPrijs } from './keuken'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat, Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
 
 /** Vuistregels en verpakkingsgroottes. Eén plek, zodat ze makkelijk bij te stellen zijn. */
@@ -330,7 +330,7 @@ export function kitLengte(p: Pick<Project, 'scope' | 'afmetingen'> & { type?: Pr
 /** Strekkende meters tegelprofiel (bovenrand tegelwerk + dagkanten van ramen in de tegelzone). */
 export function profielLengte(p: Pick<Project, 'scope' | 'afmetingen'> & { type?: ProjectType }, o: Oppervlakken): number {
   const s = effectieveScope(p)
-  if (o.type === 'keuken') return s.spatwand ? Math.max(0, p.afmetingen.spatwand.lengte) + 2 * Math.max(0, p.afmetingen.spatwand.hoogte) : 0
+  if (o.type === 'keuken') return s.spatwand && achterwandInfo(keukenVan(p).achterwand).montage === 'tegel' ? Math.max(0, p.afmetingen.spatwand.lengte) + 2 * Math.max(0, p.afmetingen.spatwand.hoogte) : 0
   if (!s.wandtegels || o.type === 'vloer') return 0
   let m = 0
   if (o.tegelhoogte < p.afmetingen.hoogte - 0.01) m += Math.max(0, o.omtrek - o.deurBreedte)
@@ -547,7 +547,8 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
 
   // — Voorbereiding
   const tegelVloer = s.vloertegels || s.egaliseren
-  const tegelWand = type === 'keuken' ? s.spatwand : s.wandtegels
+  const aw = type === 'keuken' ? achterwandInfo(keukenVan(p).achterwand) : undefined
+  const tegelWand = type === 'keuken' ? s.spatwand && aw?.montage === 'tegel' : s.wandtegels
   const primerM2 = (tegelWand ? o.wandNetto : 0) + (tegelVloer ? o.vloer : 0) + (s.stucwerk ? o.plafond + o.wandBovenTegels : 0)
   if (primerM2 > 0) {
     const liter = primerM2 * REGELS.primerLPerM2
@@ -700,7 +701,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   const lijmUitleg: string[] = []
   const voegUitleg: string[] = []
   const tegelTypes: [ProductId, string, number, TileSpec, boolean][] = [
-    ['wandtegel', type === 'keuken' ? 'Wandtegels spatwand' : 'Wandtegels', o.wandNetto, p.wandtegel, tegelWand],
+    [type === 'keuken' && keukenVan(p).achterwand ? (`achterwand-${aw!.id}` as DetailId) : 'wandtegel', type === 'keuken' ? (keukenVan(p).achterwand ? `Achterwand ${aw!.naam.toLowerCase()}` : 'Wandtegels spatwand') : 'Wandtegels', o.wandNetto, type === 'keuken' && keukenVan(p).achterwand && aw?.tegel ? { ...p.wandtegel, ...aw.tegel } : p.wandtegel, tegelWand],
     ['vloertegel', 'Vloertegels', o.vloer, p.vloertegel, s.vloertegels],
   ]
   for (const [id, naam, m2, tegel, actief] of tegelTypes) {
@@ -924,6 +925,15 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
         add(detailRegel('afzuig-kanaal', 1, 'Van afzuigkap naar gevel'))
       }
     }
+    const aw = achterwandInfo(k.achterwand)
+    if (s.spatwand && aw.montage !== 'tegel' && o.wandNetto > 0) {
+      const m2 = rond(o.wandNetto * (aw.montage === 'paneel' ? 1.05 : 1.1), 2)
+      const r = detailRegel(`achterwand-${aw.id}` as DetailId, 1, `${nl(o.wandNetto)} m² (${nl(p.afmetingen.spatwand.lengte)} × ${nl(p.afmetingen.spatwand.hoogte)} m) + ${aw.montage === 'paneel' ? '5% passen' : '10% verbruik'}`)
+      add({ ...r, nodig: m2, nodigEenheid: 'm²', aantal: m2, verpakking: 'm²', prijsAantal: m2, ...(aw.kleurKeuze && k.glasKleur ? { spec: GLAS_KLEUREN.find((g) => g.id === k.glasKleur)?.naam } : {}) })
+      const sc = aantalStopcontacten(p.afmetingen.spatwand.lengte)
+      if (aw.uitsparingLeverancier) add(detailRegel('achterwand-uitsparing', sc, `${sc} stopcontacten (ca. 1 per 1,2 m)`))
+      if (aw.montage === 'paneel') add(detailRegel('achterwand-montagekit', omhoog(o.wandNetto / 1.5), 'Verlijmen / kitten'))
+    }
     if (s.perilex) {
       add({ id: 'aardlekgroep', groep: 'elektra', naam: 'Aardlekautomaat (extra groep)', nodig: 2, nodigEenheid: 'stuk', aantal: 2, verpakking: 'stuk', prijsAantal: 2, toelichting: 'Kookgroep 2-fase (perilex)' })
       add(detailRegel('keuken-perilex', 1, 'Perilexdoos voor de kookplaat'))
@@ -991,7 +1001,11 @@ export function berekenArbeid(p: Project): ArbeidRegel[] {
   if (s.waterdicht) add('waterdicht', 'Waterdicht maken', o.waterdichtOppervlak * ARBEID.waterdichtPerM2)
   if (s.vloerverwarming) add('vloerverwarming', 'Vloerverwarming leggen', o.vloer * ARBEID.vloerverwarmingPerM2 + ARBEID.vloerverwarmingVast)
   if (s.wandtegels && type !== 'keuken') add('wandtegels', 'Wandtegels zetten', o.wandNetto * ARBEID.wandtegelsPerM2)
-  if (s.spatwand && type === 'keuken') add('spatwand', 'Spatwand tegelen', o.wandNetto * ARBEID.spatwandPerM2 + ARBEID.spatwandVast)
+  if (s.spatwand && type === 'keuken') {
+    const aw = achterwandInfo(keukenVan(p).achterwand)
+    if (aw.montage === 'tegel') add('spatwand', 'Achterwand tegelen', o.wandNetto * ARBEID.spatwandPerM2 + ARBEID.spatwandVast)
+    else add('spatwand', aw.montage === 'stuc' ? 'Achterwand microcement aanbrengen' : `Achterwand ${aw.naam.toLowerCase()} plaatsen`, achterwandUren(aw, o.wandNetto, aantalStopcontacten(p.afmetingen.spatwand.lengte)))
+  }
   if (s.legvloer) add('legvloer', p.legvloer.soort === 'pvc' ? 'PVC-vloer leggen' : 'Laminaat leggen', o.vloer * (p.legvloer.soort === 'pvc' ? ARBEID.pvcPerM2 : ARBEID.laminaatPerM2))
   if (s.ondervloer) add('ondervloer', 'Ondervloer leggen', o.vloer * ARBEID.ondervloerPerM2)
   if (s.plinten) add('plinten', 'Plinten plaatsen', o.plintLengte * ARBEID.plintenPerM)

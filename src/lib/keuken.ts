@@ -61,6 +61,9 @@ export interface KeukenSpec {
   dikte?: number
   /** decor (laminaat) */
   decor?: string
+  /** achterwand (ontbreekt = metrotegels, rekent zoals de oude tegel-spatwand) */
+  achterwand?: AchterwandSoort
+  glasKleur?: string
   apparaten: Record<Apparaat, boolean>
   /** afzuigkap met afvoer naar buiten (kernboring + muurdoorvoer) i.p.v. recirculatie */
   afzuigBuiten: boolean
@@ -89,6 +92,8 @@ export function keukenVan(p: Pick<Project, 'afmetingen'> & { keuken?: Partial<Ke
     werkblad: WERKBLADEN.some((w) => w.id === k.werkblad) ? (k.werkblad as WerkbladSoort) : basis.werkblad,
     ...(typeof k.dikte === 'number' ? { dikte: k.dikte } : {}),
     ...(typeof k.decor === 'string' ? { decor: k.decor.slice(0, 40) } : {}),
+    ...(k.achterwand && ACHTERWANDEN.some((a) => a.id === k.achterwand) ? { achterwand: k.achterwand } : {}),
+    ...(typeof k.glasKleur === 'string' ? { glasKleur: k.glasKleur.slice(0, 20) } : {}),
     apparaten: { ...basis.apparaten, ...(k.apparaten ?? {}) },
     afzuigBuiten: typeof k.afzuigBuiten === 'boolean' ? k.afzuigBuiten : basis.afzuigBuiten,
   }
@@ -136,3 +141,56 @@ export function keukenArbeid(k: KeukenSpec, s: { keukenDemontage?: boolean; keuk
 }
 
 const nlm = (n: number) => `${new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 1 }).format(n)} m`
+
+// ——— achterwand ——————————————————————————————————————————————
+export type AchterwandSoort = 'metro' | 'zellige' | 'grootformaat' | 'glas' | 'composiet' | 'keramiek' | 'rvs' | 'marmer' | 'spiegel' | 'hpl' | 'microcement' | 'paneel'
+export interface AchterwandInfo {
+  id: AchterwandSoort
+  naam: string
+  /** voorbeeldprijs materiaal per m² incl. btw */
+  prijs: number
+  /** 'tegel' = tegelen per m² (lijm/voeg), 'paneel' = op maat geplaatst, 'stuc' = microcement in lagen */
+  montage: 'tegel' | 'paneel' | 'stuc'
+  /** uitsparingen stopcontacten door de leverancier (per stuk), anders zelf (uren) */
+  uitsparingLeverancier?: boolean
+  /** tegelmaat in cm (alleen tegels) */
+  tegel?: { lengte: number; breedte: number; m2PerDoos: number; dikte: number; voeg: number }
+  beeld: { kleur: string; formaat: string; verband: string; glans?: boolean; metaal?: boolean }
+  uitleg: string
+  kleurKeuze?: boolean
+}
+export const ACHTERWANDEN: AchterwandInfo[] = [
+  { id: 'metro', naam: 'Metrotegels', prijs: 45, montage: 'tegel', tegel: { lengte: 15, breedte: 7.5, m2PerDoos: 0.5, dikte: 8, voeg: 2 }, beeld: { kleur: 'kalk', formaat: 'metro', verband: 'halfsteens', glans: true }, uitleg: 'Subway 7,5 × 15 cm, halfsteens gelegd.' },
+  { id: 'zellige', naam: 'Zellige-look', prijs: 75, montage: 'tegel', tegel: { lengte: 10, breedte: 10, m2PerDoos: 0.5, dikte: 9, voeg: 2 }, beeld: { kleur: 'salie', formaat: '15x15', verband: 'recht', glans: true }, uitleg: 'Handgemaakte look 10 × 10 cm, levendig glazuur.' },
+  { id: 'grootformaat', naam: 'Groot formaat tegel', prijs: 55, montage: 'tegel', tegel: { lengte: 120, breedte: 60, m2PerDoos: 1.44, dikte: 9, voeg: 2 }, beeld: { kleur: 'beton', formaat: '60x120', verband: 'recht' }, uitleg: '60 × 120 cm, weinig voegen.' },
+  { id: 'glas', naam: 'Glazen achterwand', prijs: 295, montage: 'paneel', uitsparingLeverancier: true, beeld: { kleur: 'kalk', formaat: '80x80', verband: 'recht', glans: true }, uitleg: '6 mm gehard glas, achterzijde gelakt in kleur naar keuze; op maat incl. inmeten.', kleurKeuze: true },
+  { id: 'composiet', naam: 'Composiet / kwarts', prijs: 360, montage: 'paneel', uitsparingLeverancier: true, beeld: { kleur: 'kalk', formaat: '60x120', verband: 'recht' }, uitleg: 'Zelfde materiaal als het werkblad, op maat.' },
+  { id: 'keramiek', naam: 'Keramiek (Dekton-type)', prijs: 400, montage: 'paneel', uitsparingLeverancier: true, beeld: { kleur: 'beton', formaat: '60x120', verband: 'recht' }, uitleg: 'Dunne keramische plaat, hitte- en krasvast.' },
+  { id: 'rvs', naam: 'RVS', prijs: 240, montage: 'paneel', uitsparingLeverancier: true, beeld: { kleur: 'kalk', formaat: '80x80', verband: 'recht', metaal: true }, uitleg: 'Geborsteld RVS-plaat, op maat gezet.' },
+  { id: 'marmer', naam: 'Natuursteen / marmer', prijs: 420, montage: 'paneel', uitsparingLeverancier: true, beeld: { kleur: 'marmer', formaat: '60x120', verband: 'recht', glans: true }, uitleg: 'Marmer of natuursteen, op maat; bijpassend bij het werkblad.' },
+  { id: 'spiegel', naam: 'Spiegel / rookglas', prijs: 320, montage: 'paneel', uitsparingLeverancier: true, beeld: { kleur: 'antraciet', formaat: '80x80', verband: 'recht', glans: true }, uitleg: 'Gehard spiegel- of rookglas, op maat.' },
+  { id: 'hpl', naam: 'HPL / compact laminaat', prijs: 180, montage: 'paneel', beeld: { kleur: 'antraciet', formaat: '60x120', verband: 'recht' }, uitleg: 'Compactplaat, zelf op maat zagen.' },
+  { id: 'microcement', naam: 'Betonlook / microcement', prijs: 95, montage: 'stuc', beeld: { kleur: 'beton', formaat: '80x80', verband: 'recht' }, uitleg: 'Naadloos in meerdere lagen, met sealer.' },
+  { id: 'paneel', naam: 'Achterwandpaneel kunststof/alu', prijs: 65, montage: 'paneel', beeld: { kleur: 'kalk', formaat: '60x120', verband: 'recht' }, uitleg: 'Voordelig paneel (kunststof of aluminium composiet), verlijmd.' },
+]
+export const GLAS_KLEUREN: { id: string; naam: string; kleur: string }[] = [
+  { id: 'wit', naam: 'Wit', kleur: 'kalk' },
+  { id: 'zwart', naam: 'Zwart', kleur: 'antraciet' },
+  { id: 'salie', naam: 'Saliegroen', kleur: 'salie' },
+  { id: 'terracotta', naam: 'Terracotta', kleur: 'terracotta' },
+  { id: 'zand', naam: 'Zand', kleur: 'zand' },
+]
+export const achterwandInfo = (id: AchterwandSoort | undefined) => ACHTERWANDEN.find((a) => a.id === id) ?? ACHTERWANDEN[0]
+/** Aantal stopcontacten in de achterwand: ca. 1 per 1,2 m, minimaal 2. */
+export const aantalStopcontacten = (lengte: number) => Math.max(2, Math.round(Math.max(0, lengte) / 1.2))
+export function achterwandBeeld(k: Pick<KeukenSpec, 'achterwand' | 'glasKleur'>) {
+  const a = achterwandInfo(k.achterwand)
+  const kleur = a.kleurKeuze ? (GLAS_KLEUREN.find((g) => g.id === k.glasKleur)?.kleur ?? a.beeld.kleur) : a.beeld.kleur
+  return { ...a.beeld, kleur }
+}
+/** Uren achterwand: paneel 1,5 u vast + 0,6 u/m²; microcement 2 u/m² + 1; zelf uitsparen 0,3 u per stopcontact. */
+export function achterwandUren(a: AchterwandInfo, m2: number, stopcontacten: number) {
+  if (a.montage === 'tegel') return 0
+  const zelf = a.uitsparingLeverancier ? 0 : stopcontacten * 0.3
+  return (a.montage === 'stuc' ? m2 * 2 + 1 : m2 * 0.6 + 1.5) + zelf
+}

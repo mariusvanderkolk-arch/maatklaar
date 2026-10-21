@@ -11,7 +11,7 @@ import { toast } from '../components/Toast'
 import { Button, Card, CardHeader, NumberField } from '../components/ui'
 import { LEGVLOER_PAK, uid } from '../lib/defaults'
 import { effectieveScope } from '../lib/calc'
-import { APPARATEN, WERKBLADEN, keukenVan, werkbladBeeld, werkbladInfo, werkbladPrijs, type KeukenSpec } from '../lib/keuken'
+import { ACHTERWANDEN, GLAS_KLEUREN, aantalStopcontacten, achterwandBeeld, achterwandInfo, APPARATEN, WERKBLADEN, keukenVan, werkbladBeeld, werkbladInfo, werkbladPrijs, type KeukenSpec } from '../lib/keuken'
 import { kleurVan } from '../lib/ontwerp/model'
 import { getal } from '../lib/format'
 import { projectStore } from '../lib/store'
@@ -139,10 +139,10 @@ export function Measure({ p }: { p: Project }) {
 
         {type === 'keuken' && s.spatwand && (
           <Card>
-            <CardHeader icon={<CookingPot className="h-5 w-5" />} title="Spatwand achter het aanrecht" sub="Het te betegelen stuk wand tussen werkblad en bovenkastjes of afzuigkap." />
+            <CardHeader icon={<CookingPot className="h-5 w-5" />} title="Achterwand achter het aanrecht" sub="Het stuk wand tussen werkblad en bovenkasten (standaard 60 cm) of afzuigkap." />
             <div className="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3 sm:p-6">
               <NumberField label="Lengte werkblad" unit="m" value={a.spatwand.lengte} onChange={(v) => setA({ spatwand: { ...a.spatwand, lengte: v } })} hint="Inclusief een eventuele hoek." />
-              <NumberField label="Hoogte spatwand" unit="m" value={a.spatwand.hoogte} onChange={(v) => setA({ spatwand: { ...a.spatwand, hoogte: v } })} />
+              <NumberField label="Hoogte achterwand" unit="m" value={a.spatwand.hoogte} onChange={(v) => setA({ spatwand: { ...a.spatwand, hoogte: v } })} />
               <div className="col-span-2 flex flex-wrap items-end gap-2 pb-2 sm:col-span-1">
                 {[0.6, 0.65, 0.7].map((h) => (
                   <Chip key={h} actief={Math.abs(a.spatwand.hoogte - h) < 0.005} onClick={() => setA({ spatwand: { ...a.spatwand, hoogte: h } })}>
@@ -151,6 +151,46 @@ export function Measure({ p }: { p: Project }) {
                 ))}
               </div>
             </div>
+            {(() => {
+              const k = keukenVan(p)
+              const gekozen = achterwandInfo(k.achterwand)
+              const setK = (patch: Partial<KeukenSpec>) => upd((x) => ({ ...x, keuken: { ...keukenVan(x), ...patch } }))
+              const m2 = o.wandNetto
+              return (
+                <div className="border-t border-sand-200 px-5 pt-4 pb-5 sm:px-6">
+                  <p className="mb-2 text-sm font-medium text-ink">Soort achterwand</p>
+                  <div role="radiogroup" aria-label="Soort achterwand" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {ACHTERWANDEN.map((w) => {
+                      const bl = achterwandBeeld({ achterwand: w.id, glasKleur: k.glasKleur })
+                      const kl = kleurVan(bl.kleur)
+                      const act = gekozen.id === w.id
+                      const voeg = w.montage === 'tegel' ? `repeating-linear-gradient(0deg, ${kl.voeg} 0 1px, transparent 1px ${w.id === 'metro' ? 6 : w.id === 'zellige' ? 9 : 18}px), repeating-linear-gradient(90deg, ${kl.voeg} 0 1px, transparent 1px ${w.id === 'metro' ? 12 : w.id === 'zellige' ? 9 : 18}px), ` : ''
+                      const glans = bl.glans ? 'linear-gradient(120deg, rgba(255,255,255,.55) 0 18%, transparent 30%), ' : ''
+                      const bg = bl.metaal ? 'linear-gradient(135deg,#d9dcdf,#9aa0a6 45%,#e9ecee 55%,#a7adb3)' : `${glans}${voeg}linear-gradient(135deg, ${kl.basis}, ${kl.voeg})`
+                      return (
+                        <button key={w.id} type="button" role="radio" aria-checked={act} onClick={() => setK({ achterwand: w.id })}
+                          className={`flex items-center gap-2.5 rounded-xl p-2 text-left ring-1 transition ${act ? 'bg-ink text-sand-50 ring-ink shadow-md' : 'bg-white/80 text-ink ring-sand-300 hover:ring-gold-400'}`}>
+                          <span aria-hidden className="h-9 w-9 shrink-0 rounded-lg shadow-inner ring-1 ring-black/10" style={{ background: bg }} />
+                          <span className="min-w-0">
+                            <span className="block truncate text-[0.8rem] font-semibold">{w.naam}</span>
+                            <span className={`block text-[0.7rem] ${act ? 'text-gold-300' : 'text-ink-soft'}`}>€ {w.prijs}/m² · {w.montage === 'tegel' ? 'tegelen' : w.montage === 'stuc' ? 'in lagen' : 'op maat'}</span>
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {gekozen.kleurKeuze && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-ink-soft">Kleur glas</span>
+                      {GLAS_KLEUREN.map((g) => <Chip key={g.id} actief={(k.glasKleur ?? 'wit') === g.id} onClick={() => setK({ glasKleur: g.id })}>{g.naam}</Chip>)}
+                    </div>
+                  )}
+                  <p className="mt-2 text-xs text-ink-soft">
+                    {gekozen.uitleg} {getal(m2)} m²{gekozen.montage === 'paneel' ? ` · ${aantalStopcontacten(a.spatwand.lengte)} uitsparingen voor stopcontacten${gekozen.uitsparingLeverancier ? ' door de leverancier' : ''}` : ''}.
+                  </p>
+                </div>
+              )
+            })()}
           </Card>
         )}
 
