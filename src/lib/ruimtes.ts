@@ -2,11 +2,12 @@
 import type { Afmetingen, ProjectType, Scope, ScopeKey } from './types'
 
 /** Fase/facet waaronder een werkzaamheid in de checklist staat. */
-export type Fase = 'sloop' | 'ondergrond' | 'installaties' | 'tegelwerk' | 'sanitair' | 'afwerking'
+export type Fase = 'sloop' | 'ondergrond' | 'installaties' | 'keuken' | 'tegelwerk' | 'sanitair' | 'afwerking'
 export const FASES: { id: Fase; naam: string }[] = [
   { id: 'sloop', naam: 'Sloop & afvoer' },
   { id: 'ondergrond', naam: 'Ondergrond' },
   { id: 'installaties', naam: 'Leidingwerk, elektra & klimaat' },
+  { id: 'keuken', naam: 'Keukenmontage & apparatuur' },
   { id: 'tegelwerk', naam: 'Tegelwerk & vloer' },
   { id: 'sanitair', naam: 'Sanitair' },
   { id: 'afwerking', naam: 'Afwerking' },
@@ -16,6 +17,7 @@ export const FASE_VAN: Record<ScopeKey, Fase> = {
   leidingwerk: 'installaties', elektra: 'installaties', ventilatie: 'installaties', vloerverwarming: 'installaties', radiator: 'installaties',
   wandtegels: 'tegelwerk', vloertegels: 'tegelwerk', spatwand: 'tegelwerk', legvloer: 'tegelwerk', ondervloer: 'tegelwerk', plinten: 'tegelwerk',
   inloopdouche: 'sanitair', bad: 'sanitair', toilet: 'sanitair', wastafelmeubel: 'sanitair', fontein: 'sanitair',
+  keukenDemontage: 'sloop', perilex: 'installaties', keukenMontage: 'keuken', werkblad: 'keuken', uitsparingen: 'keuken', apparatuur: 'keuken',
   kitwerk: 'afwerking', stucwerk: 'afwerking', plafond: 'afwerking', deur: 'afwerking',
 }
 /** Checklist gegroepeerd per fase (lege fases weggelaten). */
@@ -57,6 +59,12 @@ export const SCOPE_BASIS: Record<ScopeKey, ScopeItem> = {
   ventilatie: { key: 'ventilatie', label: 'Ventilatie', omschrijving: 'Ventilator met vochtsensor en afvoer' },
   bad: { key: 'bad', label: 'Ligbad', omschrijving: 'Bad met kraan en afvoer', optioneel: true },
   deur: { key: 'deur', label: 'Deur & dorpel', omschrijving: 'Nieuwe binnendeur, dorpel en beslag', optioneel: true },
+  keukenDemontage: { key: 'keukenDemontage', label: 'Oude keuken demonteren', omschrijving: 'Kasten, werkblad en apparatuur eruit en afvoeren' },
+  keukenMontage: { key: 'keukenMontage', label: 'Keukenkasten monteren', omschrijving: 'Onder- en bovenkasten per strekkende meter, incl. plinten' },
+  werkblad: { key: 'werkblad', label: 'Werkblad plaatsen', omschrijving: 'Laminaat zagen op maat, of composiet/graniet plaatsen' },
+  uitsparingen: { key: 'uitsparingen', label: 'Uitsparingen werkblad', omschrijving: 'Spoelbak en kookplaat' },
+  apparatuur: { key: 'apparatuur', label: 'Inbouwapparatuur aansluiten', omschrijving: 'Kookplaat, oven, vaatwasser, koelkast en afzuigkap' },
+  perilex: { key: 'perilex', label: 'Perilex & extra groepen', omschrijving: 'Kookgroep (2-fase) en groepen door de elektricien', optioneel: true },
   plafond: { key: 'plafond', label: 'PVC-plafond', omschrijving: 'Vochtbestendige plafondpanelen (i.p.v. stucwerk)', optioneel: true },
 }
 
@@ -70,7 +78,7 @@ export interface RuimteType {
   /** standaard aangevinkt bij een nieuw project */
   standaard: ScopeKey[]
   /** afwijkende teksten per werkzaamheid voor dit ruimtetype */
-  teksten?: Partial<Record<ScopeKey, Partial<Pick<ScopeItem, 'label' | 'omschrijving'>>>>
+  teksten?: Partial<Record<ScopeKey, Partial<Pick<ScopeItem, 'label' | 'omschrijving' | 'optioneel'>>>>
   afmetingen: Partial<Afmetingen>
   snijverlies: number
 }
@@ -102,12 +110,14 @@ export const RUIMTES: RuimteType[] = [
     id: 'keuken',
     label: 'Keuken',
     omschrijving: 'Spatwand achter het aanrecht, vloer en kit',
-    werk: ['sloopwerk', 'container', 'dekvloer', 'egaliseren', 'leidingwerk', 'elektra', 'ventilatie', 'spatwand', 'vloertegels', 'kitwerk', 'stucwerk', 'plafond', 'deur'],
-    standaard: ['sloopwerk', 'spatwand', 'egaliseren', 'vloertegels', 'kitwerk'],
+    werk: ['keukenDemontage', 'sloopwerk', 'container', 'dekvloer', 'egaliseren', 'leidingwerk', 'elektra', 'perilex', 'ventilatie', 'keukenMontage', 'werkblad', 'uitsparingen', 'apparatuur', 'spatwand', 'vloertegels', 'plinten', 'kitwerk', 'stucwerk', 'plafond', 'deur'],
+    standaard: ['keukenDemontage', 'sloopwerk', 'keukenMontage', 'werkblad', 'uitsparingen', 'apparatuur', 'spatwand', 'egaliseren', 'vloertegels', 'kitwerk'],
     teksten: {
-      leidingwerk: { omschrijving: 'Aansluiting spoelbak/vaatwasser verleggen' },
+      leidingwerk: { label: 'Water & afvoer verleggen', omschrijving: 'Aansluiting spoelbak/vaatwasser verleggen' },
+      spatwand: { label: 'Wandtegels achterwand' },
+      plinten: { omschrijving: 'Langs de wanden buiten de keuken' },
       elektra: { omschrijving: 'Extra groep (kookplaat/oven), spots en stopcontacten' },
-      ventilatie: { label: 'Afzuiging', omschrijving: 'Afvoer voor afzuigkap of ventilator' },
+      ventilatie: { label: 'Extra ventilator', omschrijving: 'Mechanische ventilator (afzuigkap valt onder apparatuur)' },
       stucwerk: { omschrijving: 'Plafond stucen en schilderen' },
       sloopwerk: { omschrijving: 'Oude spatwand en vloertegels verwijderen' },
       vloertegels: { label: 'Tegelvloer', omschrijving: 'Keukenvloer incl. lijm en voeg' },

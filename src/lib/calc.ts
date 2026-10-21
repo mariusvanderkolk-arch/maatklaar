@@ -17,6 +17,7 @@
  */
 import { ruimte } from './ruimtes'
 import { DETAIL_ARTIKELEN, type DetailId } from './artikelen'
+import { aantalUitsparingen, keukenArbeid, keukenVan } from './keuken'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat, Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
 
 /** Vuistregels en verpakkingsgroottes. Eén plek, zodat ze makkelijk bij te stellen zijn. */
@@ -864,6 +865,41 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     add(detailRegel('plafond-schroeven', 1, 'Bevestiging', 'plafondprofielen'))
   }
 
+  // — Keuken (kasten en apparatuur zelf levert de klant/keukenleverancier; hier montage- en aansluitmateriaal)
+  if (type === 'keuken') {
+    const k = keukenVan(p)
+    const m = (id: DetailId, n: number, eenh: string, toelichting: string) => {
+      const r = detailRegel(id, 1, toelichting)
+      const x = rond(n, 1)
+      add({ ...r, nodig: x, nodigEenheid: eenh, aantal: x, verpakking: eenh, prijsAantal: x })
+    }
+    if (s.keukenDemontage) add(detailRegel('keuken-afvoer', 1, `${nl(k.onderkastM + k.bovenkastM)} m kasten + werkblad`))
+    if (s.keukenMontage && k.onderkastM + k.bovenkastM > 0) {
+      add(detailRegel('keuken-montage', (k.onderkastM + k.bovenkastM) / 2, `${nl(k.onderkastM + k.bovenkastM)} m kasten, 1 set per 2 m`))
+      if (k.onderkastM > 0) m('keuken-plint', omhoog(k.onderkastM * 10) / 10 + 0.1, 'm', `${nl(k.onderkastM)} m onderkasten + 10 cm`)
+    }
+    if (s.werkblad && k.onderkastM > 0) {
+      if (k.werkblad === 'laminaat') {
+        m('werkblad-laminaat', omhoog(k.onderkastM * 1.1 * 10) / 10, 'm', `${nl(k.onderkastM)} m + 10% zaagverlies`)
+        add(detailRegel('keuken-werkblad-afwerk', 2, 'Kopse kanten / verbinding'))
+      } else m(k.werkblad === 'composiet' ? 'werkblad-composiet' : 'werkblad-graniet', omhoog(k.onderkastM * 10) / 10, 'm', `${nl(k.onderkastM)} m onderkasten, op maat geleverd`)
+    }
+    if (s.uitsparingen && k.werkblad !== 'laminaat') add(detailRegel('uitsparing-steen', aantalUitsparingen(k), k.apparaten.kookplaat ? 'Spoelbak en kookplaat' : 'Spoelbak'))
+    if (s.apparatuur) {
+      if (k.apparaten.vaatwasser) add(detailRegel('vaatwasser-aansluitset', 1, 'Aansluiting vaatwasser'))
+      if (k.apparaten.afzuigkap && k.afzuigBuiten) {
+        add(detailRegel('kernboring', 1, 'Afvoer afzuigkap naar buiten'))
+        add(detailRegel('afzuig-muurdoorvoer', 1, 'Met terugslagklep tegen tocht'))
+        add(detailRegel('afzuig-kanaal', 1, 'Van afzuigkap naar gevel'))
+      }
+    }
+    if (s.perilex) {
+      add({ id: 'aardlekgroep', groep: 'elektra', naam: 'Aardlekautomaat (extra groep)', nodig: 2, nodigEenheid: 'stuk', aantal: 2, verpakking: 'stuk', prijsAantal: 2, toelichting: 'Kookgroep 2-fase (perilex)' })
+      add(detailRegel('keuken-perilex', 1, 'Perilexdoos voor de kookplaat'))
+      add(detailRegel('kookgroep-materiaal', 1, 'Van meterkast naar kookplaat'))
+    }
+  }
+
   return regels
 }
 
@@ -941,5 +977,6 @@ export function berekenArbeid(p: Project): ArbeidRegel[] {
   if (s.bad) add('bad', 'Ligbad plaatsen', ARBEID.bad)
   if (s.deur) add('deur', 'Deur en dorpel plaatsen', ARBEID.deur)
   if (s.plafond) add('plafond', 'PVC-plafond monteren', o.plafond * ARBEID.plafondPerM2)
+  if (type === 'keuken') for (const [k, oms, u] of keukenArbeid(keukenVan(p), s)) add(k, oms, u)
   return r
 }

@@ -26,6 +26,12 @@ export type ScopeKey =
   | 'bad'
   | 'deur'
   | 'plafond'
+  | 'keukenDemontage'
+  | 'keukenMontage'
+  | 'werkblad'
+  | 'uitsparingen'
+  | 'apparatuur'
+  | 'perilex'
 
 export type Scope = Record<ScopeKey, boolean>
 
@@ -179,6 +185,8 @@ export interface Project {
   marge?: number
   /** marge per materiaalregel (sleutel → %), gaat voor de projectmarge */
   margeRegels?: Record<string, number>
+  /** keuken: kastlengtes, werkblad en inbouwapparatuur; ontbreekt = standaard (zie keuken.ts) */
+  keuken?: import('./keuken').KeukenSpec
   /** meer- en minderwerk (meerwerkbonnen); ontbreekt = geen */
   meerwerk?: import('./meerwerk').MeerwerkItem[]
   /** keuze bij 'Huur container': maat (m³, of auto) en afvalsoort */

@@ -10,7 +10,7 @@ export const standaardPlanning = (): Planning => ({ dagUren: 8, weekend: false, 
 
 /** Logische volgorde op de bouw. Onbekende taken komen achteraan. */
 export const VOLGORDE = [
-  'sloopwerk', 'leidingwerk', 'elektra', 'ventilatie', 'dekvloer', 'egaliseren', 'waterdicht', 'vloerverwarming', 'wandtegels', 'spatwand', 'vloertegels',
+  'keukenDemontage', 'sloopwerk', 'leidingwerk', 'elektra', 'perilex', 'ventilatie', 'dekvloer', 'egaliseren', 'waterdicht', 'vloerverwarming', 'wandtegels', 'vloertegels', 'keukenMontage', 'werkblad', 'uitsparingen', 'spatwand', 'apparatuur',
   'ondervloer', 'legvloer', 'plinten', 'bad', 'inloopdouche', 'toilet', 'fontein', 'wastafelmeubel', 'radiator', 'plafond', 'stucwerk', 'deur', 'kitwerk',
 ]
 

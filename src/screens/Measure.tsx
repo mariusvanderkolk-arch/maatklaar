@@ -11,6 +11,7 @@ import { toast } from '../components/Toast'
 import { Button, Card, CardHeader, NumberField } from '../components/ui'
 import { LEGVLOER_PAK, uid } from '../lib/defaults'
 import { effectieveScope } from '../lib/calc'
+import { APPARATEN, WERKBLADEN, keukenVan, type KeukenSpec } from '../lib/keuken'
 import { getal } from '../lib/format'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
@@ -151,6 +152,57 @@ export function Measure({ p }: { p: Project }) {
             </div>
           </Card>
         )}
+
+        {type === 'keuken' && (s.keukenDemontage || s.keukenMontage || s.werkblad || s.uitsparingen || s.apparatuur) && (() => {
+          const k = keukenVan(p)
+          const setK = (patch: Partial<KeukenSpec>) => upd((x) => ({ ...x, keuken: { ...keukenVan(x), ...patch } }))
+          return (
+            <Card>
+              <CardHeader icon={<CookingPot className="h-5 w-5" />} title="Keuken" sub="Strekkende meters kasten, het werkblad en welke apparatuur je inbouwt en aansluit." />
+              <div className="space-y-5 p-5 sm:p-6">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  <NumberField label="Onderkasten" unit="m" value={k.onderkastM} onChange={(v) => setK({ onderkastM: v })} hint="Strekkende meter, ook de werkbladlengte." />
+                  <NumberField label="Bovenkasten" unit="m" value={k.bovenkastM} onChange={(v) => setK({ bovenkastM: v })} hint="0 als er geen bovenkasten komen." />
+                  {Math.abs(k.onderkastM - a.spatwand.lengte) > 0.005 && a.spatwand.lengte > 0 && (
+                    <div className="col-span-2 flex items-end pb-2 sm:col-span-1">
+                      <Chip onClick={() => setK({ onderkastM: a.spatwand.lengte })}>Gelijk aan werkblad ({getal(a.spatwand.lengte)} m)</Chip>
+                    </div>
+                  )}
+                </div>
+                {(s.werkblad || s.uitsparingen) && (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-ink">Werkblad</p>
+                    <div role="radiogroup" aria-label="Soort werkblad" className="grid grid-cols-3 gap-1 rounded-xl bg-sand-100 p-1 ring-1 ring-sand-200">
+                      {WERKBLADEN.map((w) => (
+                        <button key={w.id} type="button" role="radio" aria-checked={k.werkblad === w.id} onClick={() => setK({ werkblad: w.id })}
+                          className={`h-11 rounded-lg text-sm font-medium transition ${k.werkblad === w.id ? 'bg-white text-ink shadow-sm ring-1 ring-sand-300' : 'text-ink-soft'}`}>
+                          {w.naam}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-ink-soft">{k.werkblad === 'laminaat' ? 'Zelf op maat zagen, incl. uitsparingen.' : 'Op maat geleverd door de steenhouwer; uitsparingen worden per stuk gerekend.'}</p>
+                  </div>
+                )}
+                {s.apparatuur && (
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-ink">Inbouwapparatuur aansluiten</p>
+                    <div className="flex flex-wrap gap-2">
+                      {APPARATEN.map((ap) => (
+                        <Chip key={ap.id} actief={k.apparaten[ap.id]} onClick={() => setK({ apparaten: { ...k.apparaten, [ap.id]: !k.apparaten[ap.id] } })}>{ap.naam}</Chip>
+                      ))}
+                    </div>
+                    {k.apparaten.afzuigkap && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Chip actief={k.afzuigBuiten} onClick={() => setK({ afzuigBuiten: true })}>Afvoer naar buiten</Chip>
+                        <Chip actief={!k.afzuigBuiten} onClick={() => setK({ afzuigBuiten: false })}>Recirculatie</Chip>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )
+        })()}
 
         {type === 'vloer' && (
           <Card>
