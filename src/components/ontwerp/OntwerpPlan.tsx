@@ -4,8 +4,9 @@ import { afstanden, halveMaat, ITEMS, kleurVan, WAND_DIKTE, type Kamer, type Ont
 import { vloerAfbeelding } from '../../lib/ontwerp/tegels'
 import { Symbool, SymboolDefs } from './symbolen'
 
-const WAND = '#3B3531'
-const MAAT = '#8C7B66'
+const WAND = '#2B2622'
+const MAAT = '#9A7A45'
+const GOUD = '#C9A15A'
 
 export const PLAN_MARGE = WAND_DIKTE + 46
 
@@ -162,7 +163,7 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
       onPointerCancel={onUp}
     >
       <defs>
-        <SymboolDefs />
+        <SymboolDefs blad={ontwerp.blad ? { ...kleurVan(ontwerp.blad.kleur), metaal: (ontwerp.blad.metaal ?? 0) > 0.5 } : undefined} />
         <pattern id="sw-raster" width={10} height={10} patternUnits="userSpaceOnUse">
           <circle cx={5} cy={5} r={0.55} fill="#D9CDBB" />
         </pattern>
@@ -177,6 +178,10 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
         <rect x={0} y={0} width={L} height={B} fill="url(#sw-vloerlicht)" />
       </g>
       <defs>
+        <linearGradient id="sw-wandschaduw" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2B2622" stopOpacity={0.35} />
+          <stop offset="1" stopColor="#2B2622" stopOpacity={0.2} />
+        </linearGradient>
         <radialGradient id="sw-vloerlicht" cx="0.35" cy="0.3" r="0.9">
           <stop offset="0" stopColor="#FFFFFF" stopOpacity={0.16} />
           <stop offset="1" stopColor="#3B3026" stopOpacity={0.08} />
@@ -185,10 +190,17 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
       {/* wandtegels: rand langs de binnenkant */}
       {betegeld && <rect x={1.6} y={1.6} width={L - 3.2} height={B - 3.2} fill="none" stroke={wandKleur.basis} strokeWidth={3.2} />}
 
+      {/* oppervlakte in het midden (subtiel) */}
+      <text x={L / 2} y={B / 2 + 4 * s} textAnchor="middle" fontSize={12 * s} fontFamily="Inter Variable, Inter, system-ui, sans-serif" fontWeight={600} fill="#2B2622" opacity={0.28} pointerEvents="none" data-ui>
+        {`${new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 1 }).format((L * B) / 10000)} m²`}
+      </text>
       <g pointerEvents={interactief ? undefined : 'none'}>{laag.map(item)}</g>
 
       {/* wanden */}
       <path d={`M${-T} ${-T}H${L + T}V${B + T}H${-T}Z M0 0V${B}H${L}V0Z`} fillRule="evenodd" fill={WAND} onPointerDown={onAchtergrondDown} />
+      {/* gouden binnenlijn + zachte binnenschaduw langs de wand */}
+      <rect x={0} y={0} width={L} height={B} fill="none" stroke="url(#sw-wandschaduw)" strokeWidth={6 * s} pointerEvents="none" opacity={0.5} />
+      <rect x={-0.6 * s} y={-0.6 * s} width={L + 1.2 * s} height={B + 1.2 * s} fill="none" stroke={GOUD} strokeWidth={1.1 * s} pointerEvents="none" />
       <g pointerEvents={interactief ? undefined : 'none'}>{openingen.map(item)}</g>
       <g pointerEvents={interactief ? undefined : 'none'} opacity={0.92}>
         {hoog.map(item)}

@@ -11,7 +11,8 @@ import { toast } from '../components/Toast'
 import { Button, Card, CardHeader, NumberField } from '../components/ui'
 import { LEGVLOER_PAK, uid } from '../lib/defaults'
 import { effectieveScope } from '../lib/calc'
-import { APPARATEN, WERKBLADEN, keukenVan, type KeukenSpec } from '../lib/keuken'
+import { APPARATEN, WERKBLADEN, keukenVan, werkbladBeeld, werkbladInfo, werkbladPrijs, type KeukenSpec } from '../lib/keuken'
+import { kleurVan } from '../lib/ontwerp/model'
 import { getal } from '../lib/format'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
@@ -172,15 +173,41 @@ export function Measure({ p }: { p: Project }) {
                 {(s.werkblad || s.uitsparingen) && (
                   <div>
                     <p className="mb-2 text-sm font-medium text-ink">Werkblad</p>
-                    <div role="radiogroup" aria-label="Soort werkblad" className="grid grid-cols-3 gap-1 rounded-xl bg-sand-100 p-1 ring-1 ring-sand-200">
-                      {WERKBLADEN.map((w) => (
-                        <button key={w.id} type="button" role="radio" aria-checked={k.werkblad === w.id} onClick={() => setK({ werkblad: w.id })}
-                          className={`h-11 rounded-lg text-sm font-medium transition ${k.werkblad === w.id ? 'bg-white text-ink shadow-sm ring-1 ring-sand-300' : 'text-ink-soft'}`}>
-                          {w.naam}
-                        </button>
-                      ))}
+                    <div role="radiogroup" aria-label="Soort werkblad" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {WERKBLADEN.map((w) => {
+                        const kl = kleurVan(werkbladBeeld({ werkblad: w.id, decor: w.id === k.werkblad ? k.decor : undefined }).kleur)
+                        const act = k.werkblad === w.id
+                        return (
+                          <button key={w.id} type="button" role="radio" aria-checked={act} onClick={() => setK({ werkblad: w.id, dikte: undefined, decor: w.decors?.[0] })}
+                            className={`flex items-center gap-2.5 rounded-xl p-2 text-left ring-1 transition ${act ? 'bg-ink text-sand-50 ring-ink shadow-md' : 'bg-white/80 text-ink ring-sand-300 hover:ring-gold-400'}`}>
+                            <span aria-hidden className="h-9 w-9 shrink-0 rounded-lg shadow-inner ring-1 ring-black/10" style={{ background: w.id === 'rvs' ? 'linear-gradient(135deg,#d9dcdf,#9aa0a6 45%,#e9ecee 55%,#a7adb3)' : `radial-gradient(circle at 30% 30%, ${kl.accent ?? kl.basis} 0 8%, transparent 9%), linear-gradient(135deg, ${kl.basis}, ${kl.voeg})` }} />
+                            <span className="min-w-0">
+                              <span className="block truncate text-[0.8rem] font-semibold">{w.naam}</span>
+                              <span className={`block text-[0.7rem] ${act ? 'text-gold-300' : 'text-ink-soft'}`}>v.a. € {w.diktes[0].prijs}/m</span>
+                            </span>
+                          </button>
+                        )
+                      })}
                     </div>
-                    <p className="mt-2 text-xs text-ink-soft">{k.werkblad === 'laminaat' ? 'Zelf op maat zagen, incl. uitsparingen.' : 'Op maat geleverd door de steenhouwer; uitsparingen worden per stuk gerekend.'}</p>
+                    {(() => {
+                      const w = werkbladInfo(k.werkblad)
+                      const d = werkbladPrijs(k)
+                      return (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-ink-soft">Dikte</span>
+                            {w.diktes.map((x) => <Chip key={x.mm} actief={d.mm === x.mm} onClick={() => setK({ dikte: x.mm })}>{x.mm} mm · €{x.prijs}/m</Chip>)}
+                          </div>
+                          {w.decors && (
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs text-ink-soft">Decor</span>
+                              {w.decors.map((x) => <Chip key={x} actief={(k.decor ?? w.decors![0]) === x} onClick={() => setK({ decor: x })}>{x}</Chip>)}
+                            </div>
+                          )}
+                          <p className="text-xs text-ink-soft">{w.uitleg} {w.opMaat ? 'Uitsparingen per stuk door de leverancier.' : 'Uitsparingen zaag je zelf.'}</p>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
                 {s.apparatuur && (

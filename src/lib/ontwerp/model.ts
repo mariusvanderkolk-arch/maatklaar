@@ -165,6 +165,8 @@ export interface Ontwerp {
   /** ontwerp tonen op de offerte en in de klantlink */
   inOfferte: boolean
   bijgewerkt: number
+  /** uiterlijk werkblad (keuken), afgeleid uit de keukenkeuze; niet opgeslagen */
+  blad?: { kleur: string; ruw: number; metaal?: number }
 }
 
 export const kleurVan = (id: string): Kleur => KLEUREN.find((k) => k.id === id) ?? KLEUREN[0]

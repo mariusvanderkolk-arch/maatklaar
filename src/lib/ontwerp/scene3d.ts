@@ -619,13 +619,13 @@ export function maakViewer(houder: HTMLElement): Viewer {
 
     // hout/blad-texturen voor meubels
     const houtTex = textuurVan({ kleur: 'eiken', formaat: 'plank', verband: 'recht' }, 120, 60, renderer, 3, 512)
-    const bladTex = textuurVan({ kleur: 'marmer', formaat: '60x120', verband: 'recht' }, 240, 120, renderer, 5, 1024)
+    const bladTex = textuurVan({ kleur: o.blad?.kleur ?? 'marmer', formaat: '60x120', verband: 'recht' }, 240, 120, renderer, 5, 1024)
     houtTex.wrapS = houtTex.wrapT = THREE.RepeatWrapping
     bladTex.wrapS = bladTex.wrapT = THREE.RepeatWrapping
     extraTex.push(houtTex, bladTex)
     const tex = {
       hout: new THREE.MeshStandardMaterial({ map: houtTex, roughness: 0.55 }),
-      blad: new THREE.MeshPhysicalMaterial({ map: bladTex, roughness: 0.2, clearcoat: 0.5 }),
+      blad: new THREE.MeshPhysicalMaterial({ map: o.blad?.metaal ? null : bladTex, color: o.blad?.metaal ? '#C9CED2' : '#FFFFFF', roughness: o.blad?.ruw ?? 0.2, metalness: o.blad?.metaal ?? 0, clearcoat: (o.blad?.ruw ?? 0.2) < 0.3 ? 0.5 : 0.1 }),
     }
 
     wanden = bouwWanden(k, o, mat, renderer)

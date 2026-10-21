@@ -4,14 +4,45 @@
  */
 import type { Project } from './types'
 
-export type WerkbladSoort = 'laminaat' | 'composiet' | 'graniet'
+export type WerkbladSoort = 'laminaat' | 'hout' | 'composiet' | 'graniet' | 'keramiek' | 'rvs' | 'beton' | 'marmer'
 export type Apparaat = 'kookplaat' | 'oven' | 'vaatwasser' | 'koelkast' | 'afzuigkap'
 
-export const WERKBLADEN: { id: WerkbladSoort; naam: string }[] = [
-  { id: 'laminaat', naam: 'Laminaat' },
-  { id: 'composiet', naam: 'Composiet' },
-  { id: 'graniet', naam: 'Graniet' },
+export interface WerkbladInfo {
+  id: WerkbladSoort
+  naam: string
+  /** diktes in mm met voorbeeldprijs per strekkende meter (60 cm diep) incl. btw */
+  diktes: { mm: number; prijs: number }[]
+  /** zelf zagen (laminaat/hout) of op maat geleverd door de leverancier */
+  opMaat: boolean
+  /** decors (alleen laminaat) */
+  decors?: string[]
+  /** uiterlijk in het 3D-ontwerp: kleur-id van de afwerking, glans en metaal */
+  beeld: { kleur: string; ruw: number; metaal?: number }
+  uitleg: string
+}
+/** Werkbladen met realistische middenklasse richtprijzen (per m¹, 60 cm diep, incl. btw, peildatum zie prices.ts). */
+export const WERKBLADEN: WerkbladInfo[] = [
+  { id: 'laminaat', naam: 'Laminaat', diktes: [{ mm: 28, prijs: 75 }, { mm: 38, prijs: 95 }], opMaat: false, decors: ['Eiken naturel', 'Betonlook', 'Wit mat', 'Antraciet', 'Marmerlook'], beeld: { kleur: 'eiken', ruw: 0.6 }, uitleg: 'Voordelig; zelf op maat zagen.' },
+  { id: 'hout', naam: 'Massief eiken', diktes: [{ mm: 27, prijs: 210 }, { mm: 40, prijs: 260 }], opMaat: false, beeld: { kleur: 'eiken', ruw: 0.5 }, uitleg: 'Massief/verlijmd eiken, geolied; zelf zagen.' },
+  { id: 'composiet', naam: 'Composiet / kwarts', diktes: [{ mm: 12, prijs: 420 }, { mm: 20, prijs: 450 }, { mm: 30, prijs: 520 }], opMaat: true, beeld: { kleur: 'kalk', ruw: 0.25 }, uitleg: 'Kwartscomposiet, op maat geleverd incl. inmeten.' },
+  { id: 'graniet', naam: 'Graniet', diktes: [{ mm: 20, prijs: 500 }, { mm: 30, prijs: 575 }], opMaat: true, beeld: { kleur: 'antraciet', ruw: 0.2 }, uitleg: 'Natuursteen, gepolijst of gezoet.' },
+  { id: 'keramiek', naam: 'Keramiek (Dekton-type)', diktes: [{ mm: 12, prijs: 650 }, { mm: 20, prijs: 750 }], opMaat: true, beeld: { kleur: 'beton', ruw: 0.35 }, uitleg: 'Krasvast en hittebestendig, dun profiel.' },
+  { id: 'rvs', naam: 'RVS', diktes: [{ mm: 40, prijs: 750 }], opMaat: true, beeld: { kleur: 'kalk', ruw: 0.3, metaal: 0.9 }, uitleg: 'Geborsteld RVS met opstaande rand, op maat gezet.' },
+  { id: 'beton', naam: 'Betonlook', diktes: [{ mm: 20, prijs: 400 }, { mm: 40, prijs: 480 }], opMaat: true, beeld: { kleur: 'beton', ruw: 0.55 }, uitleg: 'Composiet of microcement in betonlook.' },
+  { id: 'marmer', naam: 'Marmer', diktes: [{ mm: 20, prijs: 650 }, { mm: 30, prijs: 750 }], opMaat: true, beeld: { kleur: 'marmer', ruw: 0.18 }, uitleg: 'Natuursteen marmer; gevoeliger voor zuren.' },
 ]
+export const werkbladInfo = (id: WerkbladSoort | undefined) => WERKBLADEN.find((w) => w.id === id) ?? WERKBLADEN[0]
+/** Prijs per m¹ voor soort + dikte (dichtstbijzijnde dikte). */
+export function werkbladPrijs(k: Pick<KeukenSpec, 'werkblad' | 'dikte'>): { mm: number; prijs: number } {
+  const w = werkbladInfo(k.werkblad)
+  return w.diktes.find((d) => d.mm === k.dikte) ?? w.diktes[w.diktes.length - 1]
+}
+/** Decor-kleur in 3D voor laminaat. */
+export const DECOR_KLEUR: Record<string, string> = { 'Eiken naturel': 'eiken', Betonlook: 'beton', 'Wit mat': 'kalk', Antraciet: 'antraciet', Marmerlook: 'marmer' }
+export function werkbladBeeld(k: Pick<KeukenSpec, 'werkblad' | 'decor'>) {
+  const w = werkbladInfo(k.werkblad)
+  return { ...w.beeld, kleur: w.id === 'laminaat' && k.decor && DECOR_KLEUR[k.decor] ? DECOR_KLEUR[k.decor] : w.beeld.kleur }
+}
 export const APPARATEN: { id: Apparaat; naam: string }[] = [
   { id: 'kookplaat', naam: 'Kookplaat' },
   { id: 'oven', naam: 'Oven' },
@@ -26,6 +57,10 @@ export interface KeukenSpec {
   /** strekkende meter bovenkasten (0 = geen) */
   bovenkastM: number
   werkblad: WerkbladSoort
+  /** dikte werkblad in mm (ontbreekt = dikste standaard) */
+  dikte?: number
+  /** decor (laminaat) */
+  decor?: string
   apparaten: Record<Apparaat, boolean>
   /** afzuigkap met afvoer naar buiten (kernboring + muurdoorvoer) i.p.v. recirculatie */
   afzuigBuiten: boolean
@@ -52,6 +87,8 @@ export function keukenVan(p: Pick<Project, 'afmetingen'> & { keuken?: Partial<Ke
     onderkastM: getal(k.onderkastM, basis.onderkastM),
     bovenkastM: getal(k.bovenkastM, basis.bovenkastM),
     werkblad: WERKBLADEN.some((w) => w.id === k.werkblad) ? (k.werkblad as WerkbladSoort) : basis.werkblad,
+    ...(typeof k.dikte === 'number' ? { dikte: k.dikte } : {}),
+    ...(typeof k.decor === 'string' ? { decor: k.decor.slice(0, 40) } : {}),
     apparaten: { ...basis.apparaten, ...(k.apparaten ?? {}) },
     afzuigBuiten: typeof k.afzuigBuiten === 'boolean' ? k.afzuigBuiten : basis.afzuigBuiten,
   }
@@ -87,8 +124,8 @@ export function keukenArbeid(k: KeukenSpec, s: { keukenDemontage?: boolean; keuk
   const kast = k.onderkastM + k.bovenkastM
   if (s.keukenDemontage) r.push(['keukenDemontage', 'Oude keuken demonteren en afvoeren', kast * A.demontagePerM + A.demontageVast])
   if (s.keukenMontage) r.push(['keukenMontage', `Keukenkasten monteren (${nlm(k.onderkastM)} onder, ${nlm(k.bovenkastM)} boven)`, k.onderkastM * A.onderkastPerM + k.bovenkastM * A.bovenkastPerM + A.montageVast])
-  if (s.werkblad) r.push(['werkblad', `Werkblad ${k.werkblad} plaatsen${k.werkblad === 'laminaat' ? ' en op maat zagen' : ''}`, k.onderkastM * (k.werkblad === 'laminaat' ? A.werkbladLaminaatPerM : A.werkbladSteenPerM) + A.werkbladVast])
-  if (s.uitsparingen && k.werkblad === 'laminaat') r.push(['uitsparingen', 'Uitsparingen spoelbak/kookplaat zagen', aantalUitsparingen(k) * A.uitsparingLaminaat])
+  if (s.werkblad) r.push(['werkblad', `Werkblad ${werkbladInfo(k.werkblad).naam.toLowerCase()} plaatsen${!werkbladInfo(k.werkblad).opMaat ? ' en op maat zagen' : ''}`, k.onderkastM * (!werkbladInfo(k.werkblad).opMaat ? A.werkbladLaminaatPerM : A.werkbladSteenPerM) + A.werkbladVast])
+  if (s.uitsparingen && !werkbladInfo(k.werkblad).opMaat) r.push(['uitsparingen', 'Uitsparingen spoelbak/kookplaat zagen', aantalUitsparingen(k) * A.uitsparingLaminaat])
   if (s.apparatuur) {
     const ap = k.apparaten
     const u = (ap.kookplaat ? A.kookplaat : 0) + (ap.oven ? A.oven : 0) + (ap.vaatwasser ? A.vaatwasser : 0) + (ap.koelkast ? A.koelkast : 0) + (ap.afzuigkap ? A.afzuigkap + (k.afzuigBuiten ? A.afzuigBuiten : 0) : 0)

@@ -11,15 +11,41 @@ export const KLEUR = {
   chroom: '#AEB5BA',
   hout: '#C9A57A',
   houtDonker: '#A9855A',
-  blad: '#ECE6DC',
+  blad: 'url(#sw-blad)',
   zwart: '#2A2624',
   staal: '#C6CBCE',
 }
 
 /** Gedeelde defs: verlopen en schaduw. Eén keer per SVG opnemen. */
-export function SymboolDefs({ id = 'sw' }: { id?: string }) {
+export function SymboolDefs({ id = 'sw', blad }: { id?: string; blad?: { basis: string; voeg: string; accent?: string; stijl: string; metaal?: boolean } }) {
+  const b = blad ?? { basis: '#F1EEE9', voeg: '#DCD6CC', accent: '#C9C1B6', stijl: 'effen' }
   return (
     <>
+      {/* werkblad: kleur + structuur (steen-spikkels, houtnerf, geborsteld staal) */}
+      <pattern id={`${id}-blad`} width={b.stijl === 'hout' ? 60 : 24} height={b.stijl === 'hout' ? 12 : 24} patternUnits="userSpaceOnUse">
+        <rect width="100%" height="100%" fill={b.metaal ? '#C9CED2' : b.basis} />
+        {b.metaal ? (
+          <>
+            <line x1={0} y1={4} x2={24} y2={4} stroke="#E8ECEE" strokeWidth={0.6} />
+            <line x1={0} y1={11} x2={24} y2={11} stroke="#AEB4B9" strokeWidth={0.5} />
+            <line x1={0} y1={18} x2={24} y2={18} stroke="#E1E5E8" strokeWidth={0.6} />
+          </>
+        ) : b.stijl === 'hout' ? (
+          <>
+            <path d="M0 3 Q15 1.5 30 3.5 T60 3" stroke={b.accent ?? b.voeg} strokeWidth={0.7} fill="none" opacity={0.7} />
+            <path d="M0 8.5 Q20 10 38 8 T60 9" stroke={b.voeg} strokeWidth={0.5} fill="none" opacity={0.6} />
+          </>
+        ) : b.stijl === 'marmer' ? (
+          <path d="M-2 20 C6 14 10 16 14 9 S22 2 26 0" stroke={b.accent ?? b.voeg} strokeWidth={0.45} fill="none" opacity={0.75} />
+        ) : (
+          <>
+            <circle cx={5} cy={6} r={0.7} fill={b.accent ?? b.voeg} opacity={0.7} />
+            <circle cx={16} cy={13} r={0.5} fill={b.voeg} opacity={0.8} />
+            <circle cx={9} cy={19} r={0.6} fill={b.accent ?? b.voeg} opacity={0.55} />
+            <circle cx={20} cy={4} r={0.4} fill={b.voeg} opacity={0.7} />
+          </>
+        )}
+      </pattern>
       <linearGradient id={`${id}-keramiek`} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#FFFFFF" />
         <stop offset="1" stopColor="#F2EEE8" />

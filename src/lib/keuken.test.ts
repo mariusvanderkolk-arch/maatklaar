@@ -73,3 +73,40 @@ describe('keukenwerkzaamheden', () => {
     expect(berekenArbeid(b).some((r) => r.scope === 'apparatuur')).toBe(false)
   })
 })
+
+describe('werkbladkeuze', () => {
+  it('heeft minstens acht soorten met diktes en prijzen', async () => {
+    const { WERKBLADEN, werkbladPrijs } = await import('./keuken')
+    expect(WERKBLADEN.map((w) => w.id)).toEqual(['laminaat', 'hout', 'composiet', 'graniet', 'keramiek', 'rvs', 'beton', 'marmer'])
+    for (const w of WERKBLADEN) {
+      expect(w.diktes.length).toBeGreaterThan(0)
+      expect(VOORBEELD_PRIJZEN[`werkblad-${w.id}` as never]).toBe(w.diktes[w.diktes.length - 1].prijs)
+    }
+    expect(werkbladPrijs({ werkblad: 'composiet', dikte: 12 }).prijs).toBe(420)
+  })
+  it('dunner werkblad rekent naar verhouding goedkoper', () => {
+    const p = keuken({ keuken: { ...standaardKeuken(3), werkblad: 'composiet', dikte: 20 } })
+    const r = berekenMaterialen(p).find((x) => x.id === 'werkblad-composiet')!
+    expect(r.aantal).toBe(3)
+    expect(r.prijsAantal).toBeCloseTo((3 * 450) / 520, 2)
+    expect(r.spec).toContain('20 mm')
+  })
+})
+
+describe('audit: aanvullingen per ruimte', () => {
+  it('badkamer: voorzetwand en accessoires standaard, nis optioneel', () => {
+    const b = nieuwProject({ type: 'badkamer' })
+    expect(b.scope.voorzetwand && b.scope.accessoires).toBe(true)
+    expect(b.scope.nis).toBe(false)
+    const m = berekenMaterialen(b).map((r) => r.id)
+    expect(m).toEqual(expect.arrayContaining(['metalstud', 'gipsplaat', 'toiletrolhouder', 'douchemand']))
+  })
+  it('toilet: voorzetwand over de breedte', () => {
+    const t = nieuwProject({ type: 'toilet' })
+    expect(berekenArbeid(t).some((r) => r.scope === 'voorzetwand')).toBe(true)
+  })
+  it('vloer: deuren inkorten met overgangsprofielen', () => {
+    const v = nieuwProject({ type: 'vloer' })
+    expect(berekenMaterialen(v).find((r) => r.id === 'vloer-overgang')?.aantal).toBeGreaterThan(0)
+  })
+})

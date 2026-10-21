@@ -5,6 +5,7 @@ import { Badge, Button, Card, CardHeader, Notice, NumberField, Switch } from '..
 import { toast } from '../components/Toast'
 import { OntwerpPlan, PLAN_MARGE, planNaarPng } from '../components/ontwerp/OntwerpPlan'
 import { SymboolIcoon } from '../components/ontwerp/symbolen'
+import { keukenVan, werkbladBeeld } from '../lib/keuken'
 import type { Api3D } from '../components/ontwerp/Ontwerp3D'
 import { laadLater } from '../lib/lazy'
 import { track } from '../lib/analytics'
@@ -70,6 +71,8 @@ export function OntwerpScherm({ p }: { p: Project }) {
   const opgeslagen = useOntwerp(p)
   const [concept, setConcept] = useState<Ontwerp | null>(null)
   const ontwerp = concept ?? opgeslagen
+  // keuken: werkblad uit de keukenkeuze tonen in 2D en 3D (alleen weergave, niet opgeslagen)
+  const beeld = useMemo(() => (p.type === 'keuken' ? { ...ontwerp, blad: werkbladBeeld(keukenVan(p)) } : ontwerp), [ontwerp, p])
   const [hist, setHist] = useState<{ terug: Ontwerp[]; vooruit: Ontwerp[] }>({ terug: [], vooruit: [] })
   const [sel, setSel] = useState<string | null>(null)
   const [weergave, setWeergave] = useState<'2d' | '3d'>('2d')
@@ -438,7 +441,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
               {vb && (
                 <OntwerpPlan
                   kamer={kamer}
-                  ontwerp={ontwerp}
+                  ontwerp={beeld}
                   geselecteerd={sel}
                   viewBox={vb}
                   schaal={s}
@@ -486,7 +489,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
             <Suspense fallback={<div className="absolute inset-0 grid place-items-center text-sm text-ink-muted">3D laden…</div>}>
               <Ontwerp3D
                 kamer={kamer}
-                ontwerp={ontwerp}
+                ontwerp={beeld}
                 className="absolute inset-0"
                 onApi={(a) => (api3d.current = a)}
                 onFout={(m) => {

@@ -1,8 +1,12 @@
-import { Bath, CookingPot, Droplet, Layers, Ruler, SquareDashed, BrickWall, Droplets, Grid2x2, Hammer, Heater, LayoutGrid, PaintRoller, ShowerHead, Sparkles, Toilet, Wrench, Zap, Fan, Truck, Thermometer, DoorOpen, PanelTop, Square, Refrigerator, Plug, Scissors, Archive, type LucideIcon } from 'lucide-react'
+import { Bath, CookingPot, Droplet, Layers, Ruler, SquareDashed, BrickWall, Droplets, Grid2x2, Hammer, Heater, LayoutGrid, PaintRoller, ShowerHead, Sparkles, Toilet, Wrench, Zap, Fan, Truck, Thermometer, DoorOpen, PanelTop, Square, Refrigerator, Plug, Scissors, Archive, Columns3, Box, Shirt, Scissors as Zaag, type LucideIcon } from 'lucide-react'
 import type { ScopeKey } from '../lib/types'
 
 export const SCOPE_ICONS: Record<ScopeKey, LucideIcon> = {
   sloopwerk: Hammer,
+  voorzetwand: Columns3,
+  nis: Box,
+  accessoires: Shirt,
+  deurenInkorten: Zaag,
   keukenDemontage: Truck,
   keukenMontage: Archive,
   werkblad: Ruler,

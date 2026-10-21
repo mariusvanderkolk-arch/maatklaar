@@ -17,7 +17,7 @@
  */
 import { ruimte } from './ruimtes'
 import { DETAIL_ARTIKELEN, type DetailId } from './artikelen'
-import { aantalUitsparingen, keukenArbeid, keukenVan } from './keuken'
+import { aantalUitsparingen, keukenArbeid, keukenVan, werkbladInfo, werkbladPrijs } from './keuken'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat, Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
 
 /** Vuistregels en verpakkingsgroottes. Eén plek, zodat ze makkelijk bij te stellen zijn. */
@@ -153,6 +153,10 @@ export const ARBEID = {
   bad: 5,
   deur: 2.5,
   plafondPerM2: 0.6,
+  voorzetwand: 4,
+  nis: 2,
+  accessoires: 1,
+  deurInkorten: 0.75,
 } as const
 
 /** Scope zonder werkzaamheden die niet bij het ruimtetype horen (bijv. na wisselen van type). */
@@ -865,6 +869,29 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
     add(detailRegel('plafond-schroeven', 1, 'Bevestiging', 'plafondprofielen'))
   }
 
+  // — Voorzetwand, nis, accessoires, deuren
+  if (s.voorzetwand) {
+    const br = type === 'toilet' ? p.afmetingen.breedte : 1.2
+    const h = 1.2
+    add(detailRegel('metalstud', omhoog(br / 0.6 + 1) + 2, `Staanders h.o.h. 60 cm over ${nl(br)} m + boven-/onderregel`))
+    add(detailRegel('gipsplaat', (br * h * 2) / (2.6 * 0.6) + 1, `${nl(br)} × ${nl(h)} m, voor- en bovenkant, 2 lagen waar nodig`))
+    if (s.toilet) add(detailRegel('geluidsmat-wc', 1, 'Tegen contactgeluid van het reservoir'))
+  }
+  if (s.nis) {
+    add(detailRegel('tegel-nis', 1, 'In de douchewand'))
+    add(detailRegel('ledstrip', 1, 'Verlichting in de nis'))
+  }
+  if (s.accessoires) {
+    if (type !== 'toilet') add(detailRegel('handdoekhouder', 1, 'Bij douche/wastafel'))
+    add(detailRegel('haakjes', type === 'toilet' ? 1 : 2, 'Handdoeken'))
+    if (s.toilet) {
+      add(detailRegel('toiletrolhouder', 1, 'Bij het toilet'))
+      add(detailRegel('toiletborstel', 1, 'Bij het toilet'))
+    }
+    if (s.inloopdouche) add(detailRegel('douchemand', 1, 'In de douche'))
+  }
+  if (s.deurenInkorten) add(detailRegel('vloer-overgang', aantalDeuren(p), `${aantalDeuren(p)} deur(en)`))
+
   // — Keuken (kasten en apparatuur zelf levert de klant/keukenleverancier; hier montage- en aansluitmateriaal)
   if (type === 'keuken') {
     const k = keukenVan(p)
@@ -879,12 +906,16 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       if (k.onderkastM > 0) m('keuken-plint', omhoog(k.onderkastM * 10) / 10 + 0.1, 'm', `${nl(k.onderkastM)} m onderkasten + 10 cm`)
     }
     if (s.werkblad && k.onderkastM > 0) {
-      if (k.werkblad === 'laminaat') {
-        m('werkblad-laminaat', omhoog(k.onderkastM * 1.1 * 10) / 10, 'm', `${nl(k.onderkastM)} m + 10% zaagverlies`)
-        add(detailRegel('keuken-werkblad-afwerk', 2, 'Kopse kanten / verbinding'))
-      } else m(k.werkblad === 'composiet' ? 'werkblad-composiet' : 'werkblad-graniet', omhoog(k.onderkastM * 10) / 10, 'm', `${nl(k.onderkastM)} m onderkasten, op maat geleverd`)
+      const w = werkbladInfo(k.werkblad)
+      const { mm, prijs } = werkbladPrijs(k)
+      const lengte = omhoog(k.onderkastM * (w.opMaat ? 1 : 1.1) * 10) / 10
+      const basis = w.diktes[w.diktes.length - 1].prijs
+      const factor = prijs / basis
+      const r = detailRegel(`werkblad-${w.id}` as DetailId, 1, (w.opMaat ? `${nl(k.onderkastM)} m onderkasten, op maat geleverd` : `${nl(k.onderkastM)} m + 10% zaagverlies`) + (factor !== 1 ? ` · ${mm} mm: ×${nl(factor)} t.o.v. ${w.diktes[w.diktes.length - 1].mm} mm` : ''))
+      add({ ...r, spec: `${mm} mm${k.decor && w.decors ? ` · ${k.decor}` : ''}`, nodig: lengte, nodigEenheid: 'm', aantal: lengte, verpakking: 'm', prijsAantal: rond(lengte * factor, 2) })
+      if (!w.opMaat) add(detailRegel('keuken-werkblad-afwerk', 2, 'Kopse kanten / verbinding'))
     }
-    if (s.uitsparingen && k.werkblad !== 'laminaat') add(detailRegel('uitsparing-steen', aantalUitsparingen(k), k.apparaten.kookplaat ? 'Spoelbak en kookplaat' : 'Spoelbak'))
+    if (s.uitsparingen && werkbladInfo(k.werkblad).opMaat) add(detailRegel('uitsparing-steen', aantalUitsparingen(k), k.apparaten.kookplaat ? 'Spoelbak en kookplaat' : 'Spoelbak'))
     if (s.apparatuur) {
       if (k.apparaten.vaatwasser) add(detailRegel('vaatwasser-aansluitset', 1, 'Aansluiting vaatwasser'))
       if (k.apparaten.afzuigkap && k.afzuigBuiten) {
@@ -908,6 +939,9 @@ export interface ArbeidRegel {
   omschrijving: string
   uren: number
 }
+
+/** Aantal deuren voor inkorten/overgangsprofielen: ingevoerde deuren, anders 3 (gangbaar voor een woonkamer). */
+export const aantalDeuren = (p: Project) => p.afmetingen.openingen.filter((o) => o.type === 'deur').length || 3
 
 /** Tappunten voor het leidingwerk (douche, bad, wastafel, toilet, fontein). */
 export function tappunten(s: Scope, type: ProjectType) {
@@ -977,6 +1011,10 @@ export function berekenArbeid(p: Project): ArbeidRegel[] {
   if (s.bad) add('bad', 'Ligbad plaatsen', ARBEID.bad)
   if (s.deur) add('deur', 'Deur en dorpel plaatsen', ARBEID.deur)
   if (s.plafond) add('plafond', 'PVC-plafond monteren', o.plafond * ARBEID.plafondPerM2)
+  if (s.voorzetwand) add('voorzetwand', 'Voorzetwand plaatsen', ARBEID.voorzetwand)
+  if (s.nis) add('nis', 'Inbouwnis maken', ARBEID.nis)
+  if (s.accessoires) add('accessoires', 'Accessoires monteren', ARBEID.accessoires)
+  if (s.deurenInkorten) add('deurenInkorten', 'Deuren inkorten en profielen plaatsen', aantalDeuren(p) * ARBEID.deurInkorten)
   if (type === 'keuken') for (const [k, oms, u] of keukenArbeid(keukenVan(p), s)) add(k, oms, u)
   return r
 }
