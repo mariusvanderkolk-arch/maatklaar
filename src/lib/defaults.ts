@@ -1,3 +1,12 @@
+/** Standaardtekst voor het blok "Aannames en niet inbegrepen"; de vakman past dit per offerte aan. */
+export const STANDAARD_AANNAMES = [
+  'De werkplek is goed bereikbaar; materiaal kan zonder kraan of lift naar binnen.',
+  'Parkeren is mogelijk dicht bij de woning, zonder parkeerkosten voor ons.',
+  'Sanitair, meubels en accessoires die de klant zelf koopt, levert de klant op tijd aan.',
+  'Verborgen gebreken (bijv. achter tegels, onder de vloer of in leidingen) zijn niet inbegrepen; herstel gaat in overleg als meerwerk.',
+  'Niet inbegrepen: schilderwerk, elektra- of loodgieterswerk buiten de genoemde werkzaamheden, en afvoer van asbesthoudend materiaal.',
+].join('\n')
+
 import { ALLE_SCOPE_KEYS, ruimte, scopeItems, scopeVoor } from './ruimtes'
 import type { Afmetingen, LegvloerSpec, Project, ProjectType, Scope, TileSpec } from './types'
 
@@ -51,6 +60,7 @@ export function nieuwProject(velden: Partial<Project> = {}): Project {
     fotos: [],
     afgevinkt: {},
     notities: '',
+    aannames: STANDAARD_AANNAMES,
     ...velden,
   }
 }

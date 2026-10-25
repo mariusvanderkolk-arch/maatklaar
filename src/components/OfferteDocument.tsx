@@ -207,6 +207,14 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
               <p className="mt-1 whitespace-pre-line text-ink-soft">{d.notities}</p>
             </div>
           )}
+          {d.aannames && (
+            <div className="rounded-xl border border-sand-200 px-4 py-3 text-[0.8rem] sm:col-span-2">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-gold-700">Aannames en niet inbegrepen</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-ink-soft">
+                {d.aannames.split('\n').map((r) => r.trim()).filter(Boolean).map((r, i) => <li key={i}>{r}</li>)}
+              </ul>
+            </div>
+          )}
         </div>
 
         {ondertekening && (

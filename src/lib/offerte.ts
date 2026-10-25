@@ -36,6 +36,8 @@ export interface OfferteData {
   onv?: [number, number]
   totaal: number
   notities: string
+  /** aannames en niet inbegrepen (optioneel) */
+  aannames?: string
   betaaltermijn: string
   prijsTekst: string
   /** meerwerkbon (alleen bij meer-/minderwerk) */
@@ -103,6 +105,7 @@ export function leesOfferte(ruw: unknown): OfferteData {
     ...(Array.isArray(o.onv) && isNum(o.onv[0]) && isNum(o.onv[1]) ? { onv: [o.onv[0], o.onv[1]] as [number, number] } : {}),
     totaal: o.totaal as number,
     notities: str(o.notities, 2000),
+    ...(str(o.aannames, 2000).trim() ? { aannames: str(o.aannames, 2000) } : {}),
     betaaltermijn: str(o.betaaltermijn, 400),
     prijsTekst: str(o.prijsTekst, 400),
     ...(uitCompact(o.ow) ? { ow: o.ow as CompactOntwerp } : {}),

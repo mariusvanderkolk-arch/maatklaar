@@ -201,6 +201,8 @@ export interface Project {
   /** afgevinkte regels op de inkooplijst */
   afgevinkt: Record<string, boolean>
   notities: string
+  /** vast blok "Aannames en niet inbegrepen" op de offerte (undefined = oud project, niet tonen) */
+  aannames?: string
   voorbeeld?: boolean
   /** vaste sleutel van een voorbeeldproject (om nieuwe voorbeelden één keer toe te voegen) */
   voorbeeldId?: string

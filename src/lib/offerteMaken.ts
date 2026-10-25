@@ -73,6 +73,7 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     ...(onvPct > 0 ? { onv: [onvPct, onvBedrag] as [number, number] } : {}),
     totaal: Math.round((matTotaal + arbTotaal + onvBedrag) * 100) / 100,
     notities: p.notities,
+    ...(p.aannames?.trim() ? { aannames: p.aannames.trim() } : {}),
     betaaltermijn: bedrijf.betaaltermijn.trim(),
     prijsTekst: prijsTekstVoor(st, datumTekst),
     ...(ontwerp && ontwerp.inOfferte && ontwerp.items.length ? { ow: compact(ontwerp, kamerVan(p)) } : {}),

@@ -1,4 +1,4 @@
-import { uid } from '../lib/defaults'
+import { STANDAARD_AANNAMES, uid } from '../lib/defaults'
 import { MeerwerkKaart } from '../components/MeerwerkKaart'
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
@@ -154,6 +154,24 @@ export function Quote({ p }: { p: Project }) {
               onChange={(e) => projectStore.werkBij(p.id, (x) => ({ ...x, notities: e.target.value }))}
               className="w-full resize-none rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-sm focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
               placeholder="Bijv. afspraken of uitgangspunten"
+            />
+          </label>
+          <label className="mt-4 block">
+            <span className="mb-1.5 flex items-center justify-between text-[0.8rem] font-medium text-ink-soft">
+              Aannames en niet inbegrepen
+              {!p.aannames?.trim() && (
+                <button type="button" className="text-[0.74rem] font-medium text-gold-700 underline-offset-2 hover:underline" onClick={() => projectStore.werkBij(p.id, (x) => ({ ...x, aannames: STANDAARD_AANNAMES }))}>
+                  Standaardtekst invullen
+                </button>
+              )}
+            </span>
+            <textarea
+              rows={5}
+              maxLength={2000}
+              value={p.aannames ?? ''}
+              onChange={(e) => projectStore.werkBij(p.id, (x) => ({ ...x, aannames: e.target.value }))}
+              className="w-full resize-y rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-sm focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+              placeholder="Eén punt per regel. Leeg laten = blok niet op de offerte."
             />
           </label>
           <p className="mt-2 text-[0.74rem] text-ink-muted">
