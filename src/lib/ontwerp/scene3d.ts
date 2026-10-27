@@ -7,6 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { ITEMS, WAND_DIKTE, wandVan, type Afwerking, type Kamer, type Ontwerp, type OntwerpItem, type Wand } from './model'
+import { frontKleurVan, kraanKleurVan, sanitairVan, STANDAARD_SANITAIR, type DoucheKraan, type Sanitair, type WastafelKraan } from './sanitair'
 import { kiesPpc, PLEISTER, rng, tekenTegels } from './tegels'
 
 const M = 0.01 // cm → m
@@ -121,6 +122,63 @@ function kraan(mat: Mats, x: number, y: number, z: number, uitloop = 0.14): THRE
   return g
 }
 
+/** Kraan uit de wand (inbouw): rozet + uitloop. z = wandvlak. */
+function wandKraan(mat: Mats, x: number, y: number, z: number, uitloop: number): THREE.Group {
+  const g = new THREE.Group()
+  const roz = cil(0.03, 0.01, mat.goud, 24)
+  roz.rotation.x = Math.PI / 2
+  g.add(at(roz, x, y, z + 0.005))
+  const arm = cil(0.01, uitloop, mat.goud)
+  arm.rotation.x = Math.PI / 2
+  g.add(at(arm, x, y, z + uitloop / 2))
+  const greepje = cil(0.022, 0.012, mat.goud, 20)
+  greepje.rotation.x = Math.PI / 2
+  g.add(at(greepje, x, y - 0.1, z + 0.01))
+  return g
+}
+
+function wastafelKraan(mat: Mats, stijl: WastafelKraan, x: number, blad: number, achter: number, uitloop: number): THREE.Group {
+  if (stijl === 'wand') return wandKraan(mat, x, blad + 0.2, achter, uitloop + 0.06)
+  if (stijl === 'hoog') {
+    const g = new THREE.Group()
+    g.add(at(cil(0.015, 0.3, mat.goud), x, blad + 0.15, achter + 0.05))
+    const arm = cil(0.011, uitloop + 0.03, mat.goud)
+    arm.rotation.x = Math.PI / 2
+    g.add(at(arm, x, blad + 0.295, achter + 0.05 + (uitloop + 0.03) / 2))
+    return g
+  }
+  return kraan(mat, x, blad, achter + 0.05, uitloop)
+}
+
+/** Douchekraan tegen de achterwand (lokaal z = achter). */
+function doucheKraan(mat: Mats, stijl: DoucheKraan, achter: number, diep: number, hoogte = 2.12): THREE.Group {
+  const g = new THREE.Group()
+  const armL = Math.min(0.32, diep * 0.3)
+  if (stijl === 'thermostaat') {
+    g.add(at(rbox(0.3, 0.06, 0.06, 0.025, mat.goud), 0, 1.05, achter + 0.035))
+    g.add(at(cil(0.011, 0.9, mat.goud), 0.1, 1.55, achter + 0.03))
+    const hand = cil(0.035, 0.012, mat.goud, 24)
+    hand.rotation.x = Math.PI / 2.4
+    g.add(at(hand, 0.1, 1.85, achter + 0.07))
+    g.add(at(cil(0.012, 0.2, mat.goud), 0.1, 1.72, achter + 0.06))
+    return g
+  }
+  g.add(at(cil(stijl === 'inbouw' ? 0.15 : 0.13, 0.01, mat.goud, 40), 0, hoogte, achter + armL))
+  if (stijl === 'inbouw') {
+    // arm vanaf de wand, inbouwthermostaat als plaatje
+    g.add(at(box(0.016, 0.016, armL, mat.goud), 0, hoogte + 0.02, achter + armL / 2))
+    g.add(at(rbox(0.16, 0.16, 0.012, 0.01, mat.goud), 0, 1.1, achter + 0.006))
+    const knop = cil(0.025, 0.03, mat.goud, 20)
+    knop.rotation.x = Math.PI / 2
+    g.add(at(knop, 0, 1.1, achter + 0.025))
+    return g
+  }
+  g.add(at(box(0.016, 0.016, armL, mat.goud), 0, hoogte + 0.04, achter + armL / 2))
+  g.add(at(rbox(0.18, 0.06, 0.05, 0.02, mat.goud), 0, 1.05, achter + 0.03))
+  g.add(at(cil(0.012, hoogte - 1.1, mat.goud), 0.12, (hoogte + 1.1) / 2, achter + 0.03))
+  return g
+}
+
 function greep(mat: Mats, x: number, y: number, z: number, breedte: number, verticaal = false): THREE.Mesh {
   const g = box(verticaal ? 0.012 : breedte, verticaal ? breedte : 0.012, 0.018, mat.goud)
   return at(g, x, y, z)
@@ -166,7 +224,7 @@ function keukenBlok(it: OntwerpItem, mat: Mats, blad: THREE.Material): THREE.Gro
 }
 
 /** Bouwt het 3D-model van één item in lokale coördinaten (achterkant = -z). */
-function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad: THREE.Material }): THREE.Object3D | null {
+function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad: THREE.Material; meubel: THREE.Material }, san: Sanitair = STANDAARD_SANITAIR): THREE.Object3D | null {
   const def = ITEMS[it.type]
   const w = it.w * M
   const d = it.d * M
@@ -181,13 +239,7 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       const stang = box(0.012, 0.012, d, mat.goud)
       g.add(at(stang, -w / 2 + glasW - 0.01, 2.0, 0))
       g.add(at(box(w - 0.16, 0.004, 0.035, mat.staal), 0, 0.002, -d / 2 + 0.075))
-      const kop = cil(0.13, 0.012, mat.goud, 40)
-      g.add(at(kop, 0, 2.12, -d / 2 + Math.min(0.32, d * 0.3)))
-      const arm = box(0.016, 0.016, Math.min(0.32, d * 0.3), mat.goud)
-      g.add(at(arm, 0, 2.16, -d / 2 + Math.min(0.32, d * 0.3) / 2))
-      const thermo = rbox(0.18, 0.06, 0.05, 0.02, mat.goud)
-      g.add(at(thermo, 0, 1.05, -d / 2 + 0.03))
-      g.add(at(cil(0.012, 1.0, mat.goud), 0.12, 1.55, -d / 2 + 0.03))
+      g.add(doucheKraan(mat, san.douche, -d / 2, d))
       break
     }
     case 'douche-cabine': {
@@ -199,8 +251,7 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       g.add(at(p2, w / 2 - 0.005, 1.025, 0))
       g.add(at(box(w, 0.015, 0.015, mat.goud), 0, 2.0, d / 2 - 0.005))
       g.add(at(box(0.015, 0.015, d, mat.goud), w / 2 - 0.005, 2.0, 0))
-      g.add(at(cil(0.1, 0.012, mat.goud, 40), 0, 2.08, -d / 2 + 0.25))
-      g.add(at(box(0.016, 0.016, 0.25, mat.goud), 0, 2.12, -d / 2 + 0.125))
+      g.add(doucheKraan(mat, san.douche, -d / 2, Math.min(d, 0.8), 2.05))
       break
     }
     case 'bad': {
@@ -209,7 +260,8 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       const binnen = rbox(w - 0.14, 0.02, d - 0.14, 0.008, mat.water)
       binnen.castShadow = false
       g.add(at(binnen, 0, h - 0.035, 0))
-      g.add(kraan(mat, -w / 2 + 0.05, h, 0, 0.1))
+      if (san.bad === 'rand') g.add(kraan(mat, -w / 2 + 0.05, h, 0, 0.1))
+      else g.add(wandKraan(mat, 0, h + 0.15, -d / 2, 0.16))
       break
     }
     case 'toilet-hangend':
@@ -238,13 +290,13 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       const kom = rbox(w * 0.72, 0.02, d * 0.55, 0.02, mat.water)
       kom.castShadow = false
       g.add(at(kom, 0, z0 + h - 0.012, d * 0.08))
-      g.add(kraan(mat, 0, z0 + h, -d / 2 + 0.05, 0.1))
+      g.add(wastafelKraan(mat, san.wastafel, 0, z0 + h, -d / 2, 0.1))
       break
     }
     case 'badmeubel':
     case 'badmeubel-dubbel': {
       const z0 = def.z * M
-      g.add(at(rbox(w, 0.45, d - 0.01, 0.008, tex.hout), 0, z0 + 0.225, -0.005))
+      g.add(at(rbox(w, 0.45, d - 0.01, 0.008, tex.meubel), 0, z0 + 0.225, -0.005))
       g.add(at(box(w - 0.02, 0.003, 0.002, mat.plint), 0, z0 + 0.225, d / 2 - 0.009))
       g.add(greep(mat, 0, z0 + 0.4, d / 2 - 0.004, Math.min(0.4, w * 0.5)))
       g.add(greep(mat, 0, z0 + 0.18, d / 2 - 0.004, Math.min(0.4, w * 0.5)))
@@ -255,7 +307,7 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
         const kom = rbox(Math.min(w - 0.1, 0.6) / n, 0.02, d * 0.55, 0.02, mat.water)
         kom.castShadow = false
         g.add(at(kom, cx, z0 + 0.542, d * 0.08))
-        g.add(kraan(mat, cx, z0 + 0.55, -d / 2 + 0.05, 0.11))
+        g.add(wastafelKraan(mat, san.wastafel, cx, z0 + 0.55, -d / 2, 0.11))
       }
       break
     }
@@ -301,7 +353,7 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
     case 'kolomkast': {
       const h = def.h * M
       const z0 = def.z * M
-      g.add(at(rbox(w, h, d - 0.01, 0.008, tex.hout), 0, z0 + h / 2, -0.005))
+      g.add(at(rbox(w, h, d - 0.01, 0.008, tex.meubel), 0, z0 + h / 2, -0.005))
       g.add(at(box(w - 0.02, 0.003, 0.002, mat.plint), 0, z0 + h * 0.62, d / 2 - 0.009))
       g.add(greep(mat, w / 2 - 0.04, z0 + h * 0.45, d / 2, 0.22, true))
       break
@@ -327,16 +379,23 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       const water = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.01, 48), mat.water)
       water.scale.set(w - 0.12, 1, d - 0.12)
       g.add(at(water, 0, h - 0.04, 0))
-      // vloerkraan aan het hoofdeinde
-      g.add(at(cil(0.014, h + 0.25, mat.goud), -w / 2 - 0.1, (h + 0.25) / 2, 0))
-      const arm = cil(0.01, 0.16, mat.goud)
-      arm.rotation.z = Math.PI / 2
-      g.add(at(arm, -w / 2 - 0.03, h + 0.24, 0))
+      if (san.bad === 'rand') {
+        g.add(kraan(mat, -w / 2 + 0.1, h - 0.02, 0, 0.1))
+      } else if (san.bad === 'wand') {
+        g.add(wandKraan(mat, 0, h + 0.2, -d / 2 - 0.12, 0.2))
+      } else {
+        // vloerkraan aan het hoofdeinde
+        g.add(at(cil(0.014, h + 0.25, mat.goud), -w / 2 - 0.1, (h + 0.25) / 2, 0))
+        const arm = cil(0.01, 0.16, mat.goud)
+        arm.rotation.z = Math.PI / 2
+        g.add(at(arm, -w / 2 - 0.03, h + 0.24, 0))
+        g.add(at(cil(0.03, 0.01, mat.goud, 24), -w / 2 - 0.1, 0.005, 0))
+      }
       break
     }
     case 'waskom': {
       const z0 = def.z * M
-      g.add(at(rbox(w, 0.06, d, 0.006, tex.hout), 0, z0 + 0.03, 0))
+      g.add(at(rbox(w, 0.06, d, 0.006, tex.meubel), 0, z0 + 0.03, 0))
       const n = it.w >= 110 ? 2 : 1
       for (let i = 0; i < n; i++) {
         const cx = n === 1 ? 0 : i === 0 ? -w / 4 : w / 4
@@ -346,7 +405,7 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
         g.add(at(kom, cx, z0 + 0.13, d * 0.06))
         const water = cil(r - 0.02, 0.005, mat.water, 40)
         g.add(at(water, cx, z0 + 0.2, d * 0.06))
-        g.add(kraan(mat, cx, z0 + 0.18, -d / 2 + 0.04, 0.12))
+        g.add(wastafelKraan(mat, san.wastafel === 'opbouw' ? 'hoog' : san.wastafel, cx, z0 + 0.06, -d / 2, 0.14))
       }
       break
     }
@@ -710,7 +769,21 @@ export function maakViewer(houder: HTMLElement): Viewer {
     houtTex.wrapS = houtTex.wrapT = THREE.RepeatWrapping
     bladTex.wrapS = bladTex.wrapT = THREE.RepeatWrapping
     extraTex.push(houtTex, bladTex)
+    const san = sanitairVan(o.sanitair)
+    const kk = kraanKleurVan(san.kraan)
+    mat.goud.color.set(kk.kleur)
+    mat.goud.roughness = kk.ruw
+    mat.goud.metalness = kk.metaal
+    const fk = frontKleurVan(san.front)
+    let meubelMat: THREE.Material
+    if (fk.hout) {
+      const t = textuurVan({ kleur: fk.id === 'noten' ? 'notelaar' : 'eiken', formaat: 'plank', verband: 'recht' }, 120, 60, renderer, 4, 512)
+      t.wrapS = t.wrapT = THREE.RepeatWrapping
+      extraTex.push(t)
+      meubelMat = new THREE.MeshStandardMaterial({ map: t, roughness: 0.55 })
+    } else meubelMat = new THREE.MeshStandardMaterial({ color: fk.kleur, roughness: 0.6 })
     const tex = {
+      meubel: meubelMat,
       hout: new THREE.MeshStandardMaterial({ map: houtTex, roughness: 0.55 }),
       blad: new THREE.MeshPhysicalMaterial({ map: o.blad?.metaal ? null : bladTex, color: o.blad?.metaal ? '#C9CED2' : '#FFFFFF', roughness: o.blad?.ruw ?? 0.2, metalness: o.blad?.metaal ?? 0, clearcoat: (o.blad?.ruw ?? 0.2) < 0.3 ? 0.5 : 0.1 }),
     }
@@ -723,7 +796,7 @@ export function maakViewer(houder: HTMLElement): Viewer {
     wandItems = []
     for (const it of o.items) {
       if (ITEMS[it.type].montage === 'in') continue
-      const obj = bouwItem(it, mat, tex)
+      const obj = bouwItem(it, mat, tex, san)
       if (!obj) continue
       obj.position.set(it.x * M, 0, it.y * M)
       obj.rotation.y = (-it.rot * Math.PI) / 180

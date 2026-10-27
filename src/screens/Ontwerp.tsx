@@ -1,4 +1,5 @@
 /** Stap 'Ontwerp': 2D-plattegrond-editor + 3D-weergave om aan de klant te laten zien. */
+import { BAD_KRANEN, DOUCHE_KRANEN, FRONT_KLEUREN, KRAAN_KLEUREN, heeftOmbouw, metOmbouw, sanitairVan, WASTAFEL_KRANEN, type Sanitair } from '../lib/ontwerp/sanitair'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { Box, Copy, Download, FileImage, Grid2x2, Maximize2, Minus, Plus, Redo2, RotateCcw, RotateCw, Sparkles, Trash2, Undo2, Wand2 } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, Notice, NumberField, Switch } from '../components/ui'
@@ -295,10 +296,24 @@ export function OntwerpScherm({ p }: { p: Project }) {
   }
   const voegToe = (type: ItemType, bij?: { x: number; y: number }) => {
     const it = vrijePlek(type, kamer, ontwerp.items, uid(), bij)
+    const mo = type === 'toilet-hangend' ? metOmbouw(it, kamer, ontwerp.items, uid()) : null
+    if (mo) {
+      zetItems([...ontwerp.items, mo.ombouw, mo.toilet])
+      setSel(mo.toilet.id)
+      toast('Hangtoilet toegevoegd met leidingombouw erachter (voor reservoir en afvoer)')
+      return
+    }
     zetItems([...ontwerp.items, it])
     setSel(it.id)
     if (weergave === '3d') toast(`${ITEMS[type].naam} toegevoegd`)
   }
+  const ombouwErachter = () => {
+    if (!geselecteerd) return
+    const mo = metOmbouw(geselecteerd, kamer, ontwerp.items, uid())
+    if (!mo) return toast('Zet het hangtoilet eerst tegen een wand')
+    zetItems([mo.ombouw, ...ontwerp.items.map((i) => (i.id === geselecteerd.id ? mo.toilet : i))])
+  }
+  const zetSanitair = (s: Partial<Sanitair>) => commit({ ...ontwerp, sanitair: { ...sanitairVan(ontwerp.sanitair), ...s } })
 
   // toetsenbord (desktop)
   useEffect(() => {
@@ -609,6 +624,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
             onDeur={(patch) => werkBij((it) => ({ ...it, ...patch }))}
             onDupliceer={dupliceer}
             onVerwijder={verwijder}
+            onOmbouw={geselecteerd.type === 'toilet-hangend' && !heeftOmbouw(geselecteerd, ontwerp.items) ? ombouwErachter : undefined}
           />
         ) : (
           <Card className="p-5">
@@ -621,6 +637,13 @@ export function OntwerpScherm({ p }: { p: Project }) {
                 {leeg ? 'Voorstel-indeling' : 'Opnieuw indelen'}
               </Button>
             </div>
+          </Card>
+        )}
+
+        {(p.type === 'badkamer' || p.type === 'toilet') && (
+          <Card>
+            <CardHeader title="Kranen & kleuren" sub="Kraankleur, kraantypes en meubelfront — zichtbaar in 3D" />
+            <SanitairKiezer s={sanitairVan(ontwerp.sanitair)} badkamer={p.type === 'badkamer'} onChange={zetSanitair} />
           </Card>
         )}
 
@@ -742,6 +765,7 @@ function ItemPaneel({
   onDeur,
   onDupliceer,
   onVerwijder,
+  onOmbouw,
 }: {
   it: OntwerpItem
   onWissel: (t: ItemType) => void
@@ -750,6 +774,7 @@ function ItemPaneel({
   onDeur: (patch: Pick<OntwerpItem, 'draai' | 'scharnier'>) => void
   onDupliceer: () => void
   onVerwijder: () => void
+  onOmbouw?: () => void
 }) {
   const def = ITEMS[it.type]
   const familie = familieVan(it.type)
@@ -781,6 +806,14 @@ function ItemPaneel({
               {ITEMS[t].naam}
             </button>
           ))}
+        </div>
+      )}
+      {onOmbouw && (
+        <div className="mt-4 rounded-xl border border-gold-200 bg-gold-100/60 px-3.5 py-3 text-[0.8rem]">
+          <p className="text-ink-soft">Een hangtoilet heeft meestal een leidingombouw (voorzetwand) nodig voor reservoir en afvoer.</p>
+          <button type="button" onClick={onOmbouw} className="mt-2 h-8 rounded-full bg-ink px-3 text-[0.78rem] font-medium text-sand-50">
+            Leidingombouw erachter zetten
+          </button>
         </div>
       )}
       <div className={`mt-4 grid gap-3 ${opening ? 'grid-cols-1' : 'grid-cols-2'}`}>
@@ -843,6 +876,45 @@ function staal(kleur: string, formaat: string) {
     stalen.set(k, vloerAfbeelding({ kleur, formaat, verband: 'recht' }, maat, maat))
   }
   return stalen.get(k)
+}
+
+function Keuze<T extends string>({ titel, lijst, waarde, onChange, kleur }: { titel: string; lijst: { id: T; naam: string; kleur?: string }[]; waarde: T; onChange: (v: T) => void; kleur?: boolean }) {
+  return (
+    <div>
+      <p className="text-sm font-semibold">{titel}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {lijst.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            aria-pressed={waarde === o.id}
+            onClick={() => onChange(o.id)}
+            className={`inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[0.76rem] font-medium ring-1 transition ${waarde === o.id ? 'bg-ink text-sand-50 ring-ink' : 'bg-paper text-ink-soft ring-sand-300 hover:ring-gold-400'}`}
+          >
+            {kleur && o.kleur && <span className="h-3.5 w-3.5 rounded-full ring-1 ring-sand-300" style={{ background: o.kleur }} />}
+            {o.naam}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SanitairKiezer({ s, badkamer, onChange }: { s: Sanitair; badkamer: boolean; onChange: (s: Partial<Sanitair>) => void }) {
+  return (
+    <div className="space-y-4 p-5">
+      <Keuze titel="Kleur kranen & beslag" lijst={KRAAN_KLEUREN} waarde={s.kraan} onChange={(kraan) => onChange({ kraan })} kleur />
+      <Keuze titel="Wastafelkraan" lijst={WASTAFEL_KRANEN} waarde={s.wastafel} onChange={(wastafel) => onChange({ wastafel })} />
+      {badkamer && (
+        <>
+          <Keuze titel="Douchekraan" lijst={DOUCHE_KRANEN} waarde={s.douche} onChange={(douche) => onChange({ douche })} />
+          <Keuze titel="Badkraan" lijst={BAD_KRANEN} waarde={s.bad} onChange={(bad) => onChange({ bad })} />
+          <Keuze titel="Front badmeubel & kasten" lijst={FRONT_KLEUREN} waarde={s.front} onChange={(front) => onChange({ front })} kleur />
+        </>
+      )}
+      <p className="text-[0.76rem] text-ink-muted">Impressie van het uiterlijk; merk en type spreek je af met de klant.</p>
+    </div>
+  )
 }
 
 function AfwerkingKiezer({ titel, a, onChange }: { titel: string; a: Afwerking; onChange: (a: Partial<Afwerking>) => void }) {
