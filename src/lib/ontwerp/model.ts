@@ -6,6 +6,7 @@
  * 0 = achterkant tegen de bovenwand, 90 = rechterwand, 180 = onderwand, 270 = linkerwand.
  */
 import type { Project, ProjectType } from '../types'
+import { normSanitair, ombouwAchterHangtoiletten, sanitairTuple, uitSanitairTuple, type CompactSanitair, type Sanitair } from './sanitair'
 
 export const WAND_DIKTE = 12
 
@@ -203,6 +204,8 @@ export interface Ontwerp {
   /** ontwerp tonen op de offerte en in de klantlink */
   inOfferte: boolean
   bijgewerkt: number
+  /** kraankleur, kraanstijlen en frontkleur badmeubels (ontbreekt = standaard) */
+  sanitair?: Sanitair
   /** uiterlijk werkblad (keuken), afgeleid uit de keukenkeuze; niet opgeslagen */
   blad?: { kleur: string; ruw: number; metaal?: number }
   /** uiterlijk achterwand (keuken), alleen weergave */
@@ -428,7 +431,9 @@ export function voorstelIndeling(p: Pick<Project, 'afmetingen' | 'type' | 'scope
     add(plaats(k, 'radiator', maakId(), L / 2, 5, 0, Math.min(140, L - 40)))
     if (raam) add(plaats(k, 'raam', maakId(), L / 2, 0, 0, Math.min(r(raam.breedte * 100), L - 40)))
   }
-  return items.filter((it) => it.w <= Math.max(L, B) + 1)
+  const passend = items.filter((it) => it.w <= Math.max(L, B) + 1)
+  // hangtoilet: leidingombouw (voorzetwand) erachter
+  return p.type === 'badkamer' || p.type === 'toilet' ? ombouwAchterHangtoiletten(passend, k, maakId) : passend
 }
 
 // ——— normaliseren, compact (voor de offerte-link) ———————————————————
@@ -473,6 +478,7 @@ export function normaliseerOntwerp(x: unknown, type: ProjectType): Ontwerp {
     wand: normAfwerking(x.wand, basis.wand),
     inOfferte: x.inOfferte !== false,
     bijgewerkt: isNum(x.bijgewerkt) ? x.bijgewerkt : 0,
+    ...(normSanitair(x.sanitair) ? { sanitair: normSanitair(x.sanitair) } : {}),
   }
 }
 
@@ -483,6 +489,7 @@ export interface CompactOntwerp {
   i: ([ItemType, number, number, number, number, number] | [ItemType, number, number, number, number, number, number])[]
   v: [string, string, Verband] | [string, string, Verband, Voeg]
   w: [string, string, Verband] | [string, string, Verband, Voeg]
+  s?: CompactSanitair
 }
 
 const afTuple = (a: Afwerking): [string, string, Verband] | [string, string, Verband, Voeg] =>
@@ -499,6 +506,7 @@ export function compact(o: Ontwerp, k: Kamer): CompactOntwerp {
     }),
     v: afTuple(o.vloer),
     w: afTuple(o.wand),
+    ...(o.sanitair ? { s: sanitairTuple(o.sanitair) } : {}),
   }
 }
 
@@ -522,7 +530,7 @@ export function uitCompact(c: unknown): { ontwerp: Ontwerp; kamer: Kamer } | nul
   const basis = leegOntwerp(type)
   return {
     kamer,
-    ontwerp: { ...basis, items, vloer: normAfwerking(af(c.v), basis.vloer), wand: normAfwerking(af(c.w), basis.wand) },
+    ontwerp: { ...basis, items, vloer: normAfwerking(af(c.v), basis.vloer), wand: normAfwerking(af(c.w), basis.wand), ...(uitSanitairTuple(c.s) ? { sanitair: uitSanitairTuple(c.s) } : {}) },
   }
 }
 
