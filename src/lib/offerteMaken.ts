@@ -12,6 +12,15 @@ import { compact, kamerVan, type Ontwerp } from './ontwerp/model'
 
 type Berekening = ReturnType<typeof berekenAlles>
 
+export const SANITAIR_KLANT_TEKST = 'Sanitair (toilet, wastafel, douche, bad en kranen) wordt door de klant geleverd en is niet in deze prijs inbegrepen; montage wel.'
+
+/** Aannames voor op de offerte, met de regel over sanitair van de klant als die optie aan staat. */
+export function aannamesVoor(p: Pick<Project, 'aannames' | 'sanitairDoorKlant'>): string {
+  const eigen = p.aannames?.trim() ?? ''
+  if (!p.sanitairDoorKlant) return eigen
+  return eigen ? `${SANITAIR_KLANT_TEKST}\n${eigen}` : SANITAIR_KLANT_TEKST
+}
+
 const verpakkingKort = (v: string) => v.replace(/^(doos|zak|bus|emmer|rol|koker|lengte|plaat|pak) à /, '$1 ')
 
 export function prijsTekstVoor(st: Berekening['inkoop']['prijsStatus'], datumTekst: (iso: string) => string): string {
@@ -73,7 +82,7 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     ...(onvPct > 0 ? { onv: [onvPct, onvBedrag] as [number, number] } : {}),
     totaal: Math.round((matTotaal + arbTotaal + onvBedrag) * 100) / 100,
     notities: p.notities,
-    ...(p.aannames?.trim() ? { aannames: p.aannames.trim() } : {}),
+    ...(aannamesVoor(p) ? { aannames: aannamesVoor(p) } : {}),
     betaaltermijn: bedrijf.betaaltermijn.trim(),
     prijsTekst: prijsTekstVoor(st, datumTekst),
     ...(ontwerp && ontwerp.inOfferte && ontwerp.items.length ? { ow: compact(ontwerp, kamerVan(p)) } : {}),

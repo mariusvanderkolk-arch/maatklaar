@@ -28,6 +28,7 @@ export function ProjectForm({ id }: { id?: string }) {
   const [scope, setScope] = useState<Scope>(concept.scope)
   const [type, setType] = useState<ProjectType>(concept.type)
   const [container, setContainer] = useState<ContainerKeuze>(concept.container ?? {})
+  const [sanitairDoorKlant, setSanitairDoorKlant] = useState(concept.sanitairDoorKlant === true)
   const [inspraak, setInspraak] = useState<Inspraak | null>(null)
   const maten = (a: Afmetingen): Afmetingen => (inspraak ? pasInspraakToe({ ...concept, afmetingen: a }, { ...inspraak, type: undefined, aan: [], uit: [] }).afmetingen : a)
   const toepassen = (r: Inspraak) => {
@@ -56,7 +57,7 @@ export function ProjectForm({ id }: { id?: string }) {
   }
 
   const opslaan = () => {
-    const velden = { naam: naam.trim() || `Nieuwe ${ruimte(type).label.toLowerCase()}`, klant: klant.trim(), adres: adres.trim(), scope, type, container }
+    const velden = { naam: naam.trim() || `Nieuwe ${ruimte(type).label.toLowerCase()}`, klant: klant.trim(), adres: adres.trim(), scope, type, container, sanitairDoorKlant }
     if (bestaand) {
       const anderType = bestaand.type !== type
       projectStore.werkBij(bestaand.id, (p) => ({
@@ -207,6 +208,20 @@ export function ProjectForm({ id }: { id?: string }) {
               )
             })}
             </div>
+            {g.fase === 'sanitair' && g.items.some((i) => scope[i.key]) && (
+              <label className="mt-2.5 flex cursor-pointer items-start gap-3 rounded-xl bg-sand-50 p-3.5 ring-1 ring-sand-200" data-testid="sanitair-klant">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-gold-600"
+                  checked={sanitairDoorKlant}
+                  onChange={(e) => setSanitairDoorKlant(e.target.checked)}
+                />
+                <span className="min-w-0">
+                  <span className="block text-[0.9rem] font-semibold text-ink">Sanitair wordt door de klant geleverd</span>
+                  <span className="block text-xs text-ink-muted">Toilet, wastafel, douche, bad en kranen gaan niet mee in de inkooplijst en materiaalprijs; de montage-uren blijven staan. Op de offerte komt dit onder ‘Aannames en niet inbegrepen’.</span>
+                </span>
+              </label>
+            )}
             {g.fase === 'sloop' && scope.container && g.items.some((i) => i.key === 'container') && (
               <div className="mt-2.5 grid gap-2.5 rounded-xl bg-sand-50 p-3.5 ring-1 ring-sand-200 sm:grid-cols-2" data-testid="container-keuze">
                 <label className="block">

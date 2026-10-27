@@ -56,7 +56,9 @@ export function metEigenArtikelen(bron: PrijsBron, artikelen: EigenArtikel[]): P
 export function berekenAlles(p: Project, basisBron: PrijsBron, artikelen: EigenArtikel[] = eigenArtikelStore.alle()) {
   const bron = metEigenArtikelen(basisBron, artikelen)
   const oppervlakken = oppervlakkenVan(p)
-  const materialen = [...pasSetsToe(berekenMaterialen(p), bron), ...extraRegels(p, artikelen)]
+  const berekend = pasSetsToe(berekenMaterialen(p), bron)
+  // Sanitair door de klant geleverd: berekende sanitairregels vervallen (zelf toegevoegde artikelen blijven); montage-uren blijven staan.
+  const materialen = [...(p.sanitairDoorKlant ? berekend.filter((r) => r.groep !== 'sanitair') : berekend), ...extraRegels(p, artikelen)]
   const inkoop = maakInkooplijst(materialen, bron)
   const arbeid = berekenArbeid(p)
   const uren = arbeid.reduce((s, r) => s + r.uren, 0)

@@ -203,6 +203,8 @@ export interface Project {
   /** afgevinkte regels op de inkooplijst */
   afgevinkt: Record<string, boolean>
   notities: string
+  /** sanitair (toilet, wastafel, douche, bad) wordt door de klant geleverd: niet in materiaal, montage blijft */
+  sanitairDoorKlant?: boolean
   /** vast blok "Aannames en niet inbegrepen" op de offerte (undefined = oud project, niet tonen) */
   aannames?: string
   voorbeeld?: boolean
