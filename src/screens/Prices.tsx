@@ -178,7 +178,7 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
                       Laatst bijgewerkt op <span className="font-medium text-ink">{datum(Date.parse(laatst))}</span>
                     </>
                   ) : (
-                    <>Nog geen eigen prijzen: alles is voorbeeldprijs (peildatum {datum(Date.parse(VOORBEELD_PEILDATUM))}).</>
+                    <>Nog geen eigen prijzen: alles is voorbeeldprijs (fictief, peildatum {datum(Date.parse(VOORBEELD_PEILDATUM))}).</>
                   )}
                 </div>
               </div>
@@ -450,7 +450,7 @@ function PrijsRij({ item, e, toonLev, onDetail }: { item: CatalogusItem; e?: Eig
           {isEigen ? (
             <span className="text-gold-700">· eigen prijs {kortDatum(Date.parse(e!.bijgewerkt))}</span>
           ) : vb != null ? (
-            <span>· voorbeeld {euro(vb)}</span>
+            <span>· voorbeeld {euro(vb)} (fictief)</span>
           ) : null}
         </p>
       </div>
@@ -560,7 +560,7 @@ function PrijsDetails({ item, eigen, onClose }: { item: CatalogusItem; eigen: Ei
           <p className="mb-1.5 text-[0.8rem] font-medium text-ink-soft">Prijs incl. btw (per {prijsEenheid(item.id)})</p>
           <PrijsInvoer groot label="Prijs incl. btw" waarde={e?.prijs} placeholder={vb != null ? prijsTekst(vb) : '0,00'} onChange={(v) => zet({ prijs: v })} />
           <p className="mt-1.5 text-xs text-ink-muted">
-            {vb != null ? `Voorbeeldprijs ${euro(vb)} (peildatum ${datum(Date.parse(VOORBEELD_PEILDATUM))}).` : 'Geen voorbeeldprijs.'}{' '}
+            {vb != null ? `Voorbeeldprijs ${euro(vb)} (fictief, peildatum ${datum(Date.parse(VOORBEELD_PEILDATUM))}).` : 'Geen voorbeeldprijs.'}{' '}
             {heeftEigen(e) ? `Jouw prijs is bijgewerkt op ${datum(Date.parse(e!.bijgewerkt))}.` : 'Leeg = voorbeeldprijs.'}
           </p>
         </div>

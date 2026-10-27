@@ -155,11 +155,12 @@ export function Shopping({ p }: { p: Project }) {
                                       <span className="mt-0.5 inline-flex flex-col items-end gap-0.5">
                                         <span className="text-[0.75rem] text-ink-muted">
                                           {euro(r.prijs ?? 0)}/{prijsEenheid(r.id)}
+                                          {r.bron !== 'eigen' && !(inkoop.prijsStatus.eigen > 0 && inkoop.prijsStatus.voorbeeld > 0) ? ' · fictief' : ''}
                                         </span>
                                         {toonLev && r.leverancier && <Badge tone="sand">{r.leverancier}</Badge>}
                                         {inkoop.prijsStatus.eigen > 0 && inkoop.prijsStatus.voorbeeld > 0 && (
                                           <span className={`text-[0.75rem] ${r.bron === 'eigen' ? 'font-semibold text-gold-700' : 'text-ink-muted'}`}>
-                                            {r.bron === 'eigen' ? 'eigen prijs' : 'voorbeeldprijs'}
+                                            {r.bron === 'eigen' ? 'eigen prijs' : 'voorbeeldprijs (fictief)'}
                                           </span>
                                         )}
                                       </span>
@@ -201,7 +202,7 @@ export function Shopping({ p }: { p: Project }) {
               <p className="tabnum mt-1.5 font-display text-[2.4rem] leading-none font-semibold">{euro(inkoop.totaal)}</p>
               <p className="mt-2 text-xs text-sand-300">
                 Eén eigen prijslijst · incl. btw ·{' '}
-                {inkoop.prijsStatus.eigen === 0 ? 'voorbeeldprijzen' : inkoop.prijsStatus.voorbeeld === 0 ? 'eigen prijzen' : 'deels voorbeeld'}
+                {inkoop.prijsStatus.eigen === 0 ? 'voorbeeldprijzen (fictief)' : inkoop.prijsStatus.voorbeeld === 0 ? 'eigen prijzen' : 'deels voorbeeld (fictief)'}
               </p>
             </div>
             <div className="px-5 py-4 sm:px-6">

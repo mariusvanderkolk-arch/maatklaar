@@ -385,7 +385,7 @@ function ProjectKaart({ p }: { p: Project }) {
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{p.type === 'vloer' ? `${getal(o.plintLengte, 1)} m` : `${getal(o.wandNetto, 1)} m²`}</dd>
         </div>
         <div>
-          <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">Richtprijs</dt>
+          <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">{inkoop.prijsStatus?.voorbeeld ? 'Richtprijs (fictief)' : 'Richtprijs'}</dt>
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{euro(Math.round(inkoop.totaal))}</dd>
         </div>
       </dl>
