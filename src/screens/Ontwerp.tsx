@@ -642,10 +642,16 @@ export function OntwerpScherm({ p }: { p: Project }) {
         )}
 
         {(p.type === 'badkamer' || p.type === 'toilet') && (
-          <Card>
-            <CardHeader title="Kranen & kleuren" sub="Kraankleur, kraantypes en meubelfront — zichtbaar in 3D" />
-            <SanitairKiezer s={sanitairVan(ontwerp.sanitair)} badkamer={p.type === 'badkamer'} onChange={zetSanitair} />
-          </Card>
+          <>
+            <Card>
+              <CardHeader title="Kraankleur" sub="Kleur van kranen & beslag — zichtbaar in 3D en de impressie" />
+              <SanitairKiezer deel="kleur" s={sanitairVan(ontwerp.sanitair)} badkamer={p.type === 'badkamer'} onChange={zetSanitair} />
+            </Card>
+            <Card>
+              <CardHeader title="Kranen & kleuren" sub="Kraantypes en meubelfront — zichtbaar in 3D" />
+              <SanitairKiezer deel="kranen" s={sanitairVan(ontwerp.sanitair)} badkamer={p.type === 'badkamer'} onChange={zetSanitair} />
+            </Card>
+          </>
         )}
 
         <Card>
@@ -901,10 +907,13 @@ function Keuze<T extends string>({ titel, lijst, waarde, onChange, kleur }: { ti
   )
 }
 
-function SanitairKiezer({ s, badkamer, onChange }: { s: Sanitair; badkamer: boolean; onChange: (s: Partial<Sanitair>) => void }) {
+function SanitairKiezer({ deel, s, badkamer, onChange }: { deel: 'kleur' | 'kranen'; s: Sanitair; badkamer: boolean; onChange: (s: Partial<Sanitair>) => void }) {
   return (
     <div className="space-y-4 p-5">
-      <Keuze titel="Kleur kranen & beslag" lijst={KRAAN_KLEUREN} waarde={s.kraan} onChange={(kraan) => onChange({ kraan })} kleur />
+      {deel === 'kleur' ? (
+        <Keuze titel="Kleur kranen & beslag" lijst={KRAAN_KLEUREN} waarde={s.kraan} onChange={(kraan) => onChange({ kraan })} kleur />
+      ) : (
+      <>
       <Keuze titel="Wastafelkraan" lijst={WASTAFEL_KRANEN} waarde={s.wastafel} onChange={(wastafel) => onChange({ wastafel })} />
       {badkamer && (
         <>
@@ -912,6 +921,8 @@ function SanitairKiezer({ s, badkamer, onChange }: { s: Sanitair; badkamer: bool
           <Keuze titel="Badkraan" lijst={BAD_KRANEN} waarde={s.bad} onChange={(bad) => onChange({ bad })} />
           <Keuze titel="Front badmeubel & kasten" lijst={FRONT_KLEUREN} waarde={s.front} onChange={(front) => onChange({ front })} kleur />
         </>
+      )}
+      </>
       )}
       <p className="text-[0.76rem] text-ink-muted">Impressie van het uiterlijk; merk en type spreek je af met de klant.</p>
     </div>
