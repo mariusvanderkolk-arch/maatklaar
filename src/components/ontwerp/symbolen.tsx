@@ -154,9 +154,10 @@ export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: 
           <rect x={-1.6} y={y0 + 3} width={3.2} height={Math.max(5, d * 0.2)} rx={1.2} fill={KLEUR.chroom} />
         </g>
       )
-    case 'badmeubel': {
+    case 'badmeubel':
+    case 'badmeubel-dubbel': {
       const bak = Math.min(w - 10, 60)
-      const n = w >= 110 ? 2 : 1
+      const n = w >= 110 || type === 'badmeubel-dubbel' ? 2 : 1
       return (
         <g>
           <rect x={x0} y={y0} width={w} height={d} rx={2} fill={KLEUR.hout} {...sw} />
@@ -239,6 +240,66 @@ export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: 
     }
     case 'bovenkast':
       return <rect x={x0} y={y0} width={w} height={d} rx={1} fill="rgba(236,230,220,0.55)" stroke={KLEUR.lijn} strokeWidth={0.7} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />
+    case 'kolomkast':
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} rx={1.5} fill={KLEUR.hout} {...sw} />
+          <path d={`M${x0} ${y0}L${w / 2} ${d / 2}M${w / 2} ${y0}L${x0} ${d / 2}`} {...fijn} />
+          <line x1={x0} y1={d / 2 - 2.5} x2={w / 2} y2={d / 2 - 2.5} {...fijn} />
+        </g>
+      )
+    case 'spiegelkast':
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} rx={1} fill="rgba(236,230,220,0.6)" stroke={KLEUR.lijn} strokeWidth={0.7} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />
+          <rect x={x0 + 1} y={d / 2 - 2.2} width={w - 2} height={2.2} fill="url(#sw-spiegel)" stroke={KLEUR.lijnZacht} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
+          {w >= 70 && <line x1={0} y1={y0 + 1} x2={0} y2={d / 2 - 1} {...fijn} />}
+        </g>
+      )
+    case 'bad-vrijstaand':
+      return (
+        <g>
+          <ellipse cx={0} cy={0} rx={w / 2} ry={d / 2} fill={KLEUR.keramiek} {...sw} />
+          <ellipse cx={0} cy={0} rx={w / 2 - 7} ry={d / 2 - 7} fill="url(#sw-water)" stroke={KLEUR.lijnZacht} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
+          <circle cx={0} cy={0} r={2.4} fill="url(#sw-staal)" stroke={KLEUR.lijnZacht} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
+          <rect x={x0 - 8} y={-2} width={4} height={4} rx={2} fill={KLEUR.chroom} />
+        </g>
+      )
+    case 'waskom': {
+      const n = w >= 110 ? 2 : 1
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} rx={1.5} fill={KLEUR.houtDonker} {...sw} />
+          {Array.from({ length: n }, (_, i) => {
+            const cx = n === 1 ? 0 : i === 0 ? -w / 4 : w / 4
+            const r = Math.min(d * 0.36, 20)
+            return (
+              <g key={i}>
+                <circle cx={cx} cy={d * 0.06} r={r} fill={KLEUR.keramiek} {...sw} />
+                <circle cx={cx} cy={d * 0.06} r={r - 3} fill="url(#sw-water)" stroke={KLEUR.lijnZacht} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
+                <rect x={cx - 1.6} y={y0 + 2} width={3.2} height={Math.max(5, d * 0.16)} rx={1.2} fill={KLEUR.chroom} />
+              </g>
+            )
+          })}
+        </g>
+      )
+    }
+    case 'douchewand':
+      return (
+        <g>
+          <rect x={x0} y={-Math.max(d, 1.4) / 2} width={w} height={Math.max(d, 1.4)} fill={KLEUR.glas} opacity={0.85} />
+          <rect x={x0} y={-1.6} width={2.4} height={3.2} fill={KLEUR.chroom} />
+        </g>
+      )
+    case 'nis':
+      return <rect x={x0} y={y0} width={w} height={d} fill="rgba(201,165,106,0.12)" stroke={KLEUR.lijn} strokeWidth={0.6} strokeDasharray="2 2" vectorEffect="non-scaling-stroke" />
+    case 'ombouw':
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} fill="#E7E0D4" {...sw} />
+          <path d={`M${x0} ${d / 2}L${x0 + d} ${y0}`} {...fijn} />
+        </g>
+      )
     case 'koelkast':
     case 'kast':
       return (

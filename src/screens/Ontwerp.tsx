@@ -20,6 +20,8 @@ import {
   ITEM_TYPES,
   kamerVan,
   KLEUREN,
+  VERBANDEN,
+  VOEGEN,
   kleurVan,
   snap,
   voorstelIndeling,
@@ -804,13 +806,28 @@ function AfwerkingKiezer({ titel, a, onChange }: { titel: string; a: Afwerking; 
       </div>
       {f.l !== f.b && (
         <div className="mt-2 inline-flex rounded-lg bg-sand-100 p-0.5 ring-1 ring-sand-200">
-          {(['recht', 'halfsteens'] as const).map((v) => (
+          {VERBANDEN.map((v) => (
             <button key={v} type="button" onClick={() => onChange({ verband: v })} className={`h-7 rounded-md px-2.5 text-[0.76rem] font-medium ${a.verband === v ? 'bg-paper text-ink shadow-sm' : 'text-ink-muted'}`}>
-              {v === 'recht' ? 'Recht' : 'Halfsteens'}
+              {v === 'recht' ? 'Recht' : v === 'halfsteens' ? 'Halfsteens' : 'Visgraat'}
             </button>
           ))}
         </div>
       )}
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+        <span className="text-[0.76rem] text-ink-muted">Voeg</span>
+        {VOEGEN.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            aria-pressed={(a.voeg ?? 'auto') === v.id}
+            onClick={() => onChange({ voeg: v.id })}
+            className={`inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[0.74rem] font-medium ring-1 transition ${(a.voeg ?? 'auto') === v.id ? 'bg-ink text-sand-50 ring-ink' : 'bg-paper text-ink-soft ring-sand-300 hover:ring-gold-400'}`}
+          >
+            <span className="h-3 w-3 rounded-full ring-1 ring-sand-300" style={{ background: v.kleur ?? kleurVan(a.kleur).voeg }} />
+            {v.naam}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

@@ -241,14 +241,15 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       g.add(kraan(mat, 0, z0 + h, -d / 2 + 0.05, 0.1))
       break
     }
-    case 'badmeubel': {
+    case 'badmeubel':
+    case 'badmeubel-dubbel': {
       const z0 = def.z * M
       g.add(at(rbox(w, 0.45, d - 0.01, 0.008, tex.hout), 0, z0 + 0.225, -0.005))
       g.add(at(box(w - 0.02, 0.003, 0.002, mat.plint), 0, z0 + 0.225, d / 2 - 0.009))
       g.add(greep(mat, 0, z0 + 0.4, d / 2 - 0.004, Math.min(0.4, w * 0.5)))
       g.add(greep(mat, 0, z0 + 0.18, d / 2 - 0.004, Math.min(0.4, w * 0.5)))
       g.add(at(rbox(w, 0.1, d, 0.02, mat.keramiek), 0, z0 + 0.5, 0))
-      const n = it.w >= 110 ? 2 : 1
+      const n = it.w >= 110 || it.type === 'badmeubel-dubbel' ? 2 : 1
       for (let i = 0; i < n; i++) {
         const cx = n === 1 ? 0 : i === 0 ? -w / 4 : w / 4
         const kom = rbox(Math.min(w - 0.1, 0.6) / n, 0.02, d * 0.55, 0.02, mat.water)
@@ -295,6 +296,83 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
         g.add(at(rbox(fw - 0.004, h, d, 0.006, mat.front), fx, def.z * M + h / 2, 0))
         g.add(greep(mat, fx, def.z * M + 0.04, d / 2 + 0.01, Math.min(0.28, fw * 0.5)))
       }
+      break
+    }
+    case 'kolomkast': {
+      const h = def.h * M
+      const z0 = def.z * M
+      g.add(at(rbox(w, h, d - 0.01, 0.008, tex.hout), 0, z0 + h / 2, -0.005))
+      g.add(at(box(w - 0.02, 0.003, 0.002, mat.plint), 0, z0 + h * 0.62, d / 2 - 0.009))
+      g.add(greep(mat, w / 2 - 0.04, z0 + h * 0.45, d / 2, 0.22, true))
+      break
+    }
+    case 'spiegelkast': {
+      const h = def.h * M
+      const z0 = def.z * M
+      g.add(at(rbox(w, h, d - 0.02, 0.006, mat.front), 0, z0 + h / 2, -0.01))
+      const n = it.w >= 70 ? 2 : 1
+      for (let i = 0; i < n; i++) {
+        const fw = w / n
+        g.add(at(rbox(fw - 0.006, h - 0.01, 0.012, 0.004, mat.spiegel), -w / 2 + fw * (i + 0.5), z0 + h / 2, d / 2 - 0.012))
+      }
+      g.add(at(box(w * 0.9, 0.008, 0.01, new THREE.MeshStandardMaterial({ color: '#FFF4DD', emissive: '#FFE7B8', emissiveIntensity: 1.2 })), 0, z0 - 0.006, d / 2 - 0.03))
+      break
+    }
+    case 'bad-vrijstaand': {
+      const h = def.h * M
+      const kuip = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.42, h, 48, 1), mat.keramiek)
+      kuip.scale.set(w, 1, d)
+      kuip.castShadow = kuip.receiveShadow = true
+      g.add(at(kuip, 0, h / 2, 0))
+      const water = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.01, 48), mat.water)
+      water.scale.set(w - 0.12, 1, d - 0.12)
+      g.add(at(water, 0, h - 0.04, 0))
+      // vloerkraan aan het hoofdeinde
+      g.add(at(cil(0.014, h + 0.25, mat.goud), -w / 2 - 0.1, (h + 0.25) / 2, 0))
+      const arm = cil(0.01, 0.16, mat.goud)
+      arm.rotation.z = Math.PI / 2
+      g.add(at(arm, -w / 2 - 0.03, h + 0.24, 0))
+      break
+    }
+    case 'waskom': {
+      const z0 = def.z * M
+      g.add(at(rbox(w, 0.06, d, 0.006, tex.hout), 0, z0 + 0.03, 0))
+      const n = it.w >= 110 ? 2 : 1
+      for (let i = 0; i < n; i++) {
+        const cx = n === 1 ? 0 : i === 0 ? -w / 4 : w / 4
+        const r = Math.min(d * 0.36, 0.2)
+        const kom = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.7, 0.14, 40), mat.keramiek)
+        kom.castShadow = true
+        g.add(at(kom, cx, z0 + 0.13, d * 0.06))
+        const water = cil(r - 0.02, 0.005, mat.water, 40)
+        g.add(at(water, cx, z0 + 0.2, d * 0.06))
+        g.add(kraan(mat, cx, z0 + 0.18, -d / 2 + 0.04, 0.12))
+      }
+      break
+    }
+    case 'douchewand': {
+      const h = def.h * M
+      const p = box(w, h, Math.max(0.008, d), mat.glas)
+      p.castShadow = false
+      g.add(at(p, 0, h / 2 + 0.01, 0))
+      g.add(at(box(w, 0.012, 0.012, mat.goud), 0, h + 0.01, 0))
+      g.add(at(box(0.012, 0.012, 0.6, mat.goud), w / 2 - 0.006, h, 0.3))
+      break
+    }
+    case 'nis': {
+      const h = def.h * M
+      const z0 = def.z * M
+      // inbouwnis: donkere achterkant + gouden profiel; ligt tegen de wand
+      g.add(at(box(w, h, 0.006, mat.plint), 0, z0 + h / 2, -d / 2 + 0.003))
+      g.add(at(box(w, 0.012, d, mat.keramiek), 0, z0 + 0.006, 0))
+      for (const sx of [-w / 2, w / 2]) g.add(at(box(0.006, h, d, mat.goud), sx, z0 + h / 2, 0))
+      g.add(at(box(w, 0.006, d, mat.goud), 0, z0 + h, 0))
+      break
+    }
+    case 'ombouw': {
+      const h = def.h * M
+      g.add(at(box(w, h, d, mat.wandRand), 0, h / 2, 0))
+      g.add(at(box(w, 0.02, d + 0.01, mat.keramiek), 0, h + 0.01, 0))
       break
     }
     case 'koelkast':

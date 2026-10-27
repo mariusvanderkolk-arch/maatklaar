@@ -30,6 +30,14 @@ export type ItemType =
   | 'bovenkast'
   | 'koelkast'
   | 'kast'
+  | 'kolomkast'
+  | 'spiegelkast'
+  | 'bad-vrijstaand'
+  | 'waskom'
+  | 'badmeubel-dubbel'
+  | 'douchewand'
+  | 'nis'
+  | 'ombouw'
 
 export type Groep = 'sanitair' | 'meubel' | 'verwarming' | 'openingen' | 'keuken'
 /** 'aan' = hoort tegen een wand, 'in' = zit in de wand (deur/raam), 'vrij' = overal */
@@ -77,6 +85,14 @@ export const ITEMS: Record<ItemType, ItemDef> = {
   bovenkast: { type: 'bovenkast', naam: 'Bovenkast', groep: 'keuken', w: 80, d: 35, h: 70, z: 145, montage: 'aan', ruimtes: ['keuken'], min: [30, 30], max: [300, 40] },
   koelkast: { type: 'koelkast', naam: 'Koelkast', groep: 'keuken', w: 60, d: 65, h: 200, z: 0, montage: 'aan', ruimtes: ['keuken'], familie: 'hoog', min: [55, 55], max: [90, 75] },
   kast: { type: 'kast', naam: 'Kast', groep: 'meubel', w: 60, d: 40, h: 200, z: 0, montage: 'aan', ruimtes: ALLE, familie: 'hoog', min: [30, 25], max: [240, 65] },
+  kolomkast: { type: 'kolomkast', naam: 'Kolomkast', groep: 'meubel', w: 35, d: 35, h: 170, z: 15, montage: 'aan', ruimtes: NAT, familie: 'hoog', min: [25, 20], max: [60, 45] },
+  spiegelkast: { type: 'spiegelkast', naam: 'Spiegelkast', groep: 'meubel', w: 80, d: 15, h: 70, z: 110, montage: 'aan', ruimtes: NAT, min: [40, 10], max: [160, 20] },
+  'bad-vrijstaand': { type: 'bad-vrijstaand', naam: 'Vrijstaand bad', groep: 'sanitair', w: 170, d: 80, h: 60, z: 0, montage: 'vrij', ruimtes: ['badkamer'], min: [140, 70], max: [190, 95] },
+  waskom: { type: 'waskom', naam: 'Waskom op blad', groep: 'sanitair', w: 80, d: 46, h: 20, z: 70, montage: 'aan', ruimtes: ['badkamer'], familie: 'wastafel', min: [50, 35], max: [200, 55] },
+  'badmeubel-dubbel': { type: 'badmeubel-dubbel', naam: 'Dubbel badmeubel', groep: 'sanitair', w: 120, d: 46, h: 55, z: 35, montage: 'aan', ruimtes: ['badkamer'], familie: 'wastafel', min: [110, 35], max: [200, 55] },
+  douchewand: { type: 'douchewand', naam: 'Douchewand (glas)', groep: 'sanitair', w: 100, d: 2, h: 200, z: 0, montage: 'vrij', ruimtes: ['badkamer'], min: [30, 1], max: [160, 4] },
+  nis: { type: 'nis', naam: 'Inbouwnis', groep: 'meubel', w: 60, d: 10, h: 30, z: 110, montage: 'aan', ruimtes: NAT, min: [20, 8], max: [150, 15] },
+  ombouw: { type: 'ombouw', naam: 'Leidingombouw', groep: 'meubel', w: 120, d: 20, h: 120, z: 0, montage: 'aan', ruimtes: NAT, min: [30, 10], max: [400, 40] },
 }
 
 export const ITEM_TYPES = Object.keys(ITEMS) as ItemType[]
@@ -127,6 +143,14 @@ export const KLEUREN: Kleur[] = [
   { id: 'salie', naam: 'Saliegroen', basis: '#A9B49E', voeg: '#E8E2D6', stijl: 'zellige' },
   { id: 'terracotta', naam: 'Terracotta', basis: '#C07A57', voeg: '#E5D9C8', stijl: 'zellige' },
   { id: 'eiken', naam: 'Eiken (houtlook)', basis: '#C49A6C', voeg: '#A87E52', stijl: 'hout', accent: '#A57A4D' },
+  { id: 'nero', naam: 'Nero marquina', basis: '#2B2927', voeg: '#3A3735', stijl: 'marmer', accent: '#D8D2C8' },
+  { id: 'greige', naam: 'Greige', basis: '#C9BFB2', voeg: '#B4AA9C', stijl: 'beton', accent: '#BAB0A3' },
+  { id: 'mat-zwart', naam: 'Mat zwart', basis: '#2F2D2B', voeg: '#454240', stijl: 'effen' },
+  { id: 'oudroze', naam: 'Oudroze', basis: '#D9B7A8', voeg: '#EDE4DA', stijl: 'zellige' },
+  { id: 'nachtblauw', naam: 'Nachtblauw', basis: '#2F4357', voeg: '#E3DED5', stijl: 'zellige' },
+  { id: 'olijf', naam: 'Olijfgroen', basis: '#7D7F5A', voeg: '#E3DDD0', stijl: 'zellige' },
+  { id: 'notelaar', naam: 'Noten (houtlook)', basis: '#7E5A3E', voeg: '#634632', stijl: 'hout', accent: '#5E412B' },
+  { id: 'terrazzo-grijs', naam: 'Terrazzo grijs', basis: '#C7C4BF', voeg: '#B2AEA8', stijl: 'terrazzo', accent: '#5F5A55' },
 ]
 
 export interface Formaat {
@@ -149,12 +173,26 @@ export const FORMATEN: Formaat[] = [
   { id: 'plank', naam: 'Plank 20 × 120', l: 120, b: 20 },
 ]
 
-export type Verband = 'recht' | 'halfsteens'
+export type Verband = 'recht' | 'halfsteens' | 'visgraat'
+export const VERBANDEN: Verband[] = ['recht', 'halfsteens', 'visgraat']
+
+/** Voegkleur: 'auto' = passend bij de tegel. */
+export type Voeg = 'auto' | 'wit' | 'grijs' | 'antraciet' | 'zwart'
+export const VOEGEN: { id: Voeg; naam: string; kleur?: string }[] = [
+  { id: 'auto', naam: 'Passend' },
+  { id: 'wit', naam: 'Wit', kleur: '#F2EFEA' },
+  { id: 'grijs', naam: 'Grijs', kleur: '#A7A29B' },
+  { id: 'antraciet', naam: 'Antraciet', kleur: '#4A4744' },
+  { id: 'zwart', naam: 'Zwart', kleur: '#1F1D1C' },
+]
+export const voegKleur = (af: Pick<Afwerking, 'voeg'>, k: Kleur): string => VOEGEN.find((v) => v.id === af.voeg)?.kleur ?? k.voeg
 
 export interface Afwerking {
   kleur: string
   formaat: string
   verband: Verband
+  /** voegkleur (ontbreekt in oude ontwerpen = 'auto') */
+  voeg?: Voeg
 }
 
 export interface Ontwerp {
@@ -316,6 +354,8 @@ export function afstanden(it: OntwerpItem, k: Kamer): Record<Wand, number> {
 /** Overlappen twee items (omhullende rechthoeken, met een kleine marge)? Openingen tellen niet mee. */
 export function overlapt(a: OntwerpItem, b: OntwerpItem, marge = 1): boolean {
   if (ITEMS[a.type].montage === 'in' || ITEMS[b.type].montage === 'in') return false
+  // een losse douchewand staat juist op/naast de douchevloer
+  if (a.type === 'douchewand' || b.type === 'douchewand') return false
   // spiegel/bovenkast/radiator hangen boven andere objecten
   const hoog = (t: ItemType) => ITEMS[t].z >= 100 || t === 'spiegel' || t === 'handdoekradiator'
   if (hoog(a.type) !== hoog(b.type)) return false
@@ -401,7 +441,8 @@ function normAfwerking(x: unknown, standaard: Afwerking): Afwerking {
   return {
     kleur: KLEUREN.some((k) => k.id === x.kleur) ? (x.kleur as string) : standaard.kleur,
     formaat: FORMATEN.some((f) => f.id === x.formaat) ? (x.formaat as string) : standaard.formaat,
-    verband: x.verband === 'halfsteens' ? 'halfsteens' : 'recht',
+    verband: x.verband === 'halfsteens' || x.verband === 'visgraat' ? x.verband : 'recht',
+    ...(VOEGEN.some((v) => v.id === x.voeg && v.id !== 'auto') ? { voeg: x.voeg as Voeg } : {}),
   }
 }
 
@@ -440,9 +481,12 @@ export interface CompactOntwerp {
   k: [number, number, number, number]
   t: ProjectType
   i: ([ItemType, number, number, number, number, number] | [ItemType, number, number, number, number, number, number])[]
-  v: [string, string, Verband]
-  w: [string, string, Verband]
+  v: [string, string, Verband] | [string, string, Verband, Voeg]
+  w: [string, string, Verband] | [string, string, Verband, Voeg]
 }
+
+const afTuple = (a: Afwerking): [string, string, Verband] | [string, string, Verband, Voeg] =>
+  a.voeg && a.voeg !== 'auto' ? [a.kleur, a.formaat, a.verband, a.voeg] : [a.kleur, a.formaat, a.verband]
 
 export function compact(o: Ontwerp, k: Kamer): CompactOntwerp {
   const n = (v: number) => Math.round(v)
@@ -453,8 +497,8 @@ export function compact(o: Ontwerp, k: Kamer): CompactOntwerp {
       const t: [ItemType, number, number, number, number, number] = [it.type, n(it.x), n(it.y), n(it.w), n(it.d), n(it.rot)]
       return it.type === 'deur' && deurCode(it) ? [...t, deurCode(it)] : t
     }),
-    v: [o.vloer.kleur, o.vloer.formaat, o.vloer.verband],
-    w: [o.wand.kleur, o.wand.formaat, o.wand.verband],
+    v: afTuple(o.vloer),
+    w: afTuple(o.wand),
   }
 }
 
@@ -474,7 +518,7 @@ export function uitCompact(c: unknown): { ontwerp: Ontwerp; kamer: Kamer } | nul
     .slice(0, 80)
     .map((t, i) => (Array.isArray(t) ? normItem({ id: `i${i}`, type: t[0], x: t[1], y: t[2], w: t[3], d: t[4], rot: t[5], draai: t[6] & 1 ? 'buiten' : 'binnen', scharnier: t[6] & 2 ? 'rechts' : 'links' }) : null))
     .filter((i): i is OntwerpItem => i != null)
-  const af = (x: unknown) => (Array.isArray(x) ? { kleur: x[0], formaat: x[1], verband: x[2] } : null)
+  const af = (x: unknown) => (Array.isArray(x) ? { kleur: x[0], formaat: x[1], verband: x[2], voeg: x[3] } : null)
   const basis = leegOntwerp(type)
   return {
     kamer,

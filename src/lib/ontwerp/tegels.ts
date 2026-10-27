@@ -1,5 +1,5 @@
 /** Procedurele tegeltexturen (canvas). Wordt gebruikt voor de 2D-vloer én de 3D-wanden en -vloer. */
-import { formaatVan, kleurVan, type Afwerking, type Kleur } from './model'
+import { formaatVan, kleurVan, voegKleur, type Afwerking, type Kleur } from './model'
 
 /** Kleine, voorspelbare random-generator zodat de textuur niet verspringt bij elke render. */
 export function rng(seed: number) {
@@ -161,26 +161,44 @@ export function tekenTegels(ctx: CanvasRenderingContext2D, af: Afwerking, x0: nu
   ctx.beginPath()
   ctx.rect(x0, y0, w, h)
   ctx.clip()
-  ctx.fillStyle = k.voeg
+  ctx.fillStyle = voegKleur(af, k)
   ctx.fillRect(x0, y0, w, h)
   const spreiding = k.stijl === 'travertin' ? 0.03 : k.stijl === 'zellige' ? 0.12 : k.stijl === 'hout' ? 0.09 : k.stijl === 'marmer' ? 0.015 : 0.035
+  const tegel = (tx: number, ty: number, tw: number, th: number) => {
+    ctx.fillStyle = varieer(k.basis, (rnd() - 0.5) * 2 * spreiding)
+    if (k.stijl === 'zellige' && typeof ctx.roundRect === 'function') {
+      ctx.beginPath()
+      ctx.roundRect(tx, ty, tw, th, Math.min(tw, th) * 0.06)
+      ctx.fill()
+    } else ctx.fillRect(tx, ty, tw, th)
+    if (tw > 6 && th > 6) tegelDetail(ctx, k, tx, ty, tw, th, ppc, rnd)
+  }
+  if (af.verband === 'visgraat' && f.l !== f.b) {
+    // visgraat: om en om liggende en staande tegels in een trapvorm (90° visgraat)
+    // tegels L×S: liggend op (0,0), staand op (L, S−L); herhaald met (S,S) en (L,−L)
+    const L = tl
+    const S = tb
+    const nMin = Math.floor(-L / S) - 2
+    const nMax = Math.ceil((w + h + 2 * L) / (2 * S)) + 2
+    const mMin = Math.floor((-h - 2 * L) / (2 * L)) - 2
+    const mMax = Math.ceil((w + 2 * L) / (2 * L)) + 2
+    const binnen = (x: number, y: number, bw: number, bh: number) => x < x0 + w && y < y0 + h && x + bw > x0 && y + bh > y0
+    for (let n = nMin; n <= nMax; n++) {
+      for (let m = mMin; m <= mMax; m++) {
+        const ox = x0 + n * S + m * L
+        const oy = y0 + n * S - m * L
+        if (binnen(ox, oy, L, S)) tegel(ox + voeg / 2, oy + voeg / 2, L - voeg, S - voeg)
+        if (binnen(ox + L, oy + S - L, S, L)) tegel(ox + L + voeg / 2, oy + S - L + voeg / 2, S - voeg, L - voeg)
+      }
+    }
+    ctx.restore()
+    return
+  }
   let rij = 0
   for (let y = y0; y < y0 + h; y += tb, rij++) {
     const verschuif = af.verband === 'halfsteens' && rij % 2 === 1 ? -tl / 2 : 0
     for (let x = x0 + verschuif; x < x0 + w; x += tl) {
-      ctx.fillStyle = varieer(k.basis, (rnd() - 0.5) * 2 * spreiding)
-      const tx = x + voeg / 2
-      const ty = y + voeg / 2
-      const tw = tl - voeg
-      const th = tb - voeg
-      if (k.stijl === 'zellige') {
-        const rr = Math.min(tw, th) * 0.06
-        ctx.beginPath()
-        if (typeof ctx.roundRect === 'function') ctx.roundRect(tx, ty, tw, th, rr)
-        else ctx.rect(tx, ty, tw, th)
-        ctx.fill()
-      } else ctx.fillRect(tx, ty, tw, th)
-      if (tw > 6) tegelDetail(ctx, k, tx, ty, tw, th, ppc, rnd)
+      tegel(x + voeg / 2, y + voeg / 2, tl - voeg, tb - voeg)
     }
   }
   ctx.restore()
