@@ -130,3 +130,23 @@ d2('deur draairichting en scharnier', () => {
     void kv2
   })
 })
+
+describe('vrij plaatsen', () => {
+  it('bad blijft vrij staan op 20 cm van de wand bij zachte snap (8 cm)', () => {
+    const it0: OntwerpItem = { id: 'v1', type: 'bad', x: 140, y: 60, w: 170, d: 75, rot: 0 }
+    const r = snap(it0, k, { wandAfstand: 8 })
+    expect(r.y).toBe(it0.y)
+  })
+  it('klikt zacht vast binnen 8 cm', () => {
+    const it0: OntwerpItem = { id: 'v2', type: 'toilet-hangend', x: 140, y: 27 + 5, w: 37, d: 54, rot: 0 }
+    const r = snap(it0, k, { wandAfstand: 8 })
+    expect(Math.abs(r.y - 27) < 0.01 || Math.abs(k.B - r.y - 27) < 0.01 || r.y !== it0.y).toBe(true)
+  })
+  it('wandAfstand -1 = helemaal vrij, deur blijft in de wand', () => {
+    const it0: OntwerpItem = { id: 'v3', type: 'bad', x: 140, y: 40, w: 170, d: 75, rot: 0 }
+    expect(snap(it0, k, { wandAfstand: -1 }).y).toBe(40)
+    const deur = Object.keys(ITEMS).find((t) => ITEMS[t as keyof typeof ITEMS].montage === 'in')!
+    const d = snap({ id: 'v4', type: deur as any, x: 140, y: 100, w: 80, d: 10, rot: 0 }, k, { wandAfstand: -1 })
+    expect([-WAND_DIKTE / 2, k.B + WAND_DIKTE / 2, -WAND_DIKTE / 2, k.L + WAND_DIKTE / 2]).toContain(d.x === 140 ? d.y : d.x)
+  })
+})

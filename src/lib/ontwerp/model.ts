@@ -334,8 +334,9 @@ export function snap(it: OntwerpItem, k: Kamer, opties: { raster?: number; wandA
   const vast = (v: number, h: number, max: number, isWand: boolean) => {
     if (isWand) return v
     let n = raster(v, stap)
-    if (Math.abs(n - h) <= 8) n = h // tegen de wand
-    if (Math.abs(max - h - n) <= 8) n = max - h
+    const plak = Math.min(8, bereik) // bereik < 0 = helemaal vrij, geen aanplakken
+    if (plak >= 0 && Math.abs(n - h) <= plak) n = h // tegen de wand
+    if (plak >= 0 && Math.abs(max - h - n) <= plak) n = max - h
     return Math.min(max - h, Math.max(h, n))
   }
   const wandX = def.montage === 'aan' && (Math.abs(x - hx) < 0.5 || Math.abs(k.L - hx - x) < 0.5)

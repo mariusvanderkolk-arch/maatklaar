@@ -234,7 +234,8 @@ export function OntwerpScherm({ p }: { p: Project }) {
       const pt = naarCm(e.clientX, e.clientY)
       const basis = opgeslagen.items.find((i) => i.id === m.id)
       if (!basis) return
-      const nieuw = snap({ ...basis, x: pt.x + m.dx, y: pt.y + m.dy }, kamer)
+      // vrij bewegen: alleen zacht aanklikken tegen een wand binnen 8 cm; Shift/Alt = helemaal vrij
+      const nieuw = snap({ ...basis, x: pt.x + m.dx, y: pt.y + m.dy }, kamer, { wandAfstand: e.shiftKey || e.altKey ? -1 : 8 })
       setConcept({ ...opgeslagen, items: opgeslagen.items.map((i) => (i.id === m.id ? nieuw : i)) })
     } else if (m.soort === 'draai') {
       const it = opgeslagen.items.find((i) => i.id === m.id)
@@ -604,7 +605,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-[0.72rem] text-ink-muted">Tik om toe te voegen of sleep omhoog naar de plattegrond. Objecten klikken vast aan de wand en een raster van 5 cm.</p>
+          <p className="mt-1.5 text-[0.72rem] text-ink-muted">Tik om toe te voegen of sleep omhoog naar de plattegrond. Objecten bewegen vrij (raster 5 cm) en klikken alleen vlak bij de wand zacht vast; houd Shift ingedrukt om helemaal vrij te plaatsen. Deuren en ramen blijven in de wand.</p>
         </div>
         {sleep?.actief && (
           <div className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 opacity-80" style={{ left: sleep.x, top: sleep.y }}>
