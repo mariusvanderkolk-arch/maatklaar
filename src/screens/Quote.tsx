@@ -11,7 +11,7 @@ import { Badge, Button, Card, Notice, NumberField, Switch, TextField } from '../
 import { toast } from '../components/Toast'
 import { nieuwOffertenummer, useBedrijf } from '../lib/bedrijf'
 import { formatDatum, isoDatum, kortDatum } from '../lib/format'
-import { offerteLink } from '../lib/offerte'
+import { metVorige, offerteLink } from '../lib/offerte'
 import { maakOfferteData } from '../lib/offerteMaken'
 import { vandaag } from '../lib/planning'
 import { ga } from '../lib/router'
@@ -45,9 +45,13 @@ export function Quote({ p }: { p: Project }) {
   const ontwerp = useOntwerp(p)
   const beeld3d = use3dBeeld(p.id)
   const data = useMemo(() => maakOfferteData(p, berekening, bedrijf, datumIso, ontwerp), [p, berekening, bedrijf, ontwerp])
+  // herziene offerte: vergelijk met de laatst gedeelde tekenlink-versie (of, als die nog actueel is, met de versie daarvóór)
+  const t = of.teken
+  const weergave = useMemo(() => metVorige(data, t && !zelfdeVersie(t, data) ? t.code : t?.vorigeCode), [data, t])
 
   const deel = async () => {
-    const url = offerteLink(data)
+    const metV = offerteLink(weergave)
+    const url = metV.length < 11500 ? metV : offerteLink(data)
     setOfferte({ gedeeldOp: Date.now() })
     track('offerte_shared')
     reviewStatus.telOfferte()
@@ -68,7 +72,7 @@ export function Quote({ p }: { p: Project }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
       <div className="order-2 lg:order-1">
-        <OfferteDocument d={data} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} ondertekening={of.teken?.getekend && zelfdeVersie(of.teken, data) ? { ...of.teken.getekend, hash: of.teken.hash } : null} />
+        <OfferteDocument d={weergave} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} ondertekening={of.teken?.getekend && zelfdeVersie(of.teken, data) ? { ...of.teken.getekend, hash: of.teken.hash } : null} />
       </div>
 
       <aside className="no-print order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">

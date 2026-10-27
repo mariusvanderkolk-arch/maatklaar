@@ -7,6 +7,7 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 import { formatDatum, isoDatum } from './format'
 import { leesMeerwerkInfo } from './meerwerk'
 import type { Bedrijf } from './bedrijf'
+import { leesVorige, vatSamen } from './herzien'
 import { uitCompact, type CompactOntwerp } from './ontwerp/model'
 
 export interface OfferteData {
@@ -44,6 +45,8 @@ export interface OfferteData {
   mw?: import('./meerwerk').MeerwerkInfo
   /** ruimte-ontwerp (compact), optioneel */
   ow?: CompactOntwerp
+  /** herziene offerte: samenvatting van de vorige gedeelde versie (zie herzien.ts) */
+  vorige?: import('./herzien').VorigeVersie
 }
 
 const MAX_LINK = 12_000
@@ -110,6 +113,7 @@ export function leesOfferte(ruw: unknown): OfferteData {
     prijsTekst: str(o.prijsTekst, 400),
     ...(uitCompact(o.ow) ? { ow: o.ow as CompactOntwerp } : {}),
     ...(leesMeerwerkInfo(o.mw) ? { mw: leesMeerwerkInfo(o.mw) } : {}),
+    ...(leesVorige(o.vorige) ? { vorige: leesVorige(o.vorige) } : {}),
   }
 }
 
@@ -153,3 +157,18 @@ export const mailtoLink = (email: string, onderwerp: string, tekst: string) =>
   `mailto:${encodeURIComponent(email).replace(/%40/g, '@')}?subject=${encodeURIComponent(onderwerp)}&body=${encodeURIComponent(tekst)}`
 
 export { datumNl }
+
+/**
+ * Herziene offerte: voegt de samenvatting van de vorige gedeelde versie toe (op basis van de code die bij het delen is bewaard).
+ * Ongeldige of gelijke vorige versie → offerte ongewijzigd.
+ */
+export function metVorige(d: OfferteData, vorigeCode: string | undefined): OfferteData {
+  if (!vorigeCode || d.mw) return d
+  try {
+    const v = decodeerOfferte(vorigeCode)
+    if (codeerOfferte({ ...v, vorige: undefined }) === codeerOfferte({ ...d, vorige: undefined })) return d
+    return { ...d, vorige: vatSamen(v) }
+  } catch {
+    return d
+  }
+}

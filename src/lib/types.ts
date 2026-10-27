@@ -162,6 +162,8 @@ export interface OfferteStatus {
     eigenaarGeheim?: string
     /** link ingetrokken (ISO) */
     ingetrokkenOp?: string
+    /** herziene offerte: code van de vorige gedeelde versie (voor de vergelijking per regel) */
+    vorigeCode?: string
   }
 }
 

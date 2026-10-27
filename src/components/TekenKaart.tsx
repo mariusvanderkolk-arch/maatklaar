@@ -9,7 +9,7 @@ import { verwerkStatus, markeerGezien } from '../lib/opvolgingSync'
 import { meldingStand, vraagMeldingen } from '../lib/meldingen'
 import { geldigeTermijnen, TERMIJN_VOORSTELLEN } from '../lib/factuur'
 import { toast } from './Toast'
-import { codeerOfferte, type OfferteData } from '../lib/offerte'
+import { codeerOfferte, metVorige, type OfferteData } from '../lib/offerte'
 import { deelVoorOndertekening, FOUT_TEKST, haalTekenStatus, tekenLink, trekLinkIn } from '../lib/ondertekenen'
 import { toegangsToken } from '../lib/cloud/sync'
 import { kopieer } from '../lib/share'
@@ -86,13 +86,15 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
   const maakLink = async (): Promise<string | null> => {
     setBezig(true)
     const jwt = await toegangsToken()
-    const r = await deelVoorOndertekening(d, fetch, jwt)
+    // herziene offerte: de vorige gedeelde versie gaat als vergelijking mee
+    const vorigeCode = gewijzigd ? t!.code : t?.vorigeCode
+    const r = await deelVoorOndertekening(metVorige(d, vorigeCode), fetch, jwt)
     setBezig(false)
     if (!r.ok) {
       toast(r.fout === 'niet-beschikbaar' ? 'Digitaal tekenen is nog niet beschikbaar. Deel voorlopig de gewone offerte-link.' : FOUT_TEKST[r.fout], 'fout')
       return null
     }
-    zet({ token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot, getekend: undefined, bekekenOp: undefined, herinnerdOp: undefined, nieuwGetekend: undefined, eigenaarGeheim: r.data.owner_secret, ingetrokkenOp: undefined })
+    zet({ token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot, getekend: undefined, bekekenOp: undefined, herinnerdOp: undefined, nieuwGetekend: undefined, eigenaarGeheim: r.data.owner_secret, ingetrokkenOp: undefined, vorigeCode })
     // de vorige, niet-getekende link vervalt: klant ziet dan "nieuwe versie, vraag de nieuwste link" (stil bij fouten)
     if (t && !t.getekend && !t.ingetrokkenOp && t.token !== r.data.token) void trekLinkIn(t.token, t.eigenaarGeheim, fetch, jwt)
     return tekenLink(r.data.token)

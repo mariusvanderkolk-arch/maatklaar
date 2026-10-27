@@ -2,6 +2,40 @@ import { LogoMark } from './Logo'
 import { euro, getal } from '../lib/format'
 import { datumNl, type OfferteData } from '../lib/offerte'
 import { OntwerpSectie } from './ontwerp/OntwerpSectie'
+import { herziening, type Herziening } from '../lib/herzien'
+
+const plus = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${euro(Math.abs(n))}`
+const LABEL = 'ml-1.5 inline-block rounded px-1.5 py-px align-middle text-[0.62rem] font-semibold uppercase tracking-wider'
+export const Markering = ({ soort }: { soort: 'nieuw' | 'gewijzigd' | 'vervallen' }) => (
+  <span
+    className={`${LABEL} ${soort === 'nieuw' ? 'bg-[#e8eee4] text-[#3f5a3a]' : soort === 'gewijzigd' ? 'bg-gold-100 text-gold-700' : 'bg-sand-200 text-ink-muted'}`}
+    data-wijziging={soort}
+  >
+    {soort === 'nieuw' ? 'Nieuw' : soort === 'gewijzigd' ? 'Gewijzigd' : 'Vervallen'}
+  </span>
+)
+
+/** Samenvatting bovenaan een herziene offerte. */
+export function HerzieningKader({ h, totaal }: { h: Herziening; totaal: number }) {
+  const n = {
+    nieuw: h.mat.filter((m) => m.soort === 'nieuw').length + h.arb.filter((a) => a.soort === 'nieuw').length,
+    gewijzigd: h.mat.filter((m) => m.soort === 'gewijzigd').length + h.arb.filter((a) => a.soort === 'gewijzigd').length + (h.tariefWas !== undefined ? 1 : 0) + (h.onvWas !== undefined ? 1 : 0),
+    vervallen: h.matWeg.length + h.arbWeg.length,
+  }
+  const delen = [n.nieuw && `${n.nieuw} nieuw`, n.gewijzigd && `${n.gewijzigd} gewijzigd`, n.vervallen && `${n.vervallen} vervallen`].filter(Boolean)
+  return (
+    <section className="avoid-break mt-6 rounded-xl border border-gold-200 bg-gold-100/50 px-4 py-3 text-[0.84rem]" data-testid="herziening">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-gold-700">Herziene offerte</p>
+      <p className="mt-1 text-ink-soft">
+        Dit is een aangepaste versie van offerte {h.vorige.nr}
+        {h.vorige.datum ? ` van ${datumNl(h.vorige.datum)}` : ''}. {delen.length ? `Ten opzichte van die versie: ${delen.join(', ')} (gemarkeerd per regel).` : ''}
+      </p>
+      <p className="tabnum mt-1.5 text-ink">
+        Totaal was {euro(h.vorige.totaal)}, nu {euro(totaal)} <span className="font-semibold">({h.verschil === 0 ? 'gelijk' : plus(h.verschil)})</span>
+      </p>
+    </section>
+  )
+}
 
 /** Professionele offerteweergave; gebruikt in de app én in de alleen-lezen klantweergave. */
 export interface Ondertekening {
@@ -16,6 +50,7 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
   const b = d.bedrijf
   const heeftBedrijf = Boolean(b.naam)
   const gemengd = d.mat.some((m) => m[3])
+  const h = herziening(d)
   const contact = [b.telefoon, b.email, b.website].filter(Boolean)
   const registratie = [b.kvk && `KvK ${b.kvk}`, b.btw && `btw ${b.btw}`, b.iban && `IBAN ${b.iban}`].filter(Boolean)
   return (
@@ -102,6 +137,8 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
           </div>
         </section>
 
+        {h && <HerzieningKader h={h} totaal={d.totaal} />}
+
         {d.ow && <OntwerpSectie ow={d.ow} beeld3d={beeld3d} interactief3d={interactief3d} />}
 
         <section className="mt-8">
@@ -115,17 +152,39 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
               </tr>
             </thead>
             <tbody>
-              {d.mat.map(([oms, aantal, bedrag, vb], i) => (
-                <tr key={i} className="avoid-break border-b border-sand-200 align-top">
+              {d.mat.map(([oms, aantal, bedrag, vb], i) => {
+                const w = h?.mat[i]
+                return (
+                <tr key={i} className={`avoid-break border-b border-sand-200 align-top ${w && w.soort !== 'gelijk' ? 'bg-gold-100/40' : ''}`}>
                   <td className="py-2 pr-3">
                     <span className="font-medium text-ink">{oms.split(' · ')[0]}</span>
                     {oms.includes(' · ') && <span className="text-ink-muted"> · {oms.split(' · ').slice(1).join(' · ')}</span>}
+                    {w && w.soort !== 'gelijk' && <Markering soort={w.soort} />}
                     <span className="block text-[0.78rem] text-ink-muted sm:hidden">{aantal}</span>
+                    {w?.was && (
+                      <span className="tabnum block text-[0.74rem] text-ink-muted">
+                        Was: {[w.was.aantal !== undefined && w.was.aantal, w.was.bedrag !== undefined && `${euro(w.was.bedrag)} (${plus(bedrag - w.was.bedrag)})`].filter(Boolean).join(' · ')}
+                      </span>
+                    )}
                   </td>
                   <td className="tabnum hidden py-2 pr-3 text-right whitespace-nowrap text-ink-soft sm:table-cell">{aantal}</td>
                   <td className="tabnum py-2 text-right whitespace-nowrap">
                     {euro(bedrag)}
                     {gemengd && vb ? <span className="text-gold-600">*</span> : null}
+                  </td>
+                </tr>
+                )
+              })}
+              {h?.matWeg.map(([oms, aantal, bedrag], i) => (
+                <tr key={`weg${i}`} className="avoid-break border-b border-sand-200 align-top text-ink-muted">
+                  <td className="py-2 pr-3">
+                    <span className="line-through">{oms}</span>
+                    <Markering soort="vervallen" />
+                    <span className="block text-[0.78rem] sm:hidden">{aantal}</span>
+                  </td>
+                  <td className="tabnum hidden py-2 pr-3 text-right whitespace-nowrap line-through sm:table-cell">{aantal}</td>
+                  <td className="tabnum py-2 text-right whitespace-nowrap">
+                    <span className="line-through">{euro(bedrag)}</span>
                   </td>
                 </tr>
               ))}
@@ -155,10 +214,28 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
                 </tr>
               </thead>
               <tbody>
-                {d.arb.map(([oms, uren]) => (
-                  <tr key={oms} className="border-b border-sand-200">
-                    <td className="py-2 pr-3 text-ink">{oms}</td>
-                    <td className="tabnum py-2 text-right whitespace-nowrap text-ink-soft">{getal(uren, 1)} uur</td>
+                {d.arb.map(([oms, uren], i) => {
+                  const w = h?.arb[i]
+                  return (
+                    <tr key={oms} className={`border-b border-sand-200 ${w && w.soort !== 'gelijk' ? 'bg-gold-100/40' : ''}`}>
+                      <td className="py-2 pr-3 text-ink">
+                        {oms}
+                        {w && w.soort !== 'gelijk' && <Markering soort={w.soort} />}
+                      </td>
+                      <td className="tabnum py-2 text-right whitespace-nowrap text-ink-soft">
+                        {getal(uren, 1)} uur
+                        {w?.wasUren !== undefined && <span className="block text-[0.74rem] text-ink-muted">was {getal(w.wasUren, 1)} uur</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+                {h?.arbWeg.map(([oms, uren]) => (
+                  <tr key={`weg${oms}`} className="border-b border-sand-200 text-ink-muted">
+                    <td className="py-2 pr-3">
+                      <span className="line-through">{oms}</span>
+                      <Markering soort="vervallen" />
+                    </td>
+                    <td className="tabnum py-2 text-right whitespace-nowrap line-through">{getal(uren, 1)} uur</td>
                   </tr>
                 ))}
               </tbody>
@@ -170,6 +247,7 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
                       1,
                     )}{' '}
                     uur × {euro(d.tarief)}
+                    {h?.tariefWas !== undefined && <span className="block text-[0.74rem] font-normal text-ink-muted">uurtarief was {euro(h.tariefWas)}</span>}
                   </th>
                   <td className="tabnum pt-3 text-right font-semibold">{euro(d.arbTotaal)}</td>
                 </tr>
@@ -181,7 +259,16 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
         {d.onv && d.onv[1] > 0 && (
           <div className="avoid-break mt-6 flex items-baseline justify-between border-t border-sand-200 pt-3 text-[0.9rem]">
             <span className="text-ink-soft">Onvoorzien ({getal(d.onv[0], 1)}% stelpost over materiaal{d.arb.length ? ' en arbeid' : ''})</span>
-            <span className="tabnum font-semibold">{euro(d.onv[1])}</span>
+            <span className="tabnum font-semibold">
+              {euro(d.onv[1])}
+              {h?.onvWas !== undefined && <span className="block text-right text-[0.74rem] font-normal text-ink-muted">was {euro(h.onvWas)}</span>}
+            </span>
+          </div>
+        )}
+        {h && h.onvWas !== undefined && h.onvWas > 0 && !(d.onv && d.onv[1] > 0) && (
+          <div className="avoid-break mt-6 flex items-baseline justify-between border-t border-sand-200 pt-3 text-[0.9rem] text-ink-muted">
+            <span className="line-through">Onvoorzien</span>
+            <span className="tabnum line-through">{euro(h.onvWas)}</span>
           </div>
         )}
 
@@ -191,7 +278,10 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-gold-300">Totaal indicatief</p>
               <p className="mt-1 text-xs text-sand-300">Materialen{d.arb.length ? ' + arbeid' : ''}{d.onv?.[1] ? ' + onvoorzien' : ''} · incl. 21% btw</p>
             </div>
-            <p className="tabnum font-display text-[2.3rem] leading-none font-semibold">{euro(d.totaal)}</p>
+            <div className="text-right">
+              <p className="tabnum font-display text-[2.3rem] leading-none font-semibold">{euro(d.totaal)}</p>
+              {h && h.verschil !== 0 && <p className="tabnum mt-1 text-xs text-sand-300">vorige versie {euro(h.vorige.totaal)} ({plus(h.verschil)})</p>}
+            </div>
           </div>
         </section>
 
