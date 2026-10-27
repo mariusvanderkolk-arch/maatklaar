@@ -37,6 +37,10 @@ import { bewaarOntwerp, ontwerpStore, useOntwerp } from '../lib/ontwerp/store'
 import { vloerAfbeelding } from '../lib/ontwerp/tegels'
 import { webglBeschikbaar } from '../lib/ontwerp/webgl'
 import { bewaar3dBeeld, use3dBeeld } from '../lib/ontwerp/beeld'
+import type { Standpunt } from '../lib/ontwerp/scene3d'
+
+const STANDPUNT_NAAM: Record<Standpunt, string> = { overzicht: 'Overzicht', deur: 'Vanuit de deur', douche: 'Douchehoek', bad: 'Badhoek' }
+type Shot = { sp: Standpunt; url: string }
 
 const Ontwerp3D = laadLater(() => import('../components/ontwerp/Ontwerp3D').then((m) => m.Ontwerp3D))
 
@@ -384,6 +388,43 @@ export function OntwerpScherm({ p }: { p: Project }) {
     toast(ok ? '3D-beeld staat nu op de offerte' : 'Opslaan van het 3D-beeld lukte niet in deze browser', ok ? 'ok' : 'fout')
   }
 
+  // ——— impressie: vaste mooie camerastandpunten uit de eigen 3D (klopt 1-op-1 met de plattegrond) ———
+  const [shots, setShots] = useState<Shot[] | null>(null)
+  const [keuze, setKeuze] = useState(0)
+  const [bezig, setBezig] = useState(false)
+  const maakImpressie = async () => {
+    setBezig(true)
+    try {
+      if (weergave !== '3d') setWeergave('3d')
+      let api = api3d.current
+      for (let i = 0; !api && i < 60; i++) {
+        await new Promise((r) => setTimeout(r, 100))
+        api = api3d.current
+      }
+      if (!api) return toast('3D kon niet worden geladen', 'fout')
+      await new Promise((r) => setTimeout(r, 250)) // texturen laten opbouwen
+      const uit: Shot[] = []
+      for (const sp of api.standpunten()) {
+        const url = api.impressie(sp, 2400, 1600)
+        if (url) uit.push({ sp, url })
+        await new Promise((r) => setTimeout(r, 0))
+      }
+      setKeuze(0)
+      setShots(uit)
+    } catch (e) {
+      toast((e as Error).message || 'Impressie maken mislukt', 'fout')
+    } finally {
+      setBezig(false)
+    }
+  }
+  const impressieOpOfferte = async () => {
+    const s = shots?.[keuze]
+    if (!s) return
+    const ok = await bewaar3dBeeld(p.id, s.url)
+    toast(ok ? 'Impressie staat nu op de offerte' : 'Opslaan lukte niet in deze browser', ok ? 'ok' : 'fout')
+    if (ok) setShots(null)
+  }
+
   const voorstel = () => {
     const items = voorstelIndeling(p, uid)
     commit({ ...ontwerp, items })
@@ -618,10 +659,13 @@ export function OntwerpScherm({ p }: { p: Project }) {
               </Button>
               {webgl && (
                 <>
+                  <Button variant="gold" icon={<Sparkles className="h-4 w-4" />} onClick={maakImpressie} disabled={bezig || leeg}>
+                    {bezig ? 'Impressie maken…' : 'Maak impressie'}
+                  </Button>
                   <Button variant="secondary" icon={<Download className="h-4 w-4" />} onClick={exporteer3d} disabled={weergave !== '3d'}>
                     3D-beeld als PNG
                   </Button>
-                  <Button variant="gold" icon={<FileImage className="h-4 w-4" />} onClick={weergave === '3d' ? legVast3d : () => setWeergave('3d')}>
+                  <Button variant="secondary" icon={<FileImage className="h-4 w-4" />} onClick={weergave === '3d' ? legVast3d : () => setWeergave('3d')}>
                     {weergave === '3d' ? 'Dit 3D-beeld op de offerte' : '3D openen voor de offerte'}
                   </Button>
                 </>
@@ -635,6 +679,42 @@ export function OntwerpScherm({ p }: { p: Project }) {
           </div>
         </Card>
       </aside>
+      {shots && (
+        <div role="dialog" aria-modal="true" aria-label="Impressie" className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-3 sm:p-6" onClick={() => setShots(null)}>
+          <div className="max-h-full w-full max-w-5xl overflow-auto rounded-2xl bg-paper p-4 shadow-xl sm:p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">Impressie</h2>
+                <p className="text-sm text-ink-muted">Gemaakt uit jouw plattegrond — maten, meubels en tegels kloppen precies.</p>
+              </div>
+              <Button variant="secondary" onClick={() => setShots(null)}>Sluiten</Button>
+            </div>
+            {shots.length === 0 ? (
+              <p className="text-sm text-ink-muted">Geen impressie gemaakt.</p>
+            ) : (
+              <>
+                <img src={shots[keuze].url} alt={`Impressie: ${STANDPUNT_NAAM[shots[keuze].sp]}`} className="w-full rounded-xl ring-1 ring-sand-300" />
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {shots.map((s, i) => (
+                    <button key={s.sp} type="button" onClick={() => setKeuze(i)} className={`overflow-hidden rounded-lg text-left ring-2 transition ${i === keuze ? 'ring-gold-500' : 'ring-transparent hover:ring-sand-300'}`}>
+                      <img src={s.url} alt="" className="aspect-[3/2] w-full object-cover" />
+                      <span className="block px-2 py-1 text-xs font-medium">{STANDPUNT_NAAM[s.sp]}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-wrap justify-end gap-2">
+                  <Button variant="secondary" icon={<Download className="h-4 w-4" />} onClick={() => downloadDataUrl(bestandsnaam(p, `impressie-${shots[keuze].sp}`).replace(/\.png$/, '.jpg'), shots[keuze].url)}>
+                    Downloaden
+                  </Button>
+                  <Button variant="gold" icon={<FileImage className="h-4 w-4" />} onClick={impressieOpOfferte}>
+                    Deze op de offerte
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

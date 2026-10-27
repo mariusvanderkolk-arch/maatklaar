@@ -514,8 +514,15 @@ export interface Viewer {
   zet(k: Kamer, o: Ontwerp): void
   foto(breedte?: number, hoogte?: number, type?: 'image/png' | 'image/jpeg'): string
   herstelCamera(): void
+  /** Mooie vaste camerastandpunten met beter licht; geeft een data-URL (of null als het standpunt niet bestaat). */
+  impressie(standpunt: Standpunt, breedte: number, hoogte: number, type?: 'image/png' | 'image/jpeg'): string | null
+  /** Welke standpunten in dit ontwerp mogelijk zijn. */
+  standpunten(): Standpunt[]
   vernietig(): void
 }
+
+export type Standpunt = 'overzicht' | 'deur' | 'douche' | 'bad'
+export const STANDPUNT_NAAM: Record<Standpunt, string> = { overzicht: 'Overzicht', deur: 'Vanuit de deur', douche: 'Douchehoek', bad: 'Badhoek' }
 
 export function maakViewer(houder: HTMLElement): Viewer {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' })
@@ -573,6 +580,7 @@ export function maakViewer(houder: HTMLElement): Viewer {
   let wanden: WandObj[] = []
   let wandItems: { obj: THREE.Object3D; wand: Wand }[] = []
   let kamer: Kamer | null = null
+  let ontwerpNu: Ontwerp | null = null
   let camAangeraakt = false
   controls.addEventListener('start', () => (camAangeraakt = true))
   let extraTex: THREE.Texture[] = []
@@ -670,6 +678,7 @@ export function maakViewer(houder: HTMLElement): Viewer {
   function zet(k: Kamer, o: Ontwerp) {
     const eerste = !kamer || kamer.L !== k.L || kamer.B !== k.B
     kamer = k
+    ontwerpNu = o
     scene.remove(inhoud)
     ruimOp(inhoud)
     for (const w of wanden) {
@@ -769,6 +778,110 @@ export function maakViewer(houder: HTMLElement): Viewer {
     return url
   }
 
+  const vindItem = (types: string[]) => ontwerpNu?.items.find((it) => types.includes(it.type)) ?? null
+
+  function standpunten(): Standpunt[] {
+    const uit: Standpunt[] = ['overzicht', 'deur']
+    if (vindItem(['douche-inloop', 'douche-cabine'])) uit.push('douche')
+    if (vindItem(['bad', 'bad-vrijstaand'])) uit.push('bad')
+    return uit
+  }
+
+  /** Zet camera voor een standpunt (zonder OrbitControls-begrenzing). Geeft false als niet mogelijk. */
+  function zetStandpunt(sp: Standpunt, aspect: number): boolean {
+    if (!kamer) return false
+    const L = kamer.L * M
+    const B = kamer.B * M
+    const H = kamer.H * M
+    const marge = 0.22
+    const binnen = (v: THREE.Vector3) => v.set(THREE.MathUtils.clamp(v.x, marge, L - marge), v.y, THREE.MathUtils.clamp(v.z, marge, B - marge))
+    const oog = Math.min(1.6, H * 0.68)
+    const midden = new THREE.Vector3(L / 2, 0, B / 2)
+    if (sp === 'overzicht') {
+      camera.fov = 34
+      camera.aspect = aspect
+      camera.updateProjectionMatrix()
+      const doel = new THREE.Vector3(L / 2, H * 0.3, B / 2)
+      const sph = new THREE.Spherical(pasAfstand(aspect) * 0.98, THREE.MathUtils.degToRad(48), THREE.MathUtils.degToRad(32))
+      camera.position.copy(new THREE.Vector3().setFromSpherical(sph).add(doel))
+      camera.lookAt(doel)
+      return true
+    }
+    let pos: THREE.Vector3
+    let doel: THREE.Vector3
+    if (sp === 'deur') {
+      const d = vindItem(['deur'])
+      const dp = d ? new THREE.Vector3(d.x * M, 0, d.y * M) : new THREE.Vector3(L * 0.5, 0, B)
+      const richting = midden.clone().sub(dp).setY(0).normalize()
+      // net buiten de deuropening: die wand wordt laag getekend, zo zie je de hele ruimte
+      pos = dp.clone().addScaledVector(richting, -0.7)
+      pos.y = oog
+      // kijk naar het punt in de kamer het verst van de deur, iets onder ooghoogte
+      doel = binnen(dp.clone().addScaledVector(richting, Math.hypot(L, B)))
+      doel.lerp(midden, 0.35)
+      doel.y = H * 0.4
+    } else {
+      const it = vindItem(sp === 'douche' ? ['douche-inloop', 'douche-cabine'] : ['bad', 'bad-vrijstaand'])
+      if (!it) return false
+      const ip = new THREE.Vector3(it.x * M, 0, it.y * M)
+      // camera in de hoek die het verst van het item ligt
+      const hoeken = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(L, 0, 0), new THREE.Vector3(0, 0, B), new THREE.Vector3(L, 0, B)]
+      hoeken.sort((a, b) => b.distanceTo(ip) - a.distanceTo(ip))
+      pos = hoeken[0].clone().add(hoeken[0].clone().sub(midden).setY(0).normalize().multiplyScalar(0.6))
+      pos.y = oog
+      doel = ip.clone()
+      doel.y = sp === 'douche' ? H * 0.42 : 0.55
+    }
+    camera.fov = aspect >= 1 ? 50 : 62
+    camera.aspect = aspect
+    camera.updateProjectionMatrix()
+    camera.position.copy(pos)
+    camera.lookAt(doel)
+    return true
+  }
+
+  function impressie(sp: Standpunt, breedte: number, hoogte: number, type: 'image/png' | 'image/jpeg' = 'image/jpeg') {
+    if (!kamer) return null
+    const oud = new THREE.Vector2()
+    renderer.getSize(oud)
+    const ratio = renderer.getPixelRatio()
+    const bewaard = { pos: camera.position.clone(), q: camera.quaternion.clone(), fov: camera.fov, aspect: camera.aspect }
+    const licht = { exp: renderer.toneMappingExposure, envI: scene.environmentIntensity, hemi: hemi.intensity, zon: zon.intensity, binnen: binnenLicht.intensity, bg: (scene.background as THREE.Color).clone() }
+    const binnenOog = sp !== 'overzicht'
+    renderer.setPixelRatio(1)
+    renderer.setSize(breedte, hoogte, false)
+    let url: string | null = null
+    if (zetStandpunt(sp, breedte / hoogte)) {
+      // impressie-licht: helderder, zachter, warmer 'plafondlicht'
+      renderer.toneMappingExposure = binnenOog ? 0.9 : 0.92
+      scene.environmentIntensity = 0.55
+      hemi.intensity = 0.75
+      zon.intensity = 1.8
+      binnenLicht.intensity = binnenOog ? 1.4 : 1.2
+      ;(scene.background as THREE.Color).set('#F3ECE1')
+      werkWandenBij()
+      renderer.render(scene, camera)
+      url = renderer.domElement.toDataURL(type, 0.92)
+    }
+    renderer.toneMappingExposure = licht.exp
+    scene.environmentIntensity = licht.envI
+    hemi.intensity = licht.hemi
+    zon.intensity = licht.zon
+    binnenLicht.intensity = licht.binnen
+    ;(scene.background as THREE.Color).copy(licht.bg)
+    camera.position.copy(bewaard.pos)
+    camera.quaternion.copy(bewaard.q)
+    camera.fov = bewaard.fov
+    renderer.setPixelRatio(ratio)
+    renderer.setSize(oud.x, oud.y, false)
+    camera.aspect = oud.x / oud.y
+    camera.updateProjectionMatrix()
+    controls.update()
+    werkWandenBij()
+    renderer.render(scene, camera)
+    return url
+  }
+
   function vernietig() {
     ro?.disconnect()
     controls.dispose()
@@ -782,5 +895,5 @@ export function maakViewer(houder: HTMLElement): Viewer {
     renderer.domElement.remove()
   }
 
-  return { zet, foto, herstelCamera, vernietig }
+  return { zet, foto, herstelCamera, impressie, standpunten, vernietig }
 }

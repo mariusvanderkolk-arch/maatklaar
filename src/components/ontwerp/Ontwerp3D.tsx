@@ -1,11 +1,13 @@
 /** React-omhulsel voor de 3D-weergave (three.js). Lazy geladen: alleen op het 3D-tabblad. */
 import { useEffect, useRef, useState } from 'react'
 import type { Kamer, Ontwerp } from '../../lib/ontwerp/model'
-import { maakViewer, type Viewer } from '../../lib/ontwerp/scene3d'
+import { maakViewer, type Standpunt, type Viewer } from '../../lib/ontwerp/scene3d'
 
 export interface Api3D {
   foto(breedte?: number, hoogte?: number, type?: 'image/png' | 'image/jpeg'): string
   herstelCamera(): void
+  impressie(standpunt: Standpunt, breedte: number, hoogte: number): string | null
+  standpunten(): Standpunt[]
 }
 
 export function Ontwerp3D({ kamer, ontwerp, onApi, onFout, className = '' }: { kamer: Kamer; ontwerp: Ontwerp; onApi?: (api: Api3D | null) => void; onFout?: (melding: string) => void; className?: string }) {
@@ -17,7 +19,7 @@ export function Ontwerp3D({ kamer, ontwerp, onApi, onFout, className = '' }: { k
     if (!houder.current) return
     try {
       viewer.current = maakViewer(houder.current)
-      onApi?.({ foto: (b, h, t) => viewer.current?.foto(b, h, t) ?? '', herstelCamera: () => viewer.current?.herstelCamera() })
+      onApi?.({ foto: (b, h, t) => viewer.current?.foto(b, h, t) ?? '', herstelCamera: () => viewer.current?.herstelCamera(), impressie: (s, b, h) => viewer.current?.impressie(s, b, h) ?? null, standpunten: () => viewer.current?.standpunten() ?? [] })
     } catch (e) {
       const m = `3D kon niet starten: ${(e as Error)?.message ?? e}`
       setFout(m)
