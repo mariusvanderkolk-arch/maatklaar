@@ -38,6 +38,7 @@ import { bewaarOntwerp, ontwerpStore, useOntwerp } from '../lib/ontwerp/store'
 import { vloerAfbeelding } from '../lib/ontwerp/tegels'
 import { webglBeschikbaar } from '../lib/ontwerp/webgl'
 import { bewaar3dBeeld, use3dBeeld } from '../lib/ontwerp/beeld'
+import { maakAiImpressie, maakFilmpje } from '../lib/ontwerp/aiImpressie'
 import type { Standpunt } from '../lib/ontwerp/scene3d'
 
 const STANDPUNT_NAAM: Record<Standpunt, string> = { overzicht: 'Overzicht', deur: 'Vanuit de deur', douche: 'Douchehoek', bad: 'Badhoek' }
@@ -433,10 +434,46 @@ export function OntwerpScherm({ p }: { p: Project }) {
       setBezig(false)
     }
   }
+  // ——— AI-impressie (fotorealistisch, via Gemini) en kort filmpje (op het toestel) ———
+  const [ai, setAi] = useState<Record<string, string>>({})
+  const [aiBezig, setAiBezig] = useState(false)
+  const [aiAkkoord, setAiAkkoord] = useState(false)
+  const [film, setFilm] = useState<{ sp: string; url: string; ext: string } | null>(null)
+  const [filmBezig, setFilmBezig] = useState(false)
+  const huidigAi = shots?.[keuze] ? ai[shots[keuze].sp] : undefined
+  const maakAi = async () => {
+    const s = shots?.[keuze]
+    if (!s) return
+    setAiBezig(true)
+    try {
+      const beschrijving = JSON.stringify({ ruimte: p.type, maten_cm: { L: kamer.L, B: kamer.B, H: kamer.H }, vloer: ontwerp.vloer, wand: ontwerp.wand, sanitair: ontwerp.sanitair, objecten: ontwerp.items.map((i) => i.type) })
+      const r = await maakAiImpressie(s.url, beschrijving)
+      if (r.ok) setAi((a) => ({ ...a, [s.sp]: r.beeld }))
+      else toast(r.melding, 'fout')
+    } finally {
+      setAiBezig(false)
+    }
+  }
+  const maakFilm = async () => {
+    const s = shots?.[keuze]
+    const bron = s && (ai[s.sp] ?? s.url)
+    if (!s || !bron) return
+    setFilmBezig(true)
+    try {
+      const blob = await maakFilmpje(bron)
+      if (!blob) return toast('Filmpje maken lukt niet in deze browser', 'fout')
+      if (film) URL.revokeObjectURL(film.url)
+      setFilm({ sp: s.sp, url: URL.createObjectURL(blob), ext: blob.type.includes('mp4') ? 'mp4' : 'webm' })
+    } catch {
+      toast('Filmpje maken mislukt', 'fout')
+    } finally {
+      setFilmBezig(false)
+    }
+  }
   const impressieOpOfferte = async () => {
     const s = shots?.[keuze]
     if (!s) return
-    const ok = await bewaar3dBeeld(p.id, s.url)
+    const ok = await bewaar3dBeeld(p.id, ai[s.sp] ?? s.url)
     toast(ok ? 'Impressie staat nu op de offerte' : 'Opslaan lukte niet in deze browser', ok ? 'ok' : 'fout')
     if (ok) setShots(null)
   }
@@ -715,7 +752,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Impressie</h2>
-                <p className="text-sm text-ink-muted">Gemaakt uit jouw plattegrond — maten, meubels en tegels kloppen precies.</p>
+                <p className="text-sm text-ink-muted">Gemaakt uit jouw plattegrond — maten, meubels en tegels kloppen precies. De AI-versie is een impressie en kan licht afwijken.</p>
               </div>
               <Button variant="secondary" onClick={() => setShots(null)}>Sluiten</Button>
             </div>
@@ -723,17 +760,40 @@ export function OntwerpScherm({ p }: { p: Project }) {
               <p className="text-sm text-ink-muted">Geen impressie gemaakt.</p>
             ) : (
               <>
-                <img src={shots[keuze].url} alt={`Impressie: ${STANDPUNT_NAAM[shots[keuze].sp]}`} className="w-full rounded-xl ring-1 ring-sand-300" />
+                <div className="relative">
+                  <img src={huidigAi ?? shots[keuze].url} alt={`Impressie: ${STANDPUNT_NAAM[shots[keuze].sp]}`} className="w-full rounded-xl ring-1 ring-sand-300" />
+                  {huidigAi && <span className="absolute bottom-2 left-2 rounded-md bg-ink/70 px-2 py-1 text-xs font-medium text-white">AI-impressie · kan licht afwijken</span>}
+                  {aiBezig && <div className="absolute inset-0 grid place-items-center rounded-xl bg-ink/40 text-sm font-semibold text-white">Fotorealistisch beeld maken… (±15–30 s)</div>}
+                </div>
+                {film?.sp === shots[keuze].sp && <video src={film.url} controls autoPlay loop muted playsInline className="mt-3 w-full rounded-xl ring-1 ring-sand-300" />}
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {shots.map((s, i) => (
                     <button key={s.sp} type="button" onClick={() => setKeuze(i)} className={`overflow-hidden rounded-lg text-left ring-2 transition ${i === keuze ? 'ring-gold-500' : 'ring-transparent hover:ring-sand-300'}`}>
-                      <img src={s.url} alt="" className="aspect-[3/2] w-full object-cover" />
+                      <img src={ai[s.sp] ?? s.url} alt="" className="aspect-[3/2] w-full object-cover" />
                       <span className="block px-2 py-1 text-xs font-medium">{STANDPUNT_NAAM[s.sp]}</span>
                     </button>
                   ))}
                 </div>
+                <div className="mt-4 rounded-xl bg-gold-100/50 px-3.5 py-3 text-[0.8rem] ring-1 ring-gold-300">
+                  <p className="font-semibold text-ink">Epic maken met AI</p>
+                  <p className="mt-0.5 text-ink-soft">Maakt van dit beeld een fotorealistische foto. Het is een impressie: details kunnen licht afwijken van de plattegrond. Het 3D-beeld (zonder klantgegevens) gaat daarvoor naar Google Gemini; er wordt niets bewaard.</p>
+                  {!aiAkkoord ? (
+                    <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={aiAkkoord} onChange={(e) => setAiAkkoord(e.target.checked)} /> Akkoord, verstuur het beeld naar de AI-dienst</label>
+                  ) : null}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button size="sm" variant="gold" icon={<Sparkles className="h-4 w-4" />} onClick={maakAi} disabled={!aiAkkoord || aiBezig}>
+                      {aiBezig ? 'Bezig…' : huidigAi ? 'Opnieuw (AI)' : 'Fotorealistisch (AI)'}
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={maakFilm} disabled={filmBezig || aiBezig}>
+                      {filmBezig ? 'Filmpje maken… (8 s)' : 'Kort filmpje'}
+                    </Button>
+                    {film?.sp === shots[keuze].sp && (
+                      <a className="inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium underline" href={film.url} download={bestandsnaam(p, `impressie-${film.sp}`).replace(/\.png$/, `.${film.ext}`)}>Filmpje downloaden</a>
+                    )}
+                  </div>
+                </div>
                 <div className="mt-4 flex flex-wrap justify-end gap-2">
-                  <Button variant="secondary" icon={<Download className="h-4 w-4" />} onClick={() => downloadDataUrl(bestandsnaam(p, `impressie-${shots[keuze].sp}`).replace(/\.png$/, '.jpg'), shots[keuze].url)}>
+                  <Button variant="secondary" icon={<Download className="h-4 w-4" />} onClick={() => downloadDataUrl(bestandsnaam(p, `impressie-${shots[keuze].sp}${huidigAi ? '-ai' : ''}`).replace(/\.png$/, huidigAi ? '.png' : '.jpg'), huidigAi ?? shots[keuze].url)}>
                     Downloaden
                   </Button>
                   <Button variant="gold" icon={<FileImage className="h-4 w-4" />} onClick={impressieOpOfferte}>

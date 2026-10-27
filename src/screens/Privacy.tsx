@@ -24,7 +24,7 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
   {
     titel: 'Andere diensten',
     tekst:
-      'De app staat op GitHub Pages. Kies je zelf voor AI-fotoanalyse, dan gaan alleen de foto’s die jij laat analyseren naar de AI-dienst die je instelt, met je eigen sleutel. Wie een offerte-link heeft, kan die offerte zien. Offerte-links verlopen: niet getekend na 90 dagen, getekend na 365 dagen; daarna worden ze gewist.',
+      'De app staat op GitHub Pages. Kies je zelf voor AI-fotoanalyse, dan gaan alleen de foto’s die jij laat analyseren naar de AI-dienst die je instelt, met je eigen sleutel. Kies je in Ontwerp voor een AI-impressie, dan gaat alleen dat 3D-beeld van het ontwerp (zonder namen of adressen) via onze server naar Google Gemini om er een fotorealistisch beeld van te maken; wij bewaren het niet. Het filmpje wordt op je eigen toestel gemaakt. Wie een offerte-link heeft, kan die offerte zien. Offerte-links verlopen: niet getekend na 90 dagen, getekend na 365 dagen; daarna worden ze gewist.',
   },
   {
     titel: 'Verwijderen en meenemen',
