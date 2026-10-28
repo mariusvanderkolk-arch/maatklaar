@@ -27,12 +27,19 @@ grant usage on sequence public.events_id_seq to anon, authenticated;
 drop policy if exists events_insert_only on public.events;
 create policy events_insert_only on public.events for insert to anon, authenticated with check (
   name in ('page_view','project_created','offerte_shared','offerte_printed','factuur_created','design_opened',
-           'chat_opened','chat_question_unanswered','feedback_opened','signup','review_submitted')
+           'chat_opened','chat_question_unanswered','feedback_opened','signup','review_submitted',
+           'opmeten_gestart','maat_ingevuld','offerte_bekeken','snelstart_gestart','snelstart_offerte_klaar')
   and coalesce(length(path), 0) <= 100
   and coalesce(length(referrer_host), 0) <= 100
   and coalesce(length(session), 0) <= 16
   and coalesce(length(detail), 0) <= 120
-  and (detail is null or name = 'chat_question_unanswered')
+  -- detail: alleen vrije (geanonimiseerde) tekst bij onbeantwoorde chatvragen; verder uitsluitend vaste woorden.
+  and (detail is null
+    or name = 'chat_question_unanswered'
+    or (name = 'maat_ingevuld' and detail in ('lengte','breedte','hoogte','tegelhoogte','spatwand','opening','overig'))
+    or (name = 'snelstart_offerte_klaar' and detail in ('ai','regels'))
+    or (name = 'offerte_shared' and detail in ('whatsapp','herinnering','ingetrokken'))
+    or (name = 'factuur_created' and detail in ('na_tekenen')))
 );
 -- Geen SELECT-policy: niemand kan events via de API lezen.
 
@@ -54,6 +61,9 @@ begin
     'inapp', (select count(distinct session) from e where inapp),
     'top_paden', coalesce((select jsonb_agg(jsonb_build_object('pad', path, 'n', n)) from (select path, count(*) n from e where name = 'page_view' group by path order by n desc limit 10) x), '[]'::jsonb),
     'top_bronnen', coalesce((select jsonb_agg(jsonb_build_object('bron', referrer_host, 'n', n)) from (select referrer_host, count(*) n from e where referrer_host is not null group by referrer_host order by n desc limit 5) x), '[]'::jsonb),
+    -- funnel: aantal unieke dagsessies per stap (eerste minuut)
+    'funnel', coalesce((select jsonb_object_agg(name, n) from (select name, count(distinct (session, (created_at at time zone 'Europe/Amsterdam')::date)) n from e
+       where session is not null and name in ('page_view','project_created','opmeten_gestart','maat_ingevuld','offerte_bekeken','offerte_shared','snelstart_gestart','snelstart_offerte_klaar') group by name) x), '{}'::jsonb),
     'onbeantwoord', coalesce((select jsonb_agg(jsonb_build_object('vraag', d, 'n', n)) from (select lower(detail) d, count(*) n from e where name = 'chat_question_unanswered' and detail is not null group by lower(detail) order by n desc limit 10) x), '[]'::jsonb)
   ) into r;
   return r;

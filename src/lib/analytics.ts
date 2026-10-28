@@ -9,8 +9,20 @@ import { TEST_MODUS } from './modus'
 export const EVENT_NAMEN = [
   'page_view', 'project_created', 'offerte_shared', 'offerte_printed', 'factuur_created', 'design_opened',
   'chat_opened', 'chat_question_unanswered', 'feedback_opened', 'signup', 'review_submitted',
+  // funnel (eerste minuut): één keer per sessie per project-weergave, zonder ID's of waarden
+  'opmeten_gestart', 'maat_ingevuld', 'offerte_bekeken', 'snelstart_gestart', 'snelstart_offerte_klaar',
 ] as const
 export type EventNaam = (typeof EVENT_NAMEN)[number]
+
+/** Funnel-events tellen we hoogstens één keer per paginasessie, zodat het weekoverzicht 'mensen' telt en geen klikken. */
+export const FUNNEL_EVENTS: readonly EventNaam[] = ['opmeten_gestart', 'maat_ingevuld', 'offerte_bekeken', 'snelstart_gestart', 'snelstart_offerte_klaar']
+/** Vaste, niet-persoonlijke detailwaarden per event (alles anders wordt weggegooid). Spiegel van de RLS-policy. */
+export const VASTE_DETAILS: Partial<Record<EventNaam, readonly string[]>> = {
+  maat_ingevuld: ['lengte', 'breedte', 'hoogte', 'tegelhoogte', 'spatwand', 'opening', 'overig'],
+  snelstart_offerte_klaar: ['ai', 'regels'],
+  offerte_shared: ['whatsapp', 'herinnering', 'ingetrokken'],
+  factuur_created: ['na_tekenen'],
+}
 
 export interface Event {
   site: 'main' | 'test'
@@ -58,6 +70,13 @@ export function anonimiseer(t: string): string {
     .slice(0, 120)
 }
 
+function detailVoor(name: EventNaam, d: string | undefined): string | null {
+  if (!d) return null
+  if (name === 'chat_question_unanswered') return anonimiseer(d)
+  const vast = VASTE_DETAILS[name]
+  return vast?.includes(d) ? d : null
+}
+
 function sessie(): string | null {
   const dag = new Date(omg.nu()).toISOString().slice(0, 10)
   const k = 'mk-sessie'
@@ -92,12 +111,12 @@ function basis(): Pick<Event, 'site' | 'referrer_host' | 'device' | 'inapp'> {
 export function track(name: EventNaam, opts: { path?: string; detail?: string } = {}) {
   if (!omg.actief || omg.dnt || kapot) return
   try {
-    if (name === 'page_view') {
-      const s = `pv:${opts.path ?? ''}`
+    if (name === 'page_view' || FUNNEL_EVENTS.includes(name)) {
+      const s = name === 'page_view' ? `pv:${opts.path ?? ''}` : `f:${name}`
       if (gezien.has(s)) return
       gezien.add(s)
     }
-    rij.push({ ...basis(), name, path: kort(opts.path ?? null, 100), session: sessie(), detail: opts.detail ? anonimiseer(opts.detail) : null })
+    rij.push({ ...basis(), name, path: kort(opts.path ?? null, 100), session: sessie(), detail: detailVoor(name, opts.detail) })
     if (rij.length >= 20) flush()
     else if (!timer) timer = setTimeout(flush, 3000)
   } catch {

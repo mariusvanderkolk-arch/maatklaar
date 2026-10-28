@@ -1,6 +1,7 @@
+import { track } from '../lib/analytics'
 import { InsprekenKnop } from '../components/Inspreken'
 import { pasInspraakToe } from '../lib/inspraak'
-import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { AppWindow, ScanLine, CookingPot, DoorOpen, Layers, LayoutGrid, Plus, Ruler, Settings2, ShowerHead, Trash2 } from 'lucide-react'
 import { Fotos } from '../components/Fotos'
 
@@ -50,7 +51,12 @@ export function Measure({ p }: { p: Project }) {
   const { oppervlakken: o } = useBerekening(p)
   const a = p.afmetingen
   const upd = (f: (x: Project) => Project) => projectStore.werkBij(p.id, f)
-  const setA = (patch: Partial<Afmetingen>) => upd((x) => ({ ...x, afmetingen: { ...x.afmetingen, ...patch } }))
+  useEffect(() => track('opmeten_gestart'), [])
+  const setA = (patch: Partial<Afmetingen>) => {
+    const k = Object.keys(patch)[0]
+    track('maat_ingevuld', { detail: k === 'openingen' ? 'opening' : ['lengte', 'breedte', 'hoogte', 'tegelhoogte', 'spatwand'].includes(k) ? k : 'overig' })
+    upd((x) => ({ ...x, afmetingen: { ...x.afmetingen, ...patch } }))
+  }
   const setOpening = (id: string, patch: Partial<Opening>) =>
     setA({ openingen: a.openingen.map((op) => (op.id === id ? { ...op, ...patch } : op)) })
   const nieuweOpening = (type: Opening['type']) =>

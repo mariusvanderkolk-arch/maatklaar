@@ -35,6 +35,7 @@ export function Quote({ p }: { p: Project }) {
   const metArbeid = of.metArbeid ?? true
   const setOfferte = (patch: Partial<OfferteStatus>) => projectStore.werkBij(p.id, (x) => ({ ...x, offerte: { ...x.offerte, ...patch } }))
 
+  useEffect(() => track('offerte_bekeken'), [])
   // Eén keer een offertenummer en -datum toekennen.
   useEffect(() => {
     const actueel = projectStore.alle().find((x) => x.id === p.id)

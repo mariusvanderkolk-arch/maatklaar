@@ -1,3 +1,4 @@
+import { SnelstartKnop } from '../components/Snelstart'
 import { VeiligVideo } from '../components/VeiligVideo'
 import { VEILIG_PUNTEN } from '../lib/veiligheid'
 import { Welkom } from '../components/Welkom'
@@ -98,7 +99,8 @@ export function Home() {
                 ))}
               </ol>
               <div className="mt-6 flex flex-wrap gap-2.5">
-                <Button size="lg" className="w-full sm:w-auto" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
+                <SnelstartKnop className="w-full sm:w-auto" />
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
                   Bekijk hoe het werkt
                 </Button>
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>

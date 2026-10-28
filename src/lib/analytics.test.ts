@@ -50,3 +50,27 @@ describe('analytics', () => {
     expect(padVoor({ naam: 'home' })).toBe('/')
   })
 })
+
+describe('funnel-events', () => {
+  it('telt funnel-events één keer per sessie en laat alleen vaste details door', async () => {
+    _zetOmgeving({ actief: true, dnt: false, fetch: okFetch() })
+    track('opmeten_gestart'); track('opmeten_gestart')
+    track('maat_ingevuld', { detail: 'lengte' }); track('maat_ingevuld', { detail: 'breedte' })
+    track('offerte_bekeken')
+    track('snelstart_gestart')
+    track('snelstart_offerte_klaar', { detail: 'jan@x.nl Badkamer Jansen' })
+    track('offerte_shared', { detail: 'whatsapp' })
+    track('offerte_shared', { detail: 'Familie de Vries' })
+    flush(); await wacht()
+    const b = calls[0].body as Record<string, unknown>[]
+    expect(b.map((e) => e.name)).toEqual(['opmeten_gestart', 'maat_ingevuld', 'offerte_bekeken', 'snelstart_gestart', 'snelstart_offerte_klaar', 'offerte_shared', 'offerte_shared'])
+    expect(b.map((e) => e.detail)).toEqual([null, 'lengte', null, null, null, 'whatsapp', null])
+    for (const e of b) expect(Object.keys(e).sort()).toEqual(['detail', 'device', 'inapp', 'name', 'path', 'referrer_host', 'session', 'site'])
+  })
+  it('EVENT_NAMEN en VASTE_DETAILS komen overeen met de RLS-policy in supabase/analytics.sql', async () => {
+    const { EVENT_NAMEN, VASTE_DETAILS } = await import('./analytics')
+    const sql = (await import('../../supabase/analytics.sql?raw')).default
+    for (const n of EVENT_NAMEN) expect(sql).toContain(`'${n}'`)
+    for (const [n, ws] of Object.entries(VASTE_DETAILS)) for (const w of ws!) expect(sql).toMatch(new RegExp(`${n}[^\\n]*'${w}'|'${w}'[^\\n]*${n}`))
+  })
+})
