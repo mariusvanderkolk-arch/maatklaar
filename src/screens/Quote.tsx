@@ -77,6 +77,11 @@ export function Quote({ p }: { p: Project }) {
       </div>
 
       <aside className="no-print order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
+        {berekening.inkoop.prijsStatus?.voorbeeld && (
+          <Notice title="Voorbeeldprijzen (fictief)" action={<Button size="sm" variant="secondary" onClick={() => ga('/prijzen')}>Eigen prijzen</Button>}>
+            <span data-testid="offerte-fictief">Deze offerte rekent met fictieve, indicatieve voorbeeldprijzen. Vul je eigen prijzen in en controleer de maten (Opmeten) voordat je hem naar een klant stuurt.</span>
+          </Notice>
+        )}
         {!bedrijf.naam && (
           <Notice
             title="Zet je eigen bedrijf op de offerte"
