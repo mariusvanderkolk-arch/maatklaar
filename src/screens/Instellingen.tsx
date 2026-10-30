@@ -129,6 +129,7 @@ function BedrijfSectie() {
             <div className="sm:col-span-2">{veld('adres', 'Adres', { placeholder: 'Straat, postcode en plaats', autoComplete: 'street-address' })}</div>
             {veld('kvk', 'KvK-nummer', { inputMode: 'numeric', fout: kvkGeldig(b.kvk) ? null : 'Een KvK-nummer heeft 8 cijfers.' })}
             {veld('btw', 'Btw-nummer', { placeholder: 'NL123456789B01', fout: btwGeldig(b.btw) ? null : 'Verwacht formaat: NL123456789B01.' })}
+            <div className="sm:col-span-2">{veld('googleReviewUrl', 'Google-reviewlink', { type: 'url', inputMode: 'url', placeholder: 'https://g.page/r/…/review', hint: 'Te vinden in je Google Bedrijfsprofiel via "Vraag om reviews". Na het tekenen stuur je de klant met één tik een reviewverzoek via WhatsApp.' })}</div>
             <div className="sm:col-span-2">{veld('iban', 'IBAN', { placeholder: 'NL00 BANK 0123 4567 89', fout: ibanGeldig(b.iban) ? null : 'Dit IBAN klopt niet (controlegetal of lengte).' })}</div>
           </div>
         </div>

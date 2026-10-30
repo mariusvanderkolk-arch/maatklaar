@@ -2,6 +2,7 @@ import { STANDAARD_AANNAMES, uid } from '../lib/defaults'
 import { MeerwerkKaart } from '../components/MeerwerkKaart'
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
+import { VergeetCheck } from '../components/VergeetCheck'
 import { TekenKaart, zelfdeVersie } from '../components/TekenKaart'
 import { reviewStatus } from '../lib/reviews'
 import { useEffect, useMemo } from 'react'
@@ -94,6 +95,8 @@ export function Quote({ p }: { p: Project }) {
             Logo, KvK, btw-nummer, IBAN en contactgegevens.
           </Notice>
         )}
+
+        <VergeetCheck p={p} />
 
         <Card className="p-5">
           <div className="flex items-start justify-between gap-3">

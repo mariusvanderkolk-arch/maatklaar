@@ -28,6 +28,8 @@ export interface Bedrijf {
   factuurVolgnummer: number
   /** betaaltermijn factuur in dagen */
   betaalDagen: number
+  /** eigen Google-reviewlink (voor het reviewverzoek na tekenen) */
+  googleReviewUrl?: string
 }
 
 export const standaardBedrijf = (): Bedrijf => ({

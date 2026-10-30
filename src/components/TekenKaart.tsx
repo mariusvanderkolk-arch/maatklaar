@@ -1,7 +1,7 @@
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { uid } from '../lib/defaults'
 import { useEffect, useState } from 'react'
-import { Bell, BellRing, Eye, Link2Off, MessageCircle, PenLine, ReceiptText, Share2 } from 'lucide-react'
+import { Bell, BellRing, Eye, Link2Off, MessageCircle, PenLine, ReceiptText, Share2, Star } from 'lucide-react'
 import { Button, Card } from './ui'
 import { OpvolgBadge } from './OpvolgBadge'
 import { dagenSinds, herinneringNodig, herinneringTekst, opvolgstatus } from '../lib/opvolging'
@@ -15,9 +15,10 @@ import { toegangsToken } from '../lib/cloud/sync'
 import { kopieer } from '../lib/share'
 import { projectStore } from '../lib/store'
 import { track } from '../lib/analytics'
-import { openWhatsapp, whatsappTekst, whatsappUrl } from '../lib/whatsapp'
+import { normaalReviewUrl, openWhatsapp, reviewTekst, whatsappTekst, whatsappUrl } from '../lib/whatsapp'
 import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
 import { ga } from '../lib/router'
+import { useBedrijf } from '../lib/bedrijf'
 import type { OfferteStatus, Project } from '../lib/types'
 
 type Teken = NonNullable<OfferteStatus['teken']>
@@ -74,6 +75,12 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
     if (t?.nieuwGetekend) markeerGezien(p.id)
   }, [t?.nieuwGetekend, p.id])
 
+  const bedrijf = useBedrijf()
+  const reviewUrl = normaalReviewUrl(bedrijf.googleReviewUrl)
+  const vraagReview = () => {
+    track('offerte_shared', { detail: 'review' })
+    openWhatsapp(whatsappUrl(reviewTekst(p.klant, bedrijf.naam, reviewUrl)))
+  }
   const facturen = useFacturen().filter((f) => f.projectId === p.id)
   const [termijnen, setTermijnen] = useState<number[]>([100])
   const [eigen, setEigen] = useState('')
@@ -261,6 +268,22 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
         <Button variant="gold" size="lg" className="mt-4 w-full whitespace-normal" icon={<ReceiptText className="h-4 w-4" />} onClick={facturen.length ? () => ga(facturen.length > 1 ? '/facturen' : `/factuur/${facturen[0].id}`) : maakFactuur} data-testid="maak-factuur">
           {facturen.length ? `Klant heeft getekend ✅ — Bekijk factuur ${facturen[facturen.length - 1].nummer}${facturen.length > 1 ? ` (+${facturen.length - 1})` : ''}` : termijnen.length > 1 ? `Getekend ✅ — Maak ${termijnen.length} termijnfacturen` : 'Klant heeft getekend ✅ — Maak factuur'}
         </Button>
+      )}
+
+      {t?.getekend && (
+        <div className="mt-4 rounded-xl bg-sand-50 px-3.5 py-3 ring-1 ring-sand-200" data-testid="review-vragen">
+          <p className="text-sm font-semibold text-ink">Vraag om een Google-review</p>
+          <p className="mt-0.5 text-[0.8rem] text-ink-soft">Een tevreden klant is je beste reclame. Vraag het nu het nog vers is (binnen 24 uur werkt het best). Je ziet het bericht eerst in WhatsApp en verstuurt het zelf.</p>
+          {reviewUrl ? (
+            <button type="button" onClick={vraagReview} data-testid="review-whatsapp" className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-[0.92rem] font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#1ebe5a] active:scale-[.98]">
+              <Star className="h-4 w-4" aria-hidden="true" /> Vraag review via WhatsApp
+            </button>
+          ) : (
+            <Button size="sm" variant="secondary" className="mt-3" icon={<Star className="h-4 w-4" />} onClick={() => ga('/instellingen')} data-testid="review-instellen">
+              Voeg eerst je Google-reviewlink toe
+            </Button>
+          )}
+        </div>
       )}
 
       <div className="mt-4 grid gap-2">

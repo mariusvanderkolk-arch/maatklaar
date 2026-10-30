@@ -142,6 +142,8 @@ export interface OfferteStatus {
   gedeeldOp?: number
   /** handmatig vastgelegd akkoord van de klant */
   akkoord?: { naam: string; datum: string }
+  /** vergeet-check: regels die de aannemer bewust als 'niet nodig' heeft weggeklikt */
+  vergeetNietNodig?: string[]
   /** digitale ondertekening: deellink-token en (na tekenen) de handtekening */
   teken?: {
     token: string
