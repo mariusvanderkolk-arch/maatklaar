@@ -2,10 +2,10 @@ import { STANDAARD_AANNAMES, uid } from '../lib/defaults'
 import { MeerwerkKaart } from '../components/MeerwerkKaart'
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
-import { VergeetCheck } from '../components/VergeetCheck'
+import { VergeetCheck, vergeetPunten } from '../components/VergeetCheck'
 import { TekenKaart, zelfdeVersie } from '../components/TekenKaart'
 import { reviewStatus } from '../lib/reviews'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, ReceiptText, Building2, Copy, ExternalLink, Printer, Send } from 'lucide-react'
 import { OfferteDocument } from '../components/OfferteDocument'
 import { Badge, Button, Card, Notice, NumberField, Switch, TextField } from '../components/ui'
@@ -51,7 +51,17 @@ export function Quote({ p }: { p: Project }) {
   const t = of.teken
   const weergave = useMemo(() => metVorige(data, t && !zelfdeVersie(t, data) ? t.code : t?.vorigeCode), [data, t])
 
+  const [vergeetBevestig, setVergeetBevestig] = useState(false)
+  const probeerDelen = () => {
+    if (vergeetPunten(p).length) {
+      setVergeetBevestig(true)
+      document.querySelector('[data-testid="vergeet-check"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    void deel()
+  }
   const deel = async () => {
+    setVergeetBevestig(false)
     const metV = offerteLink(weergave)
     const url = metV.length < 11500 ? metV : offerteLink(data)
     setOfferte({ gedeeldOp: Date.now() })
@@ -96,7 +106,7 @@ export function Quote({ p }: { p: Project }) {
           </Notice>
         )}
 
-        <VergeetCheck p={p} />
+        <VergeetCheck p={p} bevestig={vergeetBevestig} onToch={() => void deel()} onAnnuleer={() => setVergeetBevestig(false)} />
 
         <Card className="p-5">
           <div className="flex items-start justify-between gap-3">
@@ -111,7 +121,7 @@ export function Quote({ p }: { p: Project }) {
             )}
           </div>
           <div className="mt-4 grid gap-2">
-            <Button icon={<Send className="h-4 w-4" />} onClick={deel}>
+            <Button icon={<Send className="h-4 w-4" />} onClick={probeerDelen} data-testid="deel-offerte">
               Deel offerte-link
             </Button>
             <Button variant="secondary" icon={<ExternalLink className="h-4 w-4" />} onClick={() => window.open(offerteLink(data), '_blank', 'noopener')}>
