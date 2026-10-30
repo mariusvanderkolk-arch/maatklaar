@@ -28,10 +28,11 @@ export function feedbackTekst(f: Feedback, nu = new Date()): string {
   return r.join('\n')
 }
 
-/** WhatsApp-link zonder nummer: de tester kiest zelf het gesprek met Marius. */
-/** WhatsApp-nummer van Marius (internationaal, alleen cijfers) voor feedback en 'Vraag Marius'. Overschrijfbaar met VITE_CONTACT_WHATSAPP. */
-export const CONTACT_WHATSAPP = ((import.meta.env.VITE_CONTACT_WHATSAPP as string | undefined) || '31640210974').replace(/\D/g, '')
-export const whatsappLink = (tekst: string) => `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(tekst)}`
+/** Optioneel zakelijk WhatsApp-nummer via VITE_CONTACT_WHATSAPP (alleen cijfers). Geen standaardnummer in de code. */
+export const CONTACT_WHATSAPP = ((import.meta.env.VITE_CONTACT_WHATSAPP as string | undefined) || '').replace(/\D/g, '')
+/** Zonder nummer opent WhatsApp met de tekst en kiest de gebruiker zelf het gesprek. */
+export const whatsappLink = (tekst: string) =>
+  CONTACT_WHATSAPP ? `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(tekst)}` : `https://wa.me/?text=${encodeURIComponent(tekst)}`
 
 export const mailtoLink = (tekst: string) =>
   `mailto:?subject=${encodeURIComponent('Feedback Maatklaar (testversie)')}&body=${encodeURIComponent(tekst)}`

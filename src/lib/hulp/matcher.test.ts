@@ -92,5 +92,5 @@ describe('AI-modus (optioneel)', async () => {
 
 describe('contact', async () => {
   const { whatsappLink } = await import('../feedback')
-  it('WhatsApp gaat direct naar Marius', () => expect(whatsappLink('a b')).toBe('https://wa.me/31640210974?text=a%20b'))
+  it('WhatsApp-link zonder vast nummer', () => expect(whatsappLink('a b')).toBe('https://wa.me/?text=a%20b'))
 })

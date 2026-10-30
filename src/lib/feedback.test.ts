@@ -26,7 +26,7 @@ describe('feedback', () => {
 
   it('maakt WhatsApp-link naar Marius en maillink zonder ontvanger', () => {
     const w = whatsappLink('Hoi & doei\n10/10')
-    expect(w.startsWith('https://wa.me/31640210974?text=')).toBe(true)
+    expect(w.startsWith('https://wa.me/?text=')).toBe(true)
     expect(decodeURIComponent(w.split('text=')[1])).toBe('Hoi & doei\n10/10')
     const m = mailtoLink('regel 1\nregel 2')
     expect(m.startsWith('mailto:?subject=')).toBe(true)
