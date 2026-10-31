@@ -116,15 +116,31 @@ export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: 
           <path d={`M${x0 + w * 0.15} ${d / 2}A${w * 0.6} ${w * 0.6} 0 0 0 ${w / 2} ${d / 2 - w * 0.6}`} {...fijn} strokeDasharray="2 2" />
         </g>
       )
-    case 'bad':
+    case 'bad': {
+      // inbouw-ligbad, bovenaanzicht: rechte ombouw/rand, kuip met ronde hoofdeinde en smaller voeteneinde, kraan + afvoer aan de voetkant (links)
+      const rand = Math.min(8, d * 0.11)
+      const ix0 = x0 + rand + 2
+      const ix1 = w / 2 - rand
+      const iy0 = y0 + rand
+      const iy1 = d / 2 - rand
+      const ih = iy1 - iy0
+      const kv = Math.min(ih * 0.28, 14) // hoekradius voeteneinde
+      const kh = Math.min(ih * 0.48, 34) // hoekradius hoofdeinde (ruim afgerond)
+      const kuip = `M${ix0 + kv} ${iy0}H${ix1 - kh}A${kh} ${kh} 0 0 1 ${ix1} ${iy0 + kh}V${iy1 - kh}A${kh} ${kh} 0 0 1 ${ix1 - kh} ${iy1}H${ix0 + kv}A${kv} ${kv} 0 0 1 ${ix0} ${iy1 - kv}V${iy0 + kv}A${kv} ${kv} 0 0 1 ${ix0 + kv} ${iy0}Z`
+      const afvoerX = ix0 + Math.min(16, w * 0.1)
       return (
         <g>
-          <rect x={x0} y={y0} width={w} height={d} rx={Math.min(10, d * 0.15)} fill={KLEUR.keramiek} {...sw} />
-          <rect x={x0 + 7} y={y0 + 7} width={w - 14} height={d - 14} rx={Math.min(d * 0.3, 22)} fill="url(#sw-water)" stroke={KLEUR.lijnZacht} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
-          <circle cx={x0 + 20} cy={0} r={2.6} fill="url(#sw-staal)" stroke={KLEUR.lijnZacht} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
-          <rect x={x0 + 2} y={-4} width={4} height={8} rx={1.5} fill={KLEUR.chroom} />
+          <rect x={x0} y={y0} width={w} height={d} rx={2} fill={KLEUR.keramiek} {...sw} />
+          <path d={kuip} fill="url(#sw-water)" stroke={KLEUR.lijnZacht} strokeWidth={0.7} vectorEffect="non-scaling-stroke" />
+          {/* afvoer + overloop */}
+          <circle cx={afvoerX} cy={0} r={2.8} fill="url(#sw-staal)" stroke={KLEUR.lijn} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
+          <circle cx={ix0 + 3.5} cy={0} r={2} fill="none" stroke={KLEUR.chroom} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
+          {/* thermostaatkraan op de rand aan de wandzijde, voetkant */}
+          <rect x={x0 + 1.5} y={-7} width={rand + 1} height={14} rx={1.5} fill={KLEUR.chroom} stroke={KLEUR.lijnZacht} strokeWidth={0.3} vectorEffect="non-scaling-stroke" />
+          <rect x={x0 + rand} y={-1.2} width={6} height={2.4} rx={1.2} fill={KLEUR.chroom} />
         </g>
       )
+    }
     case 'toilet-hangend':
     case 'toilet-staand': {
       const staand = type === 'toilet-staand'
@@ -256,15 +272,21 @@ export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: 
           {w >= 70 && <line x1={0} y1={y0 + 1} x2={0} y2={d / 2 - 1} {...fijn} />}
         </g>
       )
-    case 'bad-vrijstaand':
+    case 'bad-vrijstaand': {
+      // vrijstaand bad: zachte "pil"-vorm (geen ovaal), dunne rand, afvoer in het midden, staande kraan aan de kopse kant
+      const r = Math.min(d / 2, w * 0.3)
+      const rand = Math.min(6, d * 0.08)
+      const ri = Math.max(4, r - rand)
       return (
         <g>
-          <ellipse cx={0} cy={0} rx={w / 2} ry={d / 2} fill={KLEUR.keramiek} {...sw} />
-          <ellipse cx={0} cy={0} rx={w / 2 - 7} ry={d / 2 - 7} fill="url(#sw-water)" stroke={KLEUR.lijnZacht} strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
-          <circle cx={0} cy={0} r={2.4} fill="url(#sw-staal)" stroke={KLEUR.lijnZacht} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
-          <rect x={x0 - 8} y={-2} width={4} height={4} rx={2} fill={KLEUR.chroom} />
+          <rect x={x0} y={y0} width={w} height={d} rx={r} fill={KLEUR.keramiek} {...sw} />
+          <rect x={x0 + rand} y={y0 + rand} width={w - 2 * rand} height={d - 2 * rand} rx={ri} fill="url(#sw-water)" stroke={KLEUR.lijnZacht} strokeWidth={0.7} vectorEffect="non-scaling-stroke" />
+          <circle cx={0} cy={0} r={2.8} fill="url(#sw-staal)" stroke={KLEUR.lijn} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
+          <circle cx={x0 - 7} cy={0} r={3.2} fill={KLEUR.chroom} stroke={KLEUR.lijnZacht} strokeWidth={0.3} vectorEffect="non-scaling-stroke" />
+          <rect x={x0 - 6} y={-1.1} width={7} height={2.2} rx={1.1} fill={KLEUR.chroom} />
         </g>
       )
+    }
     case 'waskom': {
       const n = w >= 110 ? 2 : 1
       return (
