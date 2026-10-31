@@ -131,7 +131,7 @@ export function schrijfSeo(uit, base, test) {
     writeFileSync(join(uit, p.pad, 'index.html'), html(p, base, test))
   }
   const vandaag = new Date().toISOString().slice(0, 10)
-  writeFileSync(join(uit, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${['', ...pag.map((p) => p.pad)].map((pd) => `  <url><loc>${SITE}${pd}</loc><lastmod>${vandaag}</lastmod></url>`).join('\n')}\n</urlset>\n`)
+  writeFileSync(join(uit, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${['', ...pag.map((p) => p.pad), 'zo-ziet-maatklaar-eruit/'].map((pd) => `  <url><loc>${SITE}${pd}</loc><lastmod>${vandaag}</lastmod></url>`).join('\n')}\n</urlset>\n`)
   // Testsite mag niet geïndexeerd worden; live wel, met verwijzing naar de sitemap.
   writeFileSync(join(uit, 'robots.txt'), test ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n`)
   return pag.length
