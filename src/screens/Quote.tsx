@@ -120,6 +120,11 @@ export function Quote({ p }: { p: Project }) {
               </Badge>
             )}
           </div>
+          {!of.gedeeldOp && !of.akkoord && (
+            <p className="mt-3 rounded-xl bg-gold-100/60 px-3.5 py-2.5 text-[0.82rem] leading-snug text-ink-soft ring-1 ring-gold-300" data-testid="deel-tip">
+              Tip: stuur de link meteen via WhatsApp. De klant leest de offerte op zijn telefoon en kan direct akkoord geven, dat scheelt vaak dagen wachten.
+            </p>
+          )}
           <div className="mt-4 grid gap-2">
             <Button icon={<Send className="h-4 w-4" />} onClick={probeerDelen} data-testid="deel-offerte">
               Deel offerte-link

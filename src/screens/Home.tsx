@@ -163,6 +163,29 @@ export function Home() {
           <Welkom />
         </div>
 
+        {/* Waarom Maatklaar */}
+        <section className="mt-8" aria-labelledby="waarom-titel" data-waarom>
+          <div className="card p-5 sm:p-8">
+            <p className="text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-gold-700">Waarom Maatklaar</p>
+            <h2 id="waarom-titel" className="mt-1 text-xl font-semibold text-ink">Gemaakt voor de vakman op locatie, niet voor achter het bureau</h2>
+            <ul className="mt-5 grid gap-5 sm:grid-cols-3">
+              {[
+                { t: 'Eén flow, bij de klant', b: 'Opmeten, berekenen en offerte maken in één keer op je telefoon. Geen Excel-sheet, losse notities of foto’s in WhatsApp die je ’s avonds nog moet uitzoeken.' },
+                { t: 'Jouw prijzen, jouw offerte', b: 'Geen algemene rekenhulp met gemiddelde bedragen: Maatklaar rekent met je eigen prijslijst en zet je eigen logo op de offerte.' },
+                { t: 'Akkoord via WhatsApp', b: 'De klant opent de offerte op zijn telefoon en tekent direct. Geen zware software, installatie of cursus nodig. Gratis te proberen.' },
+              ].map((x) => (
+                <li key={x.t}>
+                  <p className="font-semibold text-ink">{x.t}</p>
+                  <p className="mt-1 text-[0.92rem] leading-snug text-ink-soft">{x.b}</p>
+                </li>
+              ))}
+            </ul>
+            <a href={`${import.meta.env.BASE_URL}zo-ziet-maatklaar-eruit/`} className="mt-5 inline-block text-sm font-medium text-gold-700 underline underline-offset-2 hover:text-ink">
+              Bekijk hoe Maatklaar eruitziet
+            </a>
+          </div>
+        </section>
+
         {/* Privacybelofte */}
         <section className="mt-8" aria-labelledby="veilig-titel" data-vertrouwen>
           <div className="card overflow-hidden">
