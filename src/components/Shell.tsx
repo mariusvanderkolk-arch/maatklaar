@@ -104,8 +104,8 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
               Offerte maken: tips &amp; regio's
             </a>{' '}
             ·{' '}
-            <a href={`${import.meta.env.BASE_URL}gratis-offerte-app-badkamerrenovatie/`} className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
-              Gratis offerte-app badkamer
+            <a href={`${import.meta.env.BASE_URL}gratis-offerte-app/`} className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
+              Gratis offerte-app voor aannemers
             </a>{' '}
             ·{' '}
             <a href="#/privacy" className="inline-block py-3 underline underline-offset-2 hover:text-ink sm:py-0">
