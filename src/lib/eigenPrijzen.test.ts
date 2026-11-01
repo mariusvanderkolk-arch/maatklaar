@@ -24,10 +24,9 @@ const NU = new Date('2026-10-10T10:00:00Z')
 
 describe('eigen prijslijst', () => {
   it('elk catalogusartikel heeft een voorbeeldprijs', () => {
-    // casco-posten aanbouw hebben bewust géén richtprijs
+    // ook casco-posten aanbouw hebben een richtprijs
     for (const c of CATALOGUS) {
-      if (c.groep === 'aanbouw') expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeUndefined()
-      else expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
+      expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
     }
   })
 
@@ -51,11 +50,11 @@ describe('eigen prijslijst', () => {
 
   it('voorbeeld overnemen en bijvullen', () => {
     const alles = voorbeeldAlsEigen(voorbeeldPrijsBron, NU)
-    expect(telEigenPrijzen(alles)).toBe(CATALOGUS.filter((c) => !c.oud && c.groep !== 'aanbouw').length)
+    expect(telEigenPrijzen(alles)).toBe(CATALOGUS.filter((c) => !c.oud).length)
     const deel = zetEigenPrijs({}, 'kit', { prijs: 1 }, NU)
     const bij = vulVoorbeeldenAan(deel, voorbeeldPrijsBron, NU)
     expect(bij.kit?.prijs).toBe(1)
-    expect(telEigenPrijzen(bij)).toBe(CATALOGUS.filter((c) => !c.oud && c.groep !== 'aanbouw').length)
+    expect(telEigenPrijzen(bij)).toBe(CATALOGUS.filter((c) => !c.oud).length)
   })
 
   it('percentage per categorie en leverancier', () => {

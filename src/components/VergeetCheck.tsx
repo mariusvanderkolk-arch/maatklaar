@@ -38,7 +38,7 @@ export const VERGEET_REGELS: Record<ProjectType, Regel[]> = {
     { key: 'grondwerk', label: 'Grondwerk', waarom: 'ontgraven en grond afvoeren of aanvullen' },
     { key: 'hwa', label: 'Hemelwaterafvoer', waarom: 'regenwater van het nieuwe dak afvoeren' },
     { key: 'gevelDoorbraak', label: 'Doorbraak bestaande gevel', waarom: 'opening naar het huis, met ligger volgens constructeur' },
-    { key: 'isolatie', label: 'Isolatie', waarom: 'vloer, gevels en dak (Rc-eisen Bbl)' },
+    { key: 'isolatie', label: 'Isolatie', waarom: 'spouw en dak (Rc-eisen Bbl); vloer zit in de systeemvloer' },
     { key: 'elektra', label: 'Elektra', waarom: 'groepen, verlichting en stopcontacten in de aanbouw' },
   ],
 }

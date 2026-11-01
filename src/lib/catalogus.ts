@@ -89,7 +89,7 @@ const BASIS: CatalogusItem[] = [
 export const CATALOGUS: CatalogusItem[] = [
   ...BASIS.filter((b) => !(b.id in SETS)),
   ...DETAIL_ARTIKELEN.map(([id, groep, naam, eenheid]) => ({ id, groep: groep as Groep, naam, eenheid })),
-  ...AANBOUW_POSTEN.map(([id, naam, eenheid]): CatalogusItem => ({ id, groep: 'aanbouw', naam, eenheid, toelichting: 'Geen richtprijs: vul je eigen prijs in (bijv. incl. arbeid)' })),
+  ...AANBOUW_POSTEN.map(([id, naam, eenheid]): CatalogusItem => ({ id, groep: 'aanbouw', naam, eenheid, toelichting: 'Richtprijs incl. materiaal, arbeid en btw (traditionele bouw). Vul je eigen prijs in' })),
   ...BASIS.filter((b) => b.id in SETS).map((b) => ({ ...b, naam: `${b.naam} (oude set)`, oud: true, toelichting: 'Vervangen door losse artikelen. Je eigen setprijs blijft gelden tot je de losse artikelen prijst.' })),
 ]
 

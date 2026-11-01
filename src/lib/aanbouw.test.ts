@@ -37,20 +37,32 @@ describe('aanbouwMaten', () => {
 describe('aanbouwRegels', () => {
   it('alleen aangevinkte posten, zonder lege regels', () => {
     const r = aanbouwRegels(afm({ lengte: 4, breedte: 3, hoogte: 2.7 }), { fundering: true, kozijnen: true })
-    expect(r.map((x) => x.id)).toEqual(['aanbouw-fundering']) // geen kozijnen ingevuld → geen regel
+    expect(r.map((x) => x.id)).toEqual(['aanbouw-fundering', 'aanbouw-vloer']) // geen kozijnen ingevuld → geen regel
     expect(r[0]).toMatchObject({ nodig: 10, eenheid: 'm¹' })
     expect(r[0].toelichting).toMatch(/constructeur/)
   })
 })
 
 describe('berekenMaterialen aanbouw', () => {
-  it('zet casco-posten vooraan, zonder prijs', () => {
+  it('isolatie: spouw (gevel netto) en dak (L×B) apart', () => {
+    const r = aanbouwRegels(afm({ lengte: 4, breedte: 3, hoogte: 2.7 }), { isolatie: true })
+    expect(r.map((x) => [x.id, x.nodig])).toEqual([['aanbouw-isolatie', 27], ['aanbouw-dakisolatie', 12]])
+  })
+  it('zet casco-posten vooraan, met all-in richtprijs', () => {
     const p = nieuwProject({ type: 'aanbouw' })
     const regels = berekenMaterialen(p)
     const casco = regels.filter((r) => r.groep === 'aanbouw')
     expect(casco.length).toBeGreaterThan(3)
     expect(regels[0].groep).toBe('aanbouw')
-    for (const r of casco) expect(voorbeeldPrijsBron.aanbod(r.id), r.id).toBeUndefined()
+    for (const r of casco) expect(voorbeeldPrijsBron.aanbod(r.id)?.prijs, r.id).toBeGreaterThan(0)
+  })
+  it('casco 4×3×2,7 m met 6 m² kozijn valt binnen NL-bandbreedte casco (€1.500–4.200/m²)', () => {
+    const p = nieuwProject({ type: 'aanbouw' })
+    p.afmetingen = { ...p.afmetingen, lengte: 4, breedte: 3, hoogte: 2.7, aanbouw: { doorbraak: 4, overstek: 0.2 }, openingen: [{ id: 'a', type: 'raam', breedte: 3, hoogte: 2, vanafVloer: 0 }] }
+    p.scope = { ...p.scope, grondwerk: true, fundering: true, buitenmuur: true, isolatie: true, dak: true, hwa: true, kozijnen: true, gevelDoorbraak: true }
+    const totaal = berekenMaterialen(p).filter((r) => r.groep === 'aanbouw').reduce((t, r) => t + r.prijsAantal * voorbeeldPrijsBron.aanbod(r.id)!.prijs, 0)
+    expect(totaal / 12).toBeGreaterThan(1500)
+    expect(totaal / 12).toBeLessThan(4200)
   })
   it('standaard-scope bevat casco-werk', () => {
     const s = scopeVoor('aanbouw')

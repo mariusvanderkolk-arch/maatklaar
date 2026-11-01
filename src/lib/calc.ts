@@ -512,7 +512,7 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
   return berekenMaterialenRuimte(p)
 }
 
-/** Casco-posten van een aanbouw: hoeveelheden zonder richtprijs (eigen prijs van de aannemer). */
+/** Casco-posten van een aanbouw: all-in richtprijs per eenheid (aannemer kan overschrijven). */
 function aanbouwMaterialen(p: Project): MateriaalRegel[] {
   return aanbouwRegels(p.afmetingen, effectieveScope(p)).map((r) => ({
     id: r.id, groep: 'aanbouw', naam: r.naam, nodig: r.nodig, nodigEenheid: r.eenheid, aantal: r.nodig, verpakking: r.eenheid, prijsAantal: r.nodig,

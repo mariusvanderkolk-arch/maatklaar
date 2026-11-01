@@ -6,6 +6,7 @@
  */
 import type { BasisId, ProductId } from './calc'
 import { DETAIL_ARTIKELEN } from './artikelen'
+import { AANBOUW_POSTEN } from './aanbouw'
 
 export interface PrijsAanbod {
   /** prijs in euro incl. btw per prijseenheid (m² bij tegels/matten, anders per verpakking/stuk) */
@@ -112,6 +113,8 @@ const BASIS_PRIJZEN: Record<BasisId, number> = {
 export const VOORBEELD_PRIJZEN: Partial<Record<ProductId, number>> = {
   ...BASIS_PRIJZEN,
   ...Object.fromEntries(DETAIL_ARTIKELEN.map(([id, , , , prijs]) => [id, prijs])),
+  // casco aanbouw: all-in richtprijzen (materiaal + arbeid + btw), zie docs/AANBOUW-RICHTPRIJZEN.md
+  ...Object.fromEntries(AANBOUW_POSTEN.map(([id, , , , prijs]) => [id, prijs])),
 }
 
 export const VOORBEELD_PEILDATUM = '2026-10-19'
@@ -129,7 +132,7 @@ export const voorbeeldPrijsBron: PrijsBron = {
 
 /** Producten die per m² geprijsd worden (overige per verpakking/stuk/m). */
 const PER_M2: ProductId[] = ['wandtegel', 'vloertegel', 'vv-mat', 'laminaat', 'pvc', 'pvc-plafond']
-const AANBOUW_M2: ProductId[] = ['aanbouw-grondwerk', 'aanbouw-gevel', 'aanbouw-isolatie', 'aanbouw-dak', 'aanbouw-kozijn']
+const AANBOUW_M2: ProductId[] = ['aanbouw-grondwerk', 'aanbouw-vloer', 'aanbouw-gevel', 'aanbouw-isolatie', 'aanbouw-dakisolatie', 'aanbouw-dak', 'aanbouw-kozijn']
 const AANBOUW_M1: ProductId[] = ['aanbouw-fundering', 'aanbouw-daktrim', 'aanbouw-doorbraak']
 export const prijsEenheid = (id: ProductId) => (PER_M2.includes(id) || AANBOUW_M2.includes(id) ? 'm²' : AANBOUW_M1.includes(id) ? 'm¹' : id === 'waterleiding' ? 'm' : id === 'afvalverwerking' || id.startsWith('stort-') ? 'm³' : 'st.')
 
