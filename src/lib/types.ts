@@ -45,6 +45,8 @@ export type ScopeKey =
   | 'kozijnen'
   | 'gevelDoorbraak'
   | 'hwa'
+  | 'sauswerk'
+  | 'behang'
 
 export type Scope = Record<ScopeKey, boolean>
 

@@ -21,7 +21,7 @@ export const FASE_VAN: Record<ScopeKey, Fase> = {
   voorzetwand: 'ondergrond', nis: 'tegelwerk', accessoires: 'afwerking', deurenInkorten: 'afwerking',
   keukenDemontage: 'sloop', perilex: 'installaties', keukenMontage: 'keuken', werkblad: 'keuken', uitsparingen: 'keuken', apparatuur: 'keuken',
   kitwerk: 'afwerking', stucwerk: 'afwerking', plafond: 'afwerking', deur: 'afwerking',
-  grondwerk: 'casco', fundering: 'casco', buitenmuur: 'casco', dak: 'casco', isolatie: 'casco', kozijnen: 'casco', gevelDoorbraak: 'casco', hwa: 'casco',
+  grondwerk: 'casco', fundering: 'casco', buitenmuur: 'casco', dak: 'casco', isolatie: 'casco', kozijnen: 'casco', gevelDoorbraak: 'casco', hwa: 'casco', sauswerk: 'afwerking', behang: 'afwerking',
 }
 /** Checklist gegroepeerd per fase (lege fases weggelaten). */
 export function scopePerFase(type: ProjectType | undefined): { fase: Fase; naam: string; items: ScopeItem[] }[] {
@@ -80,6 +80,8 @@ export const SCOPE_BASIS: Record<ScopeKey, ScopeItem> = {
   kozijnen: { key: 'kozijnen', label: 'Kozijnen', omschrijving: 'Ramen, deuren en schuifpui (stuks en m²)' },
   gevelDoorbraak: { key: 'gevelDoorbraak', label: 'Doorbraak bestaande gevel', omschrijving: 'Opening naar het huis (m¹). Stalen ligger volgens constructeur' },
   hwa: { key: 'hwa', label: 'Hemelwaterafvoer', omschrijving: 'HWA met aansluiting op het riool' },
+  sauswerk: { key: 'sauswerk', label: 'Sauswerk', omschrijving: 'Wanden en plafond sauzen (latex, 2 lagen). Met behang: alleen plafond', optioneel: true },
+  behang: { key: 'behang', label: 'Behang', omschrijving: 'Wanden behangen (m² netto, minus kozijnen)', optioneel: true },
   plafond: { key: 'plafond', label: 'PVC-plafond', omschrijving: 'Vochtbestendige plafondpanelen (i.p.v. stucwerk)', optioneel: true },
 }
 
@@ -161,10 +163,10 @@ export const RUIMTES: RuimteType[] = [
     id: 'aanbouw',
     label: 'Aanbouw',
     omschrijving: 'Uitbouw aan de achtergevel: casco-hoeveelheden en kozijnen',
-    werk: ['grondwerk', 'fundering', 'buitenmuur', 'isolatie', 'dak', 'hwa', 'kozijnen', 'gevelDoorbraak', 'sloopwerk', 'container', 'dekvloer', 'vloerverwarming', 'elektra', 'radiator', 'vloertegels', 'legvloer', 'ondervloer', 'plinten', 'stucwerk', 'plafond'],
-    standaard: ['grondwerk', 'fundering', 'buitenmuur', 'isolatie', 'dak', 'hwa', 'kozijnen', 'gevelDoorbraak', 'dekvloer', 'elektra', 'stucwerk'],
+    werk: ['grondwerk', 'fundering', 'buitenmuur', 'isolatie', 'dak', 'hwa', 'kozijnen', 'gevelDoorbraak', 'sloopwerk', 'container', 'dekvloer', 'vloerverwarming', 'elektra', 'radiator', 'vloertegels', 'legvloer', 'ondervloer', 'plinten', 'stucwerk', 'sauswerk', 'behang', 'plafond'],
+    standaard: ['grondwerk', 'fundering', 'buitenmuur', 'isolatie', 'dak', 'hwa', 'kozijnen', 'gevelDoorbraak', 'dekvloer', 'elektra', 'stucwerk', 'sauswerk'],
     teksten: {
-      stucwerk: { omschrijving: 'Binnenzijde wanden en plafond' },
+      stucwerk: { label: 'Stucwerk', omschrijving: 'Binnenzijde wanden en plafond stucen (saus-/behangklaar)' },
       vloertegels: { label: 'Tegelvloer', omschrijving: 'In plaats van laminaat/PVC, incl. lijm en voeg' },
       vloerverwarming: { omschrijving: 'Elektrische mat onder de tegelvloer, met thermostaat' },
     },

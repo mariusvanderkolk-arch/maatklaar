@@ -23,6 +23,8 @@ export const AANBOUW_POSTEN = [
   ['aanbouw-daktrim', 'Daktrim aluminium', 'per m¹', 'dak', 40],
   ['aanbouw-hwa', 'Hemelwaterafvoer PVC Ø80 incl. stadsuitloop en aansluiting', 'per stuk', 'hwa', 350],
   ['aanbouw-kozijn', 'Kunststof kozijnen/schuifpui met HR++ glas, incl. montage', 'per m²', 'kozijnen', 550],
+  ['aanbouw-sauswerk', 'Sauswerk: latex muurverf mat wit, voorstrijk + 2 lagen', 'per m²', 'sauswerk', 14],
+  ['aanbouw-behang', 'Behangen: glasvlies/vliesbehang incl. lijm, behang standaard', 'per m²', 'behang', 30],
   ['aanbouw-doorbraak', 'Doorbraak bestaande gevel incl. stalen ligger en stempelen (volgens constructeur)', 'per m¹', 'gevelDoorbraak', 1200],
 ] as const
 
@@ -112,6 +114,17 @@ export function aanbouwRegels(a: Afmetingen, s: Partial<Scope>): AanbouwRegel[] 
   }
   if (s.hwa) add('aanbouw-hwa', 1, 'stuk', `Lengte ca. ${nl(m.H)} m (hoogte aanbouw)`)
   if (s.kozijnen) add('aanbouw-kozijn', m.kozijnM2, 'm²', `${m.kozijnAantal} kozijn(en) uit de openingen bij Opmeten`)
+  if (s.sauswerk || s.behang) {
+    const bruto = 2 * (m.L + m.B) * m.H
+    const open = Math.min(bruto, kozijnOppervlak(a.openingen))
+    const wand = Math.max(0, bruto - open)
+    const wandTxt = `Binnenwanden 2 × (${nl(m.L)} + ${nl(m.B)}) × ${nl(m.H)} m − ${nl(r2(open))} m² openingen = ${nl(r2(wand))} m²`
+    if (s.behang) add('aanbouw-behang', wand, 'm²', `${wandTxt}. Banen/rapport-verlies naar keuze`)
+    if (s.sauswerk) {
+      if (s.behang) add('aanbouw-sauswerk', m.vloer, 'm²', `Alleen plafond ${LB} (wanden worden behangen)`)
+      else add('aanbouw-sauswerk', wand + m.vloer, 'm²', `${wandTxt} + plafond ${nl(r2(m.vloer))} m²`)
+    }
+  }
   if (s.gevelDoorbraak) add('aanbouw-doorbraak', m.doorbraak, 'm¹', 'Breedte doorbraak. Ligger en stempelen volgens constructeur')
   return uit
 }

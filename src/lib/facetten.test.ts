@@ -5,8 +5,8 @@ import { RUIMTES, scopePerFase } from './ruimtes'
 import { voorbeeldPrijsBron } from './prices'
 import type { Scope, ScopeKey } from './types'
 
-// TODO aanbouw: casco-werk heeft (nog) geen automatische arbeidsuren; posten hebben een all-in richtprijs (incl. arbeid)
-const CASCO = new Set<string>(['grondwerk', 'fundering', 'buitenmuur', 'dak', 'isolatie', 'kozijnen', 'gevelDoorbraak', 'hwa'])
+// TODO aanbouw: casco-werk (en sauswerk/behang) heeft (nog) geen automatische arbeidsuren; posten hebben een all-in richtprijs (incl. arbeid)
+const CASCO = new Set<string>(['grondwerk', 'fundering', 'buitenmuur', 'dak', 'isolatie', 'kozijnen', 'gevelDoorbraak', 'hwa', 'sauswerk', 'behang'])
 
 describe('volledige facetlijst per ruimte', () => {
   for (const r of RUIMTES) {

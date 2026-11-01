@@ -843,9 +843,10 @@ function berekenMaterialenRuimte(p: Project): MateriaalRegel[] {
       nodig: kg, nodigEenheid: 'kg', aantal: zakken, verpakking: `zak à ${REGELS.pleisterZakKg} kg`, prijsAantal: zakken, inhoud: REGELS.pleisterZakKg, verpakkingSoort: 'zak',
       toelichting: `(${nl(o.plafond)} m² plafond + ${nl(o.wandBovenTegels)} m² wand) × ${nl(REGELS.pleisterKgPerM2, 1)} kg/m² = ${nl(kg, 1)} kg`,
     })
+    // aanbouw: verf loopt via de post Sauswerk (geen badkamerverf)
     const liter = m2 * REGELS.verfLPerM2
     const bussen = omhoog(liter / REGELS.verfBusL)
-    add({
+    if (type !== 'aanbouw') add({
       id: 'verf', groep: 'afwerking', naam: 'Badkamerverf (anti-schimmel)',
       nodig: liter, nodigEenheid: 'L', aantal: bussen, verpakking: `bus à ${nl(REGELS.verfBusL, 1)} L`, prijsAantal: bussen, inhoud: REGELS.verfBusL, verpakkingSoort: 'bus',
       toelichting: `${nl(m2)} m² × 2 lagen × 0,1 L/m² = ${nl(liter, 1)} L`,
@@ -1043,7 +1044,7 @@ export function berekenArbeid(p: Project): ArbeidRegel[] {
   if (s.wastafelmeubel) add('wastafelmeubel', 'Wastafelmeubel plaatsen', ARBEID.wastafelmeubel)
   if (s.fontein) add('fontein', 'Fonteintje plaatsen', ARBEID.fontein)
   if (s.kitwerk) add('kitwerk', 'Kitwerk', kitLengte(p, o) * ARBEID.kitwerkPerM)
-  if (s.stucwerk) add('stucwerk', 'Stucwerk en schilderen', (o.plafond + o.wandBovenTegels) * ARBEID.stucwerkPerM2)
+  if (s.stucwerk) add('stucwerk', type === 'aanbouw' ? 'Stucwerk' : 'Stucwerk en schilderen', (o.plafond + o.wandBovenTegels) * ARBEID.stucwerkPerM2)
   if (s.dekvloer) add('dekvloer', 'Dekvloer storten', o.vloer * ARBEID.dekvloerPerM2 + ARBEID.dekvloerVast)
   const tp = tappunten(s, type)
   if (s.leidingwerk) add('leidingwerk', 'Leidingwerk water en afvoer', tp.totaal * ARBEID.leidingwerkPerTappunt)

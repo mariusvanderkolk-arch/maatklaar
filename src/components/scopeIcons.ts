@@ -31,6 +31,8 @@ export const SCOPE_ICONS: Record<ScopeKey, LucideIcon> = {
   wastafelmeubel: Bath,
   kitwerk: Sparkles,
   stucwerk: PaintRoller,
+  sauswerk: PaintRoller,
+  behang: PaintRoller,
   fontein: Droplet,
   spatwand: CookingPot,
   legvloer: Layers,

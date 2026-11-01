@@ -69,3 +69,17 @@ describe('berekenMaterialen aanbouw', () => {
     expect(s.fundering && s.buitenmuur && s.dak && s.kozijnen).toBe(true)
   })
 })
+
+import { aanbouwRegels as _r } from './aanbouw'
+describe('aanbouw afwerking wanden', () => {
+  const a = { lengte: 4, breedte: 3, hoogte: 2.5, tegelhoogte: 0, openingen: [{ type: 'raam', breedte: 2, hoogte: 1 }] } as any
+  it('sauswerk = wanden netto + plafond', () => {
+    const r = aanbouwRegels(a, { sauswerk: true })
+    expect(r.find((x) => x.id === 'aanbouw-sauswerk')!.nodig).toBe(33 + 12)
+  })
+  it('behang op wanden, saus dan alleen plafond', () => {
+    const r = aanbouwRegels(a, { sauswerk: true, behang: true })
+    expect(r.find((x) => x.id === 'aanbouw-behang')!.nodig).toBe(33)
+    expect(r.find((x) => x.id === 'aanbouw-sauswerk')!.nodig).toBe(12)
+  })
+})

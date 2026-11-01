@@ -107,6 +107,8 @@ const TREFWOORDEN: [RegExp, ScopeKey[]][] = [
   [/\b(ventilat\w*|afzuig\w*|mechanische afzuiging)\b/, ['ventilatie']],
   [/\b(kitten|kitwerk|kit)\b/, ['kitwerk']],
   [/\b(stuc\w*|schilder\w*|sauzen)\b/, ['stucwerk']],
+  [/\b(saus\w*|sauz\w*)\b/, ['sauswerk']],
+  [/\bbehang\w*\b/, ['behang']],
   [/\b(pvc[- ]?plafond|plafondpanelen|plafondplaten)\b/, ['plafond']],
   [/\b(deur|dorpel)\b/, ['deur']],
 ]
