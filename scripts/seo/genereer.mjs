@@ -3,7 +3,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { onderwerpen } from './onderwerpen.mjs'
-import { provincies, steden } from './regio.mjs'
+import { provincies as prov0, steden as st0 } from './regio.mjs'
+import { stadExtra, provExtra } from './regio-extra.mjs'
+const provincies = prov0.map((p) => ({ ...p, ...provExtra[p.slug] }))
+const steden = st0.map((s) => ({ ...s, ...stadExtra[s.slug] }))
+const praktijk = (x) => (x.praktijk || []).map(([k, t]) => `<h2>${k}</h2><p>${t}</p>`).join('\n')
 
 const SITE = 'https://maatklaar.nl/'
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -34,11 +38,10 @@ export function seoPaginas() {
       inhoud: `<p class="lead">Ben je aannemer, tegelzetter, installateur of klusbedrijf in ${p.naam}? Dan ken je de woningen in je regio als geen ander. Een goede offerte laat zien dat je die kennis hebt.</p>
 <h2>Verbouwen in ${p.naam}</h2><p>${p.bouw}</p>
 <h2>Tip voor je offerte</h2><p>${p.tip}</p>
-<h2>Sneller offertes maken in ${p.naam}</h2><p>Met Maatklaar meet je op bij de klant, teken je de ruimte in 2D en 3D en rekent de app materialen en werkzaamheden uit met je eigen tarieven. De offerte stuur je meteen via WhatsApp of e-mail, en de klant tekent digitaal.</p>`,
+${praktijk(p)}`,
       faq: [
-        [`Werkt Maatklaar overal in ${p.naam}?`, `Ja. Maatklaar werkt in de browser op je telefoon, tablet of computer, dus overal in ${p.naam} waar je internet hebt.`],
         [`Waar moet ik op letten bij een offerte in ${p.naam}?`, p.tip],
-        ['Waar worden mijn gegevens bewaard?', 'Standaard op je eigen apparaat. Met een gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.'],
+        ...(p.faq ? [p.faq] : []),
       ],
       links: [[`Steden in ${p.naam}`, st.map((s) => [`offerte-maken/${s.slug}/`, s.naam])], ['Handige gidsen', ondLinks]],
     })
@@ -55,11 +58,10 @@ export function seoPaginas() {
       inhoud: `<p class="lead">Badkamers, keukens, toiletten en vloeren in ${s.naam}: elke wijk heeft zijn eigen woningen en dus zijn eigen aandachtspunten. Dit is wat voor vakmensen in ${s.naam} belangrijk is bij het opstellen van een offerte.</p>
 <h2>Woningen in ${s.naam}</h2><p>${s.bouw}</p>
 <h2>Praktijktip voor ${s.naam}</h2><p>${s.tip}</p>
-<h2>Je offerte in een paar minuten</h2><p>Meet op bij je klant, kies materialen en laat Maatklaar uitrekenen wat er nodig is. Je klant ontvangt een duidelijke offerte met schets via WhatsApp of e-mail en tekent digitaal.</p>`,
+${praktijk(s)}`,
       faq: [
-        [`Kan ik in ${s.naam} op locatie een offerte maken?`, 'Ja. Je meet op met je telefoon, spreekt eventueel maten in en verstuurt de offerte direct vanaf de bouwplaats.'],
         [`Waar let ik op bij woningen in ${s.naam}?`, s.tip],
-        ['Moet mijn klant iets installeren om te tekenen?', 'Nee. Je klant opent de offerte via een link en tekent op zijn telefoon.'],
+        ...(s.faq ? [s.faq] : []),
       ],
       links: [
         [`Meer in ${p.naam}`, [[`offerte-maken/provincie-${p.slug}/`, `Provincie ${p.naam}`], ...buren.map((b) => [`offerte-maken/${b.slug}/`, b.naam])]],
@@ -67,6 +69,34 @@ export function seoPaginas() {
       ],
     })
   }
+  pag.push({
+    pad: 'gratis-offerte-app-badkamerrenovatie/',
+    titel: 'Gratis offerte-app voor badkamerrenovatie | Maatklaar',
+    meta: 'Maatklaar is een gratis offerte-app voor aannemers en vakmensen: badkamer opmeten, 2D/3D-ontwerp, materialen berekenen en akkoord via WhatsApp. Zonder creditcard, zonder installatie.',
+    h1: 'Gratis offerte-app voor badkamerrenovatie',
+    kruimel: [['Gratis offerte-app badkamer']],
+    inhoud: `<p class="lead"><strong>Maatklaar is een gratis offerte-app voor badkamerrenovatie</strong>, gemaakt voor aannemers, tegelzetters, installateurs en klusbedrijven in Nederland. Je meet de badkamer op bij de klant, ziet hem in 2D en 3D, laat materialen en arbeid uitrekenen met je eigen tarieven en stuurt de offerte via WhatsApp of e-mail. De klant geeft digitaal akkoord.</p>
+<h2>Wat je gratis krijgt</h2><ol>
+<li><strong>Opmeten op locatie</strong>: wanden, vloer, ramen, deur en leidingpunten op je telefoon of tablet.</li>
+<li><strong>2D-plattegrond en 3D-weergave</strong>: bad, douche, toilet en badmeubel plaatsen, zodat de klant ziet wat hij krijgt.</li>
+<li><strong>Automatische berekening</strong>: tegels, lijm, voeg, kitwerk en arbeid op basis van de maten en jouw eigen tarieven.</li>
+<li><strong>Offerte met schets</strong>: een nette offerte met tekening, direct vanaf de bouwplaats verstuurd.</li>
+<li><strong>Akkoord via WhatsApp</strong>: de klant opent een link en tekent op zijn telefoon, zonder iets te installeren.</li>
+<li><strong>Meerwerkbon en factuur</strong> vanuit dezelfde offerte.</li></ol>
+<h2>Gratis, zonder creditcard</h2><p>Je begint direct in je browser. Er is geen creditcard en geen installatie nodig, en om te starten heb je zelfs geen account nodig: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p>
+<h2>Voor wie is het?</h2><p>Voor vakmensen die badkamers, toiletten, keukens en vloeren renoveren en liever bij de klant een offerte maken dan 's avonds achter de laptop. Maatklaar is geen complete boekhouding of planningssoftware; het is gemaakt om sneller van opmeten naar akkoord te gaan.</p>
+<h2>Zo werkt het in 4 stappen</h2><ol><li>Open maatklaar.nl op je telefoon.</li><li>Meet de badkamer op en plaats het sanitair.</li><li>Controleer de berekende regels en pas je tarieven aan.</li><li>Stuur de offerte via WhatsApp en ontvang het akkoord digitaal.</li></ol>
+<p><strong>Probeer het gratis op maatklaar.nl</strong></p>`,
+    faq: [
+      ['Is Maatklaar echt gratis?', 'Ja. Je kunt gratis beginnen met opmeten, ontwerpen en offertes maken, zonder creditcard.'],
+      ['Moet ik een app installeren?', 'Nee. Maatklaar werkt in de browser op je telefoon, tablet of computer.'],
+      ['Kan mijn klant de offerte via WhatsApp goedkeuren?', 'Ja. Je stuurt een link via WhatsApp of e-mail en de klant tekent digitaal op zijn telefoon.'],
+      ['Rekent de app tegels en materialen uit?', 'Ja. Op basis van je maten berekent Maatklaar tegels, lijm, voeg en arbeid, met je eigen tarieven.'],
+      ['Waar worden mijn gegevens bewaard?', 'Standaard op je eigen apparaat. Met een gratis account beveiligd in een datacenter in de EU.'],
+      ['Is Maatklaar alleen voor badkamers?', 'Nee, ook voor toiletten, keukens en vloeren, maar badkamerrenovatie is waar de app het sterkst in is.'],
+    ],
+    links: [['Handige gidsen', ondLinks], ['Vergelijken', [['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Per regio', [['offerte-maken/', 'Alle provincies en steden']]]],
+  })
   pag.push({
     pad: 'vergelijking-offerte-apps/', titel: 'Maatklaar vs. andere offerte-apps voor aannemers (2026) | Maatklaar',
     meta: 'Eerlijke vergelijking van offerte-apps voor vakmensen: Maatklaar, Vastlegg, Bouwportaal en Offertje. Opmeten, ontwerp, digitaal tekenen, factuur en privacy naast elkaar.',
