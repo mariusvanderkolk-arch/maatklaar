@@ -1,6 +1,10 @@
 /** Stap 'Ontwerp': 2D-plattegrond-editor + 3D-weergave om aan de klant te laten zien. */
 import { BAD_KRANEN, DOUCHE_KRANEN, FRONT_KLEUREN, KRAAN_KLEUREN, heeftOmbouw, metOmbouw, sanitairVan, WASTAFEL_KRANEN, type Sanitair } from '../lib/ontwerp/sanitair'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
+import { AppWindow, Eye, Layers, Move, Ruler, Upload } from 'lucide-react'
+import { formaatCm, kalibreer, MAX_BESTAND_MB, nieuweOnderlegger, type Onderlegger } from '../lib/ontwerp/onderlegger'
+import { bewaarTekening, leesTekening, useTekening, verwijderTekening } from '../lib/ontwerp/onderleggerBestand'
+import type { Opening } from '../lib/types'
 import { Box, Copy, Download, FileImage, Grid2x2, Maximize2, Minus, Plus, Redo2, RotateCcw, RotateCw, Sparkles, Trash2, Undo2, Wand2 } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, Notice, NumberField, Switch } from '../components/ui'
 import { toast } from '../components/Toast'
@@ -50,6 +54,7 @@ type Modus =
   | { soort: 'item'; id: string; dx: number; dy: number; bewogen: boolean; sx: number; sy: number }
   | { soort: 'draai'; id: string }
   | { soort: 'pan'; vb: VB; cx: number; cy: number; bewogen: boolean }
+  | { soort: 'onder'; sx: number; sy: number; ox: number; oy: number; bewogen: boolean }
   | { soort: 'knijp'; vb: VB; afstand: number; mx: number; my: number }
   | null
 
@@ -91,9 +96,16 @@ export function OntwerpScherm({ p }: { p: Project }) {
   const [vb, setVb] = useState<VB | null>(null)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const modus = useRef<Modus>(null)
-  const [groep, setGroep] = useState<Groep>(p.type === 'keuken' ? 'keuken' : p.type === 'vloer' ? 'meubel' : 'sanitair')
+  const [groep, setGroep] = useState<Groep>(p.type === 'keuken' ? 'keuken' : p.type === 'vloer' ? 'meubel' : p.type === 'aanbouw' ? 'openingen' : 'sanitair')
   const [sleep, setSleep] = useState<{ type: ItemType; x: number; y: number; actief: boolean } | null>(null)
   const beeld3d = use3dBeeld(p.id)
+  // ——— onderlegger (eigen tekening; afbeelding alleen op dit apparaat) ———
+  const tekeningUrl = useTekening(p.id)
+  const [onderModus, setOnderModus] = useState<'uit' | 'schuif' | 'kalibreer'>('uit')
+  const [kalPunten, setKalPunten] = useState<{ x: number; y: number }[]>([])
+  const [kalCm, setKalCm] = useState(0)
+  const [tekeningBezig, setTekeningBezig] = useState(false)
+  const bestandRef = useRef<HTMLInputElement>(null)
   const opslagFout = ontwerpStore.fout()
 
   // ——— geschiedenis ———
@@ -184,6 +196,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
 
   const onItemDown = (e: RPointerEvent, id: string) => {
     e.stopPropagation()
+    if (onderModus !== 'uit') return onAchtergrondDown(e)
     vang(e)
     if (pointers.current.size >= 2) return startKnijp()
     const it = ontwerp.items.find((i) => i.id === id)
@@ -194,12 +207,25 @@ export function OntwerpScherm({ p }: { p: Project }) {
   }
   const onDraaiDown = (e: RPointerEvent, id: string) => {
     e.stopPropagation()
+    if (onderModus !== 'uit') return onAchtergrondDown(e)
     vang(e)
     modus.current = { soort: 'draai', id }
   }
   const onAchtergrondDown = (e: RPointerEvent) => {
     vang(e)
     if (pointers.current.size >= 2) return startKnijp()
+    const o = ontwerp.onderlegger
+    if (o && onderModus === 'schuif') {
+      const pt = naarCm(e.clientX, e.clientY)
+      modus.current = { soort: 'onder', sx: pt.x, sy: pt.y, ox: o.x, oy: o.y, bewogen: false }
+      return
+    }
+    if (o && onderModus === 'kalibreer') {
+      const pt = naarCm(e.clientX, e.clientY)
+      setKalPunten((k) => (k.length >= 2 ? [pt] : [...k, pt]))
+      modus.current = null
+      return
+    }
     if (vb) modus.current = { soort: 'pan', vb, cx: e.clientX, cy: e.clientY, bewogen: false }
   }
 
@@ -223,6 +249,12 @@ export function OntwerpScherm({ p }: { p: Project }) {
       const mx = (a.x + b.x) / 2
       const my = (a.y + b.y) / 2
       setVb([px - ((mx - r.left) / r.width) * w, py - ((my - r.top) / r.height) * h, w, h])
+    } else if (m.soort === 'onder') {
+      const o = opgeslagen.onderlegger
+      if (!o) return
+      const pt = naarCm(e.clientX, e.clientY)
+      m.bewogen = true
+      setConcept({ ...opgeslagen, onderlegger: { ...o, x: Math.round(m.ox + pt.x - m.sx), y: Math.round(m.oy + pt.y - m.sy) } })
     } else if (m.soort === 'pan') {
       const dx = e.clientX - m.cx
       const dy = e.clientY - m.cy
@@ -258,7 +290,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
     if (pointers.current.size > 0) return
     modus.current = null
     if (!m) return
-    if ((m.soort === 'item' && m.bewogen) || m.soort === 'draai') {
+    if ((m.soort === 'item' && m.bewogen) || m.soort === 'draai' || (m.soort === 'onder' && m.bewogen)) {
       if (concept) commit(concept)
     } else if (m.soort === 'pan' && !m.bewogen) setSel(null)
   }
@@ -362,6 +394,57 @@ export function OntwerpScherm({ p }: { p: Project }) {
     } else if (!s.actief) voegToe(s.type)
   }
 
+  // ——— onderlegger ———
+  const zetOnder = (o: Onderlegger | undefined) => {
+    const { onderlegger: _weg, ...rest } = ontwerp
+    void _weg
+    commit(o ? { ...rest, onderlegger: o } : rest)
+  }
+  const kiesTekening = async (f: File) => {
+    setTekeningBezig(true)
+    try {
+      const t = await leesTekening(f)
+      const blijvend = await bewaarTekening(p.id, t.blob)
+      zetOnder(nieuweOnderlegger(t.pxB, t.pxH, kamer, f.name, t.pdf))
+      setKalPunten([])
+      setOnderModus('kalibreer')
+      toast(blijvend ? 'Tekening geplaatst. Kalibreer: tik twee punten waarvan je de afstand weet.' : 'Tekening geplaatst, maar alleen voor deze sessie (deze browser bewaart geen bestanden).', blijvend ? 'ok' : 'fout')
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'De tekening kon niet worden gelezen.', 'fout')
+    } finally {
+      setTekeningBezig(false)
+      if (bestandRef.current) bestandRef.current.value = ''
+    }
+  }
+  const pasKalibratieToe = () => {
+    const o = ontwerp.onderlegger
+    if (!o || kalPunten.length < 2) return
+    const n = kalibreer(o, kalPunten[0], kalPunten[1], kalCm)
+    if (!n) return toast('Kies twee punten verder uit elkaar en vul een afstand in.', 'fout')
+    zetOnder(n)
+    setKalPunten([])
+    setOnderModus('uit')
+    toast('Schaal ingesteld. Verschuif of draai de tekening tot de wanden samenvallen.')
+  }
+  const verwijderOnder = () => {
+    void verwijderTekening(p.id)
+    zetOnder(undefined)
+    setOnderModus('uit')
+    setKalPunten([])
+  }
+  const kozijnItems = ontwerp.items.filter((i) => i.type === 'kozijn' || i.type === 'schuifpui' || i.type === 'raam' || i.type === 'deur')
+  const kozijnenNaarBerekening = () => {
+    const openingen: Opening[] = kozijnItems.map((i) => ({
+      id: uid(),
+      type: i.type === 'deur' ? 'deur' : 'raam',
+      breedte: Math.round(i.w) / 100,
+      hoogte: Math.round(ITEMS[i.type].h) / 100,
+      vanafVloer: i.type === 'deur' || i.type === 'schuifpui' ? 0 : Math.round(ITEMS[i.type].z) / 100,
+    }))
+    projectStore.werkBij(p.id, (x) => ({ ...x, afmetingen: { ...x.afmetingen, openingen } }))
+    toast(`${openingen.length} opening${openingen.length === 1 ? '' : 'en'} overgenomen in de berekening (vervangt de lijst bij Meten)`)
+  }
+
   // ——— afwerking ———
   const zetAfwerking = (wat: 'vloer' | 'wand', a: Partial<Afwerking>) => commit({ ...ontwerp, [wat]: { ...ontwerp[wat], ...a } })
   const tegelsInBerekening = () => {
@@ -449,7 +532,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
   }
 
   const leeg = ontwerp.items.length === 0
-  const bibItems = ITEM_TYPES.filter((t) => ITEMS[t].groep === groep)
+  const bibItems = ITEM_TYPES.filter((t) => ITEMS[t].groep === groep && (ITEMS[t].ruimtes.includes(p.type) || !ITEMS[t].ruimtes.every((r) => r === 'vloer' || r === 'aanbouw')))
   const relevanteGroepen = GROEPEN.filter((g) => ITEM_TYPES.some((t) => ITEMS[t].groep === g.id && (ITEMS[t].ruimtes.includes(p.type) || g.id === 'openingen' || g.id === 'meubel')))
   const s = vb ? vb[2] / Math.max(1, vak.current?.getBoundingClientRect().width ?? 400) : undefined
 
@@ -513,6 +596,17 @@ export function OntwerpScherm({ p }: { p: Project }) {
                   onAchtergrondDown={onAchtergrondDown}
                   onMove={onMove}
                   onUp={onUp}
+                  onderlegger={ontwerp.onderlegger && tekeningUrl ? { ...ontwerp.onderlegger, url: tekeningUrl } : undefined}
+                  bovenlaag={
+                    onderModus === 'kalibreer' && kalPunten.length > 0 ? (
+                      <g pointerEvents="none">
+                        {kalPunten.length === 2 && <line x1={kalPunten[0].x} y1={kalPunten[0].y} x2={kalPunten[1].x} y2={kalPunten[1].y} stroke="#D2452F" strokeWidth={2 * (s ?? 1)} strokeDasharray={`${6 * (s ?? 1)} ${4 * (s ?? 1)}`} />}
+                        {kalPunten.map((k, i) => (
+                          <circle key={i} cx={k.x} cy={k.y} r={6 * (s ?? 1)} fill="#D2452F" stroke="#fff" strokeWidth={2 * (s ?? 1)} />
+                        ))}
+                      </g>
+                    ) : undefined
+                  }
                   titel={`Plattegrond ${p.naam}, ${kamer.L} × ${kamer.B} cm`}
                 />
               )}
@@ -675,6 +769,123 @@ export function OntwerpScherm({ p }: { p: Project }) {
             </div>
           </div>
         </Card>
+
+        <Card>
+          <CardHeader title="Constructietekening / plattegrond eronder" sub="Upload je bouw- of constructietekening (PNG, JPG of PDF, 1e pagina) en teken er op schaal overheen. DXF/DWG nog niet." icon={<Layers className="h-5 w-5" />} />
+          <div className="space-y-3 p-5 text-sm">
+            <input
+              ref={bestandRef}
+              type="file"
+              accept="image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) void kiesTekening(f)
+              }}
+            />
+            {!ontwerp.onderlegger ? (
+              <>
+                <Button variant="secondary" icon={<Upload className="h-4 w-4" />} onClick={() => bestandRef.current?.click()} disabled={tekeningBezig || weergave !== '2d'}>
+                  {tekeningBezig ? 'Tekening inlezen…' : 'Tekening kiezen (PNG, JPG of PDF)'}
+                </Button>
+                <p className="text-[0.75rem] text-ink-muted">
+                  Max. {MAX_BESTAND_MB} MB. Van een PDF wordt alleen pagina 1 gebruikt, omgezet in je browser. De tekening blijft op dit apparaat: niet in de cloud, niet op de offerte of PNG. Het is alleen een hulplijn om over te tekenen; Maatklaar controleert geen constructie.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate font-medium" title={ontwerp.onderlegger.naam}>
+                    {ontwerp.onderlegger.naam}
+                    {ontwerp.onderlegger.pdf ? ' (PDF p.1)' : ''}
+                  </span>
+                  <Switch checked={ontwerp.onderlegger.zichtbaar} onChange={(v) => zetOnder({ ...ontwerp.onderlegger!, zichtbaar: v })} label="Tekening tonen" />
+                </div>
+                {tekeningUrl === null && <Notice title="Afbeelding niet op dit apparaat">De instellingen zijn er wel, maar de tekening zelf staat op een ander apparaat. Kies hem hier opnieuw.</Notice>}
+                <label className="block">
+                  <span className="flex items-center gap-1.5 text-[0.78rem] text-ink-muted">
+                    <Eye className="h-3.5 w-3.5" /> Zichtbaarheid {Math.round(ontwerp.onderlegger.opacity * 100)}%
+                  </span>
+                  <input type="range" min={10} max={100} step={5} value={Math.round(ontwerp.onderlegger.opacity * 100)} onChange={(e) => zetOnder({ ...ontwerp.onderlegger!, opacity: Number(e.target.value) / 100 })} className="w-full accent-[#9A7A45]" aria-label="Zichtbaarheid tekening" />
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-[0.78rem] text-ink-muted">Draaien</span>
+                  <IconKnop label="Tekening 1° linksom" onClick={() => zetOnder({ ...ontwerp.onderlegger!, rot: (ontwerp.onderlegger!.rot + 359) % 360 })}>
+                    <RotateCcw className="h-4 w-4" />
+                  </IconKnop>
+                  <IconKnop label="Tekening 1° rechtsom" onClick={() => zetOnder({ ...ontwerp.onderlegger!, rot: (ontwerp.onderlegger!.rot + 1) % 360 })}>
+                    <RotateCw className="h-4 w-4" />
+                  </IconKnop>
+                  <Button size="sm" variant="secondary" onClick={() => zetOnder({ ...ontwerp.onderlegger!, rot: (ontwerp.onderlegger!.rot + 90) % 360 })}>
+                    +90°
+                  </Button>
+                  <span className="ml-auto tabular-nums text-[0.78rem] text-ink-muted">{ontwerp.onderlegger.rot}°</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button size="sm" variant={onderModus === 'schuif' ? 'gold' : 'secondary'} icon={<Move className="h-4 w-4" />} onClick={() => setOnderModus(onderModus === 'schuif' ? 'uit' : 'schuif')} disabled={weergave !== '2d'}>
+                    {onderModus === 'schuif' ? 'Klaar' : 'Verschuiven'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={onderModus === 'kalibreer' ? 'gold' : 'secondary'}
+                    icon={<Ruler className="h-4 w-4" />}
+                    onClick={() => {
+                      setKalPunten([])
+                      setOnderModus(onderModus === 'kalibreer' ? 'uit' : 'kalibreer')
+                    }}
+                    disabled={weergave !== '2d'}
+                  >
+                    {onderModus === 'kalibreer' ? 'Stoppen' : 'Kalibreren'}
+                  </Button>
+                </div>
+                {onderModus === 'schuif' && <p className="text-[0.78rem] text-ink-muted">Sleep op de plattegrond om de tekening te verplaatsen. Objecten zijn zolang vergrendeld.</p>}
+                {onderModus === 'kalibreer' && (
+                  <div className="space-y-2 rounded-xl bg-sand-50 px-3.5 py-3 ring-1 ring-sand-200">
+                    <p className="text-[0.78rem] text-ink-soft">
+                      {kalPunten.length < 2 ? `Tik punt ${kalPunten.length + 1} van 2 op de tekening (bijv. de uiteinden van een maatvoering).` : 'Vul de echte afstand tussen de twee punten in.'}
+                    </p>
+                    {kalPunten.length === 2 && (
+                      <>
+                        <NumberField label="Echte afstand" value={kalCm} onChange={setKalCm} unit="cm" min={1} step={1} />
+                        <Button size="sm" variant="gold" onClick={pasKalibratieToe} disabled={!(kalCm > 0)}>
+                          Schaal toepassen
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
+                <p className="text-[0.75rem] text-ink-muted">
+                  {ontwerp.onderlegger.gekalibreerd ? 'Gekalibreerd' : 'Nog niet gekalibreerd'} · ca. {Math.round(formaatCm(ontwerp.onderlegger).w)} × {Math.round(formaatCm(ontwerp.onderlegger).h)} cm op schaal
+                </p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="secondary" icon={<Upload className="h-4 w-4" />} onClick={() => bestandRef.current?.click()} disabled={tekeningBezig}>
+                    Vervangen
+                  </Button>
+                  <Button size="sm" variant="secondary" icon={<Trash2 className="h-4 w-4" />} onClick={verwijderOnder}>
+                    Verwijderen
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
+
+        {p.type === 'aanbouw' && (
+          <Card>
+            <CardHeader title="Kozijnen" sub="Van plattegrond naar berekening" icon={<AppWindow className="h-5 w-5" />} />
+            <div className="space-y-2 p-5 text-sm">
+              <p className="text-ink-soft">
+                {kozijnItems.length === 0
+                  ? 'Zet kozijnen, een schuifpui of deuren in de wand via "Deur & raam" hieronder.'
+                  : `${kozijnItems.length} opening${kozijnItems.length === 1 ? '' : 'en'} in het ontwerp, samen ${(kozijnItems.reduce((t, i) => t + i.w * ITEMS[i.type].h, 0) / 10000).toLocaleString('nl-NL', { maximumFractionDigits: 2 })} m².`}
+              </p>
+              <Button size="sm" variant="secondary" onClick={kozijnenNaarBerekening} disabled={kozijnItems.length === 0}>
+                Overnemen in berekening
+              </Button>
+              <p className="text-[0.75rem] text-ink-muted">Vervangt de openingen bij Meten; de gevel wordt dan netto (min kozijnen) berekend. Maten volgens de tekening/leverancier controleren.</p>
+            </div>
+          </Card>
+        )}
 
         <Card>
           <CardHeader title="Laten zien aan de klant" sub="Afbeeldingen en offerte" icon={<FileImage className="h-5 w-5" />} />

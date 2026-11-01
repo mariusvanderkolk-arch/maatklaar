@@ -6,6 +6,7 @@
  * 0 = achterkant tegen de bovenwand, 90 = rechterwand, 180 = onderwand, 270 = linkerwand.
  */
 import type { Project, ProjectType } from '../types'
+import { normaliseerOnderlegger, type Onderlegger } from './onderlegger'
 import { normSanitair, ombouwAchterHangtoiletten, sanitairTuple, uitSanitairTuple, type CompactSanitair, type Sanitair } from './sanitair'
 
 export const WAND_DIKTE = 12
@@ -39,6 +40,16 @@ export type ItemType =
   | 'douchewand'
   | 'nis'
   | 'ombouw'
+  | 'kozijn'
+  | 'schuifpui'
+  | 'bank'
+  | 'hoekbank'
+  | 'fauteuil'
+  | 'salontafel'
+  | 'eettafel'
+  | 'stoel'
+  | 'tvmeubel'
+  | 'vloerkleed'
 
 export type Groep = 'sanitair' | 'meubel' | 'verwarming' | 'openingen' | 'keuken'
 /** 'aan' = hoort tegen een wand, 'in' = zit in de wand (deur/raam), 'vrij' = overal */
@@ -62,8 +73,9 @@ export interface ItemDef {
   max: [number, number]
 }
 
-const ALLE: ProjectType[] = ['badkamer', 'toilet', 'keuken', 'vloer']
+const ALLE: ProjectType[] = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw']
 const NAT: ProjectType[] = ['badkamer', 'toilet']
+const WOON: ProjectType[] = ['vloer', 'aanbouw']
 
 export const ITEMS: Record<ItemType, ItemDef> = {
   'douche-inloop': { type: 'douche-inloop', naam: 'Inloopdouche', groep: 'sanitair', w: 100, d: 120, h: 200, z: 0, montage: 'aan', ruimtes: ['badkamer'], familie: 'douche', min: [70, 70], max: [200, 200] },
@@ -93,6 +105,16 @@ export const ITEMS: Record<ItemType, ItemDef> = {
   'badmeubel-dubbel': { type: 'badmeubel-dubbel', naam: 'Dubbel badmeubel', groep: 'sanitair', w: 120, d: 46, h: 55, z: 35, montage: 'aan', ruimtes: ['badkamer'], familie: 'wastafel', min: [110, 35], max: [200, 55] },
   douchewand: { type: 'douchewand', naam: 'Douchewand (glas)', groep: 'sanitair', w: 100, d: 2, h: 200, z: 0, montage: 'vrij', ruimtes: ['badkamer'], min: [30, 1], max: [160, 4] },
   nis: { type: 'nis', naam: 'Inbouwnis', groep: 'meubel', w: 60, d: 10, h: 30, z: 110, montage: 'aan', ruimtes: NAT, min: [20, 8], max: [150, 15] },
+  kozijn: { type: 'kozijn', naam: 'Kozijn (raam)', groep: 'openingen', w: 120, d: WAND_DIKTE, h: 150, z: 60, montage: 'in', ruimtes: ['aanbouw'], min: [40, WAND_DIKTE], max: [400, WAND_DIKTE] },
+  schuifpui: { type: 'schuifpui', naam: 'Schuifpui', groep: 'openingen', w: 300, d: WAND_DIKTE, h: 230, z: 0, montage: 'in', ruimtes: ['aanbouw'], min: [150, WAND_DIKTE], max: [600, WAND_DIKTE] },
+  bank: { type: 'bank', naam: 'Bank', groep: 'meubel', w: 220, d: 95, h: 85, z: 0, montage: 'vrij', ruimtes: WOON, familie: 'bank', min: [120, 75], max: [400, 120] },
+  hoekbank: { type: 'hoekbank', naam: 'Hoekbank', groep: 'meubel', w: 280, d: 200, h: 85, z: 0, montage: 'vrij', ruimtes: WOON, familie: 'bank', min: [180, 150], max: [400, 350] },
+  fauteuil: { type: 'fauteuil', naam: 'Fauteuil', groep: 'meubel', w: 85, d: 85, h: 85, z: 0, montage: 'vrij', ruimtes: WOON, min: [60, 60], max: [120, 120] },
+  salontafel: { type: 'salontafel', naam: 'Salontafel', groep: 'meubel', w: 110, d: 60, h: 42, z: 0, montage: 'vrij', ruimtes: WOON, min: [40, 40], max: [180, 120] },
+  eettafel: { type: 'eettafel', naam: 'Eettafel', groep: 'meubel', w: 200, d: 95, h: 76, z: 0, montage: 'vrij', ruimtes: WOON, min: [80, 70], max: [350, 140] },
+  stoel: { type: 'stoel', naam: 'Stoel', groep: 'meubel', w: 48, d: 52, h: 85, z: 0, montage: 'vrij', ruimtes: WOON, min: [38, 40], max: [70, 70] },
+  tvmeubel: { type: 'tvmeubel', naam: 'Tv-meubel', groep: 'meubel', w: 180, d: 40, h: 50, z: 0, montage: 'aan', ruimtes: WOON, min: [80, 30], max: [360, 60] },
+  vloerkleed: { type: 'vloerkleed', naam: 'Vloerkleed', groep: 'meubel', w: 240, d: 170, h: 1, z: 0, montage: 'vrij', ruimtes: WOON, min: [60, 60], max: [400, 400] },
   ombouw: { type: 'ombouw', naam: 'Leidingombouw', groep: 'meubel', w: 120, d: 20, h: 120, z: 0, montage: 'aan', ruimtes: NAT, min: [30, 10], max: [400, 40] },
 }
 
@@ -210,6 +232,8 @@ export interface Ontwerp {
   blad?: { kleur: string; ruw: number; metaal?: number }
   /** uiterlijk achterwand (keuken), alleen weergave */
   achterwand?: { kleur: string; formaat: string; verband: string; glans?: boolean; metaal?: boolean }
+  /** eigen tekening onder de plattegrond (afbeelding alleen lokaal; niet in de offerte-link) */
+  onderlegger?: Onderlegger
 }
 
 export const kleurVan = (id: string): Kleur => KLEUREN.find((k) => k.id === id) ?? KLEUREN[0]
@@ -480,6 +504,7 @@ export function normaliseerOntwerp(x: unknown, type: ProjectType): Ontwerp {
     inOfferte: x.inOfferte !== false,
     bijgewerkt: isNum(x.bijgewerkt) ? x.bijgewerkt : 0,
     ...(normSanitair(x.sanitair) ? { sanitair: normSanitair(x.sanitair) } : {}),
+    ...(normaliseerOnderlegger(x.onderlegger) ? { onderlegger: normaliseerOnderlegger(x.onderlegger) } : {}),
   }
 }
 
@@ -515,7 +540,7 @@ export function uitCompact(c: unknown): { ontwerp: Ontwerp; kamer: Kamer } | nul
   if (!isObj(c) || !Array.isArray(c.k) || !Array.isArray(c.i)) return null
   const [L, B, H, tegelH] = c.k as unknown[]
   if (![L, B, H].every(isNum)) return null
-  const type: ProjectType = ['badkamer', 'toilet', 'keuken', 'vloer'].includes(c.t as string) ? (c.t as ProjectType) : 'badkamer'
+  const type: ProjectType = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw'].includes(c.t as string) ? (c.t as ProjectType) : 'badkamer'
   const kamer: Kamer = {
     L: Math.min(3000, Math.max(80, L as number)),
     B: Math.min(3000, Math.max(80, B as number)),

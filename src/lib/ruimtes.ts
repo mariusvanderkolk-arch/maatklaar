@@ -2,8 +2,9 @@
 import type { Afmetingen, ProjectType, Scope, ScopeKey } from './types'
 
 /** Fase/facet waaronder een werkzaamheid in de checklist staat. */
-export type Fase = 'sloop' | 'ondergrond' | 'installaties' | 'keuken' | 'tegelwerk' | 'sanitair' | 'afwerking'
+export type Fase = 'casco' | 'sloop' | 'ondergrond' | 'installaties' | 'keuken' | 'tegelwerk' | 'sanitair' | 'afwerking'
 export const FASES: { id: Fase; naam: string }[] = [
+  { id: 'casco', naam: 'Casco aanbouw' },
   { id: 'sloop', naam: 'Sloop & afvoer' },
   { id: 'ondergrond', naam: 'Ondergrond' },
   { id: 'installaties', naam: 'Leidingwerk, elektra & klimaat' },
@@ -20,6 +21,7 @@ export const FASE_VAN: Record<ScopeKey, Fase> = {
   voorzetwand: 'ondergrond', nis: 'tegelwerk', accessoires: 'afwerking', deurenInkorten: 'afwerking',
   keukenDemontage: 'sloop', perilex: 'installaties', keukenMontage: 'keuken', werkblad: 'keuken', uitsparingen: 'keuken', apparatuur: 'keuken',
   kitwerk: 'afwerking', stucwerk: 'afwerking', plafond: 'afwerking', deur: 'afwerking',
+  grondwerk: 'casco', fundering: 'casco', buitenmuur: 'casco', dak: 'casco', isolatie: 'casco', kozijnen: 'casco', gevelDoorbraak: 'casco', hwa: 'casco', sauswerk: 'afwerking', behang: 'afwerking',
 }
 /** Checklist gegroepeerd per fase (lege fases weggelaten). */
 export function scopePerFase(type: ProjectType | undefined): { fase: Fase; naam: string; items: ScopeItem[] }[] {
@@ -70,6 +72,16 @@ export const SCOPE_BASIS: Record<ScopeKey, ScopeItem> = {
   uitsparingen: { key: 'uitsparingen', label: 'Uitsparingen werkblad', omschrijving: 'Spoelbak en kookplaat' },
   apparatuur: { key: 'apparatuur', label: 'Inbouwapparatuur aansluiten', omschrijving: 'Kookplaat, oven, vaatwasser, koelkast en afzuigkap' },
   perilex: { key: 'perilex', label: 'Perilex & extra groepen', omschrijving: 'Kookgroep (2-fase) en groepen door de elektricien', optioneel: true },
+  grondwerk: { key: 'grondwerk', label: 'Grondwerk', omschrijving: 'Ontgraven en aanvullen onder de aanbouw (m² vloer)' },
+  fundering: { key: 'fundering', label: 'Fundering', omschrijving: 'Strokenfundering langs de nieuwe gevels (m¹). Constructie volgens constructeur' },
+  buitenmuur: { key: 'buitenmuur', label: 'Gevels / buitenmuren', omschrijving: 'Nieuwe gevels, m² netto (minus kozijnen)' },
+  dak: { key: 'dak', label: 'Plat dak', omschrijving: 'Dakvlak incl. overstek, met daktrim (m¹)' },
+  isolatie: { key: 'isolatie', label: 'Isolatie', omschrijving: 'Vloer, gevels en dak (m²)' },
+  kozijnen: { key: 'kozijnen', label: 'Kozijnen', omschrijving: 'Ramen, deuren en schuifpui (stuks en m²)' },
+  gevelDoorbraak: { key: 'gevelDoorbraak', label: 'Doorbraak bestaande gevel', omschrijving: 'Opening naar het huis (m¹). Stalen ligger volgens constructeur' },
+  hwa: { key: 'hwa', label: 'Hemelwaterafvoer', omschrijving: 'HWA met aansluiting op het riool' },
+  sauswerk: { key: 'sauswerk', label: 'Sauswerk', omschrijving: 'Wanden en plafond sauzen (latex, 2 lagen). Met behang: alleen plafond', optioneel: true },
+  behang: { key: 'behang', label: 'Behang', omschrijving: 'Wanden behangen (m² netto, minus kozijnen)', optioneel: true },
   plafond: { key: 'plafond', label: 'PVC-plafond', omschrijving: 'Vochtbestendige plafondpanelen (i.p.v. stucwerk)', optioneel: true },
 }
 
@@ -145,6 +157,20 @@ export const RUIMTES: RuimteType[] = [
       deur: { label: 'Dorpel & deur', omschrijving: 'Nieuwe dorpel en deur passend maken/vervangen' },
     },
     afmetingen: { lengte: 6.0, breedte: 4.5, hoogte: 2.6, tegelhoogte: 0 },
+    snijverlies: 7,
+  },
+  {
+    id: 'aanbouw',
+    label: 'Aanbouw',
+    omschrijving: 'Uitbouw aan de achtergevel: casco-hoeveelheden en kozijnen',
+    werk: ['grondwerk', 'fundering', 'buitenmuur', 'isolatie', 'dak', 'hwa', 'kozijnen', 'gevelDoorbraak', 'sloopwerk', 'container', 'dekvloer', 'vloerverwarming', 'elektra', 'radiator', 'vloertegels', 'legvloer', 'ondervloer', 'plinten', 'stucwerk', 'sauswerk', 'behang', 'plafond'],
+    standaard: ['grondwerk', 'fundering', 'buitenmuur', 'isolatie', 'dak', 'hwa', 'kozijnen', 'gevelDoorbraak', 'dekvloer', 'elektra', 'stucwerk', 'sauswerk'],
+    teksten: {
+      stucwerk: { label: 'Stucwerk', omschrijving: 'Binnenzijde wanden en plafond stucen (saus-/behangklaar)' },
+      vloertegels: { label: 'Tegelvloer', omschrijving: 'In plaats van laminaat/PVC, incl. lijm en voeg' },
+      vloerverwarming: { omschrijving: 'Elektrische mat onder de tegelvloer, met thermostaat' },
+    },
+    afmetingen: { lengte: 4.0, breedte: 3.0, hoogte: 2.7, tegelhoogte: 0 },
     snijverlies: 7,
   },
 ]

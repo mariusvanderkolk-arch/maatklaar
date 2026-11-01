@@ -17,6 +17,7 @@
  */
 import { ruimte } from './ruimtes'
 import { DETAIL_ARTIKELEN, type DetailId } from './artikelen'
+import { aanbouwRegels, type AanbouwId } from './aanbouw'
 import { aantalStopcontacten, aantalUitsparingen, achterwandInfo, achterwandUren, GLAS_KLEUREN, keukenArbeid, keukenVan, werkbladInfo, werkbladPrijs } from './keuken'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat, Afmetingen, Opening, Project, ProjectType, Scope, TileSpec } from './types'
 
@@ -226,6 +227,18 @@ export function berekenOppervlakken(a: Afmetingen, scope: Partial<Pick<Scope, 'i
   const L = Math.max(0, a.lengte)
   const B = Math.max(0, a.breedte)
   const H = Math.max(0, a.hoogte)
+  if (type === 'aanbouw') {
+    // binnenzijde: alle vier de wanden (ook de bestaande gevel) tot het plafond, minus openingen; geen tegelwanden
+    const omtrek = 2 * (L + B)
+    const vloer = L * B
+    const deurBreedte = som(a.openingen.filter((o) => o.type === 'deur').map((o) => Math.max(0, o.breedte)))
+    const aftrek = som(a.openingen.map((o) => Math.max(0, o.breedte) * Math.max(0, o.hoogte)))
+    return {
+      omtrek, wandBruto: 0, openingenAftrek: 0, wandNetto: 0, vloer, plafond: vloer,
+      wandBovenTegels: Math.max(0, omtrek * H - aftrek), deurBreedte, douchezoneWand: 0, waterdichtOppervlak: vloer,
+      tegelhoogte: 0, type, spatwand: 0, plintLengte: Math.max(0, omtrek - deurBreedte),
+    }
+  }
   if (type === 'keuken' || type === 'vloer') {
     const omtrek = 2 * (L + B)
     const vloer = L * B
@@ -360,6 +373,7 @@ export type Groep =
   | 'elektra'
   | 'timmerwerk'
   | 'keuken'
+  | 'aanbouw'
 
 export const GROEPEN: { id: Groep; naam: string }[] = [
   { id: 'sloop', naam: 'Sloop & afvoer' },
@@ -375,11 +389,12 @@ export const GROEPEN: { id: Groep; naam: string }[] = [
   { id: 'sanitair', naam: 'Sanitair' },
   { id: 'timmerwerk', naam: 'Deur, dorpel & plafond' },
   { id: 'keuken', naam: 'Keuken' },
+  { id: 'aanbouw', naam: 'Aanbouw (casco)' },
 ]
 
 /** Eigen artikel van de aannemer (onbeperkt, per categorie). */
 export type EigenArtikelId = `eigen-${string}`
-export type ProductId = BasisId | DetailId | EigenArtikelId
+export type ProductId = BasisId | DetailId | EigenArtikelId | AanbouwId
 export type BasisId =
   | 'wandtegel'
   | 'vloertegel'
@@ -493,6 +508,19 @@ const fmtTegel = (t: TileSpec) => `${nl(t.lengte, 1)} × ${nl(t.breedte, 1)} cm`
 
 /** Berekent alle materialen voor een project. */
 export function berekenMaterialen(p: Project): MateriaalRegel[] {
+  if ((p.type ?? 'badkamer') === 'aanbouw') return [...aanbouwMaterialen(p), ...berekenMaterialenRuimte(p)]
+  return berekenMaterialenRuimte(p)
+}
+
+/** Casco-posten van een aanbouw: all-in richtprijs per eenheid (aannemer kan overschrijven). */
+function aanbouwMaterialen(p: Project): MateriaalRegel[] {
+  return aanbouwRegels(p.afmetingen, effectieveScope(p)).map((r) => ({
+    id: r.id, groep: 'aanbouw', naam: r.naam, nodig: r.nodig, nodigEenheid: r.eenheid, aantal: r.nodig, verpakking: r.eenheid, prijsAantal: r.nodig,
+    toelichting: r.toelichting,
+  }))
+}
+
+function berekenMaterialenRuimte(p: Project): MateriaalRegel[] {
   const s = effectieveScope(p)
   const type = p.type ?? 'badkamer'
   const o = berekenOppervlakken(p.afmetingen, s, type)
@@ -815,9 +843,10 @@ export function berekenMaterialen(p: Project): MateriaalRegel[] {
       nodig: kg, nodigEenheid: 'kg', aantal: zakken, verpakking: `zak à ${REGELS.pleisterZakKg} kg`, prijsAantal: zakken, inhoud: REGELS.pleisterZakKg, verpakkingSoort: 'zak',
       toelichting: `(${nl(o.plafond)} m² plafond + ${nl(o.wandBovenTegels)} m² wand) × ${nl(REGELS.pleisterKgPerM2, 1)} kg/m² = ${nl(kg, 1)} kg`,
     })
+    // aanbouw: verf loopt via de post Sauswerk (geen badkamerverf)
     const liter = m2 * REGELS.verfLPerM2
     const bussen = omhoog(liter / REGELS.verfBusL)
-    add({
+    if (type !== 'aanbouw') add({
       id: 'verf', groep: 'afwerking', naam: 'Badkamerverf (anti-schimmel)',
       nodig: liter, nodigEenheid: 'L', aantal: bussen, verpakking: `bus à ${nl(REGELS.verfBusL, 1)} L`, prijsAantal: bussen, inhoud: REGELS.verfBusL, verpakkingSoort: 'bus',
       toelichting: `${nl(m2)} m² × 2 lagen × 0,1 L/m² = ${nl(liter, 1)} L`,
@@ -1015,7 +1044,7 @@ export function berekenArbeid(p: Project): ArbeidRegel[] {
   if (s.wastafelmeubel) add('wastafelmeubel', 'Wastafelmeubel plaatsen', ARBEID.wastafelmeubel)
   if (s.fontein) add('fontein', 'Fonteintje plaatsen', ARBEID.fontein)
   if (s.kitwerk) add('kitwerk', 'Kitwerk', kitLengte(p, o) * ARBEID.kitwerkPerM)
-  if (s.stucwerk) add('stucwerk', 'Stucwerk en schilderen', (o.plafond + o.wandBovenTegels) * ARBEID.stucwerkPerM2)
+  if (s.stucwerk) add('stucwerk', type === 'aanbouw' ? 'Stucwerk' : 'Stucwerk en schilderen', (o.plafond + o.wandBovenTegels) * ARBEID.stucwerkPerM2)
   if (s.dekvloer) add('dekvloer', 'Dekvloer storten', o.vloer * ARBEID.dekvloerPerM2 + ARBEID.dekvloerVast)
   const tp = tappunten(s, type)
   if (s.leidingwerk) add('leidingwerk', 'Leidingwerk water en afvoer', tp.totaal * ARBEID.leidingwerkPerTappunt)

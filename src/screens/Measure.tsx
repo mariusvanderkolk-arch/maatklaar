@@ -15,6 +15,7 @@ import { effectieveScope } from '../lib/calc'
 import { ACHTERWANDEN, GLAS_KLEUREN, aantalStopcontacten, achterwandBeeld, achterwandInfo, APPARATEN, WERKBLADEN, keukenVan, werkbladBeeld, werkbladInfo, werkbladPrijs, type KeukenSpec } from '../lib/keuken'
 import { kleurVan } from '../lib/ontwerp/model'
 import { getal } from '../lib/format'
+import { aanbouwMaten } from '../lib/aanbouw'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
 import type { Afmetingen, LegvloerSpec, Opening, Project, TileSpec } from '../lib/types'
@@ -142,6 +143,24 @@ export function Measure({ p }: { p: Project }) {
             </div>}
           </div>
         </Card>
+
+        {type === 'aanbouw' && (() => {
+          const m = aanbouwMaten(a)
+          const ab = a.aanbouw ?? { doorbraak: 0, overstek: 0 }
+          return (
+            <Card>
+              <CardHeader icon={<Ruler className="h-5 w-5" />} title="Aanbouw" sub="Binnenmaten. De lengte staat tegen de bestaande gevel (bovenwand in de plattegrond)." />
+              <div className="grid grid-cols-2 gap-4 p-5 sm:p-6">
+                <NumberField label="Doorbraak bestaande gevel" unit="m" value={ab.doorbraak} onChange={(v) => setA({ aanbouw: { ...ab, doorbraak: Math.min(v, a.lengte) } })} hint="Breedte van de opening naar het huis." />
+                <NumberField label="Dakoverstek" unit="m" value={ab.overstek} onChange={(v) => setA({ aanbouw: { ...ab, overstek: Math.min(v, 1) } })} hint="Aan de drie vrije zijden; 0 = geen." />
+                <p className="col-span-2 rounded-xl bg-sand-50 px-3.5 py-3 text-[0.8rem] leading-snug text-ink-soft ring-1 ring-sand-200">
+                  Vloer {getal(m.vloer)} m² · nieuwe gevels {getal(m.gevelLengte)} m¹ · gevel netto {getal(m.gevelNetto)} m² · dak {getal(m.dak)} m². Alleen hoeveelheden: geen constructieberekening.
+                  Fundering, ligger en dak altijd volgens constructeur en tekening.
+                </p>
+              </div>
+            </Card>
+          )
+        })()}
 
         {type === 'keuken' && s.spatwand && (
           <Card>
@@ -324,6 +343,8 @@ export function Measure({ p }: { p: Project }) {
                 ? 'Deurbreedtes gaan af van de plinten.'
                 : type === 'keuken'
                   ? 'Deurbreedtes gaan af van de omtrek (plinten/naden).'
+                  : type === 'aanbouw'
+                    ? 'Kozijnen in de nieuwe gevels: ze gaan af van het gevel-m² en tellen mee bij Kozijnen.'
                   : 'Openingen worden van het wandoppervlak afgetrokken, voor zover ze in de tegelzone vallen.'
             }
           />

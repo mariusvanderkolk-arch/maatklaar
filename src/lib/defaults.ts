@@ -137,7 +137,7 @@ export function voorbeeldProjecten(): Project[] {
 const OUDE_VOORBEELD_ADRESSEN = ['Lindenlaan 12, Amersfoort', 'Havenstraat 4, Zwolle', 'Kerkweg 31, Utrecht', 'Molenstraat 8, Deventer']
 
 export function normaliseerProject(ruw: Partial<Project> & { id: string }): Project {
-  const type: ProjectType = ruw.type && ['badkamer', 'toilet', 'keuken', 'vloer'].includes(ruw.type) ? ruw.type : 'badkamer'
+  const type: ProjectType = ruw.type && ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw'].includes(ruw.type) ? ruw.type : 'badkamer'
   const basis = nieuwProject({ type })
   const scope = { ...Object.fromEntries(ALLE_SCOPE_KEYS.map((k) => [k, false])), ...(ruw.scope ?? basis.scope) } as Scope
   return {

@@ -1,5 +1,6 @@
 /** 2D-plattegrond (bovenaanzicht) van een ontwerp. Alleen-lezen of, met handlers, als basis voor de editor. */
-import { memo, useMemo, type PointerEvent as RPointerEvent, type Ref } from 'react'
+import { memo, useMemo, type PointerEvent as RPointerEvent, type ReactNode, type Ref } from 'react'
+import { formaatCm, type Onderlegger } from '../../lib/ontwerp/onderlegger'
 import { afstanden, halveMaat, ITEMS, kleurVan, WAND_DIKTE, type Kamer, type Ontwerp, type OntwerpItem } from '../../lib/ontwerp/model'
 import { vloerAfbeelding } from '../../lib/ontwerp/tegels'
 import { Symbool, SymboolDefs } from './symbolen'
@@ -30,6 +31,10 @@ interface Props {
   preserveAspectRatio?: string
   onMove?: (e: RPointerEvent) => void
   onUp?: (e: RPointerEvent) => void
+  /** eigen tekening (alleen in de editor; wordt niet meegenomen in de PNG-export) */
+  onderlegger?: Onderlegger & { url: string }
+  /** extra UI-laag bovenop (bijv. kalibratiepunten); wordt niet geëxporteerd */
+  bovenlaag?: ReactNode
 }
 
 function Maatlijn({ x1, y1, x2, y2, tekst, s, kant = -1, kleur = MAAT }: { x1: number; y1: number; x2: number; y2: number; tekst: string; s: number; kant?: number; kleur?: string }) {
@@ -66,7 +71,7 @@ function Maatlijn({ x1, y1, x2, y2, tekst, s, kant = -1, kleur = MAAT }: { x1: n
   )
 }
 
-function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonMaten = true, className = '', svgRef, titel, onItemDown, onDraaiDown, onAchtergrondDown, interactief, preserveAspectRatio, onMove, onUp }: Props) {
+function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonMaten = true, className = '', svgRef, titel, onItemDown, onDraaiDown, onAchtergrondDown, interactief, preserveAspectRatio, onMove, onUp, onderlegger, bovenlaag }: Props) {
   const { L, B } = kamer
   const m = PLAN_MARGE
   const vb = viewBox ?? [-m, -m, L + 2 * m, B + 2 * m]
@@ -204,6 +209,24 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
       {/* gouden binnenlijn + zachte binnenschaduw langs de wand */}
       <rect x={0} y={0} width={L} height={B} fill="none" stroke="url(#sw-wandschaduw)" strokeWidth={6 * s} pointerEvents="none" opacity={0.5} />
       <rect x={-0.6 * s} y={-0.6 * s} width={L + 1.2 * s} height={B + 1.2 * s} fill="none" stroke={GOUD} strokeWidth={1.1 * s} pointerEvents="none" />
+      {onderlegger?.zichtbaar && (() => {
+        const { w, h } = formaatCm(onderlegger)
+        return (
+          <image
+            data-ui
+            data-onderlegger
+            href={onderlegger.url}
+            x={onderlegger.x - w / 2}
+            y={onderlegger.y - h / 2}
+            width={w}
+            height={h}
+            opacity={onderlegger.opacity}
+            transform={onderlegger.rot ? `rotate(${onderlegger.rot} ${onderlegger.x} ${onderlegger.y})` : undefined}
+            preserveAspectRatio="none"
+            pointerEvents="none"
+          />
+        )
+      })()}
       <g pointerEvents={interactief ? undefined : 'none'}>{openingen.map(item)}</g>
       <g pointerEvents={interactief ? undefined : 'none'} opacity={0.92}>
         {hoog.map(item)}
@@ -216,6 +239,7 @@ function OntwerpPlanBasis({ kamer, ontwerp, geselecteerd, schaal, viewBox, toonM
         </g>
       )}
       {selectie}
+      {bovenlaag && <g data-ui>{bovenlaag}</g>}
     </svg>
   )
 }

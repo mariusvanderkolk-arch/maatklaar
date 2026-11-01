@@ -24,7 +24,10 @@ const NU = new Date('2026-10-10T10:00:00Z')
 
 describe('eigen prijslijst', () => {
   it('elk catalogusartikel heeft een voorbeeldprijs', () => {
-    for (const c of CATALOGUS) expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
+    // ook casco-posten aanbouw hebben een richtprijs
+    for (const c of CATALOGUS) {
+      expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
+    }
   })
 
   it('eigen prijs gaat vóór voorbeeld, leverancier komt mee', () => {
