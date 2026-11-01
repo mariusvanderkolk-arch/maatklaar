@@ -418,6 +418,39 @@ function bouwItem(it: OntwerpItem, mat: Mats, tex: { hout: THREE.Material; blad:
       g.add(at(box(0.012, 0.012, 0.6, mat.goud), w / 2 - 0.006, h, 0.3))
       break
     }
+    case 'bank':
+    case 'hoekbank':
+    case 'fauteuil': {
+      const stof = mat.antraciet
+      const diep = it.type === 'hoekbank' ? Math.min(d, 0.95) : d
+      const delen: [number, number, number, number][] = [[0, w, -d / 2 + diep / 2, diep]]
+      if (it.type === 'hoekbank') delen.push([w / 2 - 0.475, 0.95, 0, d])
+      for (const [cx, bw, cz, bd] of delen) {
+        g.add(at(rbox(bw, 0.42, bd, 0.03, stof), cx, 0.21, cz))
+      }
+      g.add(at(rbox(w, 0.45, 0.18, 0.03, stof), 0, 0.62, -d / 2 + 0.09))
+      if (it.type !== 'hoekbank') for (const sx of [-w / 2 + 0.09, w / 2 - 0.09]) g.add(at(rbox(0.18, 0.22, d, 0.03, stof), sx, 0.53, 0))
+      break
+    }
+    case 'salontafel':
+    case 'eettafel':
+    case 'stoel': {
+      const h = def.h * M
+      const blad = it.type === 'stoel' ? 0.46 : h
+      g.add(at(box(w, 0.035, d, tex.hout), 0, blad - 0.018, 0))
+      const p = 0.035
+      for (const sx of [-w / 2 + p, w / 2 - p]) for (const sz of [-d / 2 + p, d / 2 - p]) g.add(at(box(p, blad - 0.035, p, mat.antraciet), sx, (blad - 0.035) / 2, sz))
+      if (it.type === 'stoel') g.add(at(box(w, h - blad, 0.03, tex.hout), 0, blad + (h - blad) / 2, -d / 2 + 0.015))
+      break
+    }
+    case 'tvmeubel': {
+      const h = def.h * M
+      g.add(at(rbox(w, h, d, 0.008, tex.hout), 0, h / 2, 0))
+      break
+    }
+    case 'vloerkleed':
+      g.add(at(box(w, 0.01, d, mat.wandRand), 0, 0.005, 0))
+      break
     case 'nis': {
       const h = def.h * M
       const z0 = def.z * M

@@ -324,6 +324,60 @@ export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: 
           <rect x={x0} y={-1.6} width={2.4} height={3.2} fill={KLEUR.chroom} />
         </g>
       )
+    case 'bank':
+    case 'hoekbank': {
+      const a = Math.min(18, d * 0.2)
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={type === 'hoekbank' ? Math.min(d, 95) : d} rx={6} fill="#B9AE9F" {...sw} />
+          {type === 'hoekbank' && <rect x={w / 2 - 95} y={y0} width={95} height={d} rx={6} fill="#B9AE9F" {...sw} />}
+          <rect x={x0 + a} y={y0} width={w - 2 * a} height={a} {...fijn} />
+          <line x1={0} y1={y0 + a} x2={0} y2={type === 'hoekbank' ? y0 + Math.min(d, 95) : d / 2} {...fijn} />
+        </g>
+      )
+    }
+    case 'fauteuil':
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} rx={8} fill="#B9AE9F" {...sw} />
+          <rect x={x0 + w * 0.18} y={y0 + d * 0.22} width={w * 0.64} height={d * 0.7} rx={4} {...fijn} />
+        </g>
+      )
+    case 'salontafel':
+      return <rect x={x0} y={y0} width={w} height={d} rx={4} fill={KLEUR.hout} {...sw} />
+    case 'eettafel': {
+      const n = Math.max(1, Math.floor(w / 60))
+      return (
+        <g>
+          {Array.from({ length: n }, (_, i) => {
+            const cx = x0 + (w / n) * (i + 0.5)
+            return (
+              <g key={i}>
+                <rect x={cx - 21} y={y0 - 34} width={42} height={30} rx={4} {...fijn} />
+                <rect x={cx - 21} y={d / 2 + 4} width={42} height={30} rx={4} {...fijn} />
+              </g>
+            )
+          })}
+          <rect x={x0} y={y0} width={w} height={d} rx={2} fill={KLEUR.hout} {...sw} />
+        </g>
+      )
+    }
+    case 'stoel':
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} rx={4} fill={KLEUR.houtDonker} {...sw} />
+          <line x1={x0} y1={y0 + 6} x2={w / 2} y2={y0 + 6} {...fijn} />
+        </g>
+      )
+    case 'tvmeubel':
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} rx={1.5} fill={KLEUR.houtDonker} {...sw} />
+          <rect x={x0 + w * 0.2} y={y0 + 2} width={w * 0.6} height={3} fill={KLEUR.zwart} />
+        </g>
+      )
+    case 'vloerkleed':
+      return <rect x={x0} y={y0} width={w} height={d} rx={2} fill="rgba(169,133,90,0.18)" stroke={KLEUR.lijnZacht} strokeWidth={0.6} strokeDasharray="6 3" vectorEffect="non-scaling-stroke" />
     case 'nis':
       return <rect x={x0} y={y0} width={w} height={d} fill="rgba(201,165,106,0.12)" stroke={KLEUR.lijn} strokeWidth={0.6} strokeDasharray="2 2" vectorEffect="non-scaling-stroke" />
     case 'ombouw':

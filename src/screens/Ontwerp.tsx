@@ -532,7 +532,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
   }
 
   const leeg = ontwerp.items.length === 0
-  const bibItems = ITEM_TYPES.filter((t) => ITEMS[t].groep === groep && (p.type === 'aanbouw' || (t !== 'kozijn' && t !== 'schuifpui')))
+  const bibItems = ITEM_TYPES.filter((t) => ITEMS[t].groep === groep && (ITEMS[t].ruimtes.includes(p.type) || !ITEMS[t].ruimtes.every((r) => r === 'vloer' || r === 'aanbouw')))
   const relevanteGroepen = GROEPEN.filter((g) => ITEM_TYPES.some((t) => ITEMS[t].groep === g.id && (ITEMS[t].ruimtes.includes(p.type) || g.id === 'openingen' || g.id === 'meubel')))
   const s = vb ? vb[2] / Math.max(1, vak.current?.getBoundingClientRect().width ?? 400) : undefined
 
@@ -771,7 +771,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
         </Card>
 
         <Card>
-          <CardHeader title="Eigen tekening eronder" sub="Bijv. constructie- of bouwtekening, alleen als onderlegger" icon={<Layers className="h-5 w-5" />} />
+          <CardHeader title="Constructietekening / plattegrond eronder" sub="Upload je bouw- of constructietekening (PNG, JPG of PDF, 1e pagina) en teken er op schaal overheen. DXF/DWG nog niet." icon={<Layers className="h-5 w-5" />} />
           <div className="space-y-3 p-5 text-sm">
             <input
               ref={bestandRef}
