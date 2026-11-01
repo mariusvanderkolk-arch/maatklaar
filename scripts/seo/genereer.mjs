@@ -119,7 +119,7 @@ ${praktijk(s)}`,
     h1: 'Offerte maken: gidsen en tips per regio', kruimel: [['Per regio']],
     inhoud: '<p class="lead">Het Maatklaar-team verzamelt hier praktische gidsen voor vakmensen, en lokale aandachtspunten voor heel Nederland: van jaren-30 woningen in Groningen tot houten funderingen in de Zaanstreek.</p>',
     faq: [['Voor wie zijn deze gidsen?', 'Voor aannemers, tegelzetters, installateurs, keukenmonteurs en klusbedrijven die sneller en duidelijker offertes willen maken.']],
-    links: [['Gidsen', [...ondLinks, ['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Provincies', provincies.map((p) => [`offerte-maken/provincie-${p.slug}/`, p.naam])], ['Steden', [...steden].sort((a, b) => a.naam.localeCompare(b.naam, 'nl')).map((s) => [`offerte-maken/${s.slug}/`, s.naam])]],
+    links: [['Gidsen', [['gratis-offerte-app-badkamerrenovatie/', 'Gratis offerte-app voor badkamerrenovatie'], ...ondLinks, ['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Provincies', provincies.map((p) => [`offerte-maken/provincie-${p.slug}/`, p.naam])], ['Steden', [...steden].sort((a, b) => a.naam.localeCompare(b.naam, 'nl')).map((s) => [`offerte-maken/${s.slug}/`, s.naam])]],
   })
   return pag
 }
@@ -149,7 +149,7 @@ ${p.inhoud}
 ${p.faq.map(([q, an]) => `<details><summary>${esc(q)}</summary><p>${esc(an)}</p></details>`).join('\n')}
 ${p.links.map(([kop, ls]) => `<h2>${esc(kop)}</h2><ul class="links">${ls.map(([h, t]) => `<li><a href="${a(h)}">${esc(t)}</a></li>`).join('')}</ul>`).join('\n')}
 </main>
-<footer><p><a href="${a('offerte-maken/')}">Alle gidsen en regio's</a> · ${onderwerpen.map((o) => `<a href="${a(o.slug + '/')}">${esc(o.kort)}</a>`).join(' · ')}</p><p>© 2026 Maatklaar · gemaakt door het Maatklaar-team · <a href="${a('#/privacy')}">Privacy</a></p></footer>
+<footer><p><a href="${a('offerte-maken/')}">Alle gidsen en regio's</a> · <a href="${a('gratis-offerte-app-badkamerrenovatie/')}">Gratis offerte-app badkamer</a> · ${onderwerpen.map((o) => `<a href="${a(o.slug + '/')}">${esc(o.kort)}</a>`).join(' · ')}</p><p>© 2026 Maatklaar · gemaakt door het Maatklaar-team · <a href="${a('#/privacy')}">Privacy</a></p></footer>
 </body></html>
 `
 }
