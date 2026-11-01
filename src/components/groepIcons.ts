@@ -1,4 +1,4 @@
-import { BrickWall, Layers, Droplets, Hammer, Heater, LayoutGrid, Package, Sparkles, Bath, Wrench, Zap, DoorOpen, CookingPot, type LucideIcon } from 'lucide-react'
+import { BrickWall, Layers, Droplets, Hammer, Heater, LayoutGrid, Package, Sparkles, Bath, Wrench, Zap, DoorOpen, CookingPot, House, type LucideIcon } from 'lucide-react'
 import type { Groep } from '../lib/calc'
 
 export const GROEP_ICONS: Record<Groep, LucideIcon> = {
@@ -15,4 +15,5 @@ export const GROEP_ICONS: Record<Groep, LucideIcon> = {
   elektra: Zap,
   timmerwerk: DoorOpen,
   keuken: CookingPot,
+  aanbouw: House,
 }

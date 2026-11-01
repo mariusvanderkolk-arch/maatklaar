@@ -36,10 +36,19 @@ export type ScopeKey =
   | 'nis'
   | 'accessoires'
   | 'deurenInkorten'
+  // aanbouw (casco)
+  | 'grondwerk'
+  | 'fundering'
+  | 'buitenmuur'
+  | 'dak'
+  | 'isolatie'
+  | 'kozijnen'
+  | 'gevelDoorbraak'
+  | 'hwa'
 
 export type Scope = Record<ScopeKey, boolean>
 
-export type ProjectType = 'badkamer' | 'toilet' | 'keuken' | 'vloer'
+export type ProjectType = 'badkamer' | 'toilet' | 'keuken' | 'vloer' | 'aanbouw'
 
 /** Soort klikvloer (laminaat of PVC). Een tegelvloer loopt via de werkzaamheid 'vloertegels'. */
 export type VloerSoort = 'laminaat' | 'pvc'
@@ -87,6 +96,8 @@ export interface Afmetingen {
   egaliseerDikte: number
   /** tegelwand achter het aanrecht (keuken): lengte en hoogte in m */
   spatwand: { lengte: number; hoogte: number }
+  /** aanbouw: breedte van de doorbraak in de bestaande gevel en dakoverstek (m) */
+  aanbouw?: { doorbraak: number; overstek: number }
 }
 
 export interface PhotoRef {

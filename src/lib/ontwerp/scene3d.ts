@@ -477,7 +477,8 @@ function bouwOpening(it: OntwerpItem, mat: Mats, lokaalX: number, T: number): TH
     const ruit = box(w - kozijn * 2, h - kozijn * 2, 0.008, new THREE.MeshPhysicalMaterial({ color: '#CFE3EC', roughness: 0.02, transparent: true, opacity: 0.35, metalness: 0.1 }))
     ruit.castShadow = false
     g.add(at(ruit, lokaalX, z0 + h / 2, kz))
-    g.add(at(box(w + 0.06, 0.025, 0.06, mat.keramiek), lokaalX, z0 - 0.0125, 0.02))
+    if (it.type === 'schuifpui') g.add(at(box(kozijn, h, T + 0.01, frame), lokaalX, z0 + h / 2, kz))
+    if (z0 > 0) g.add(at(box(w + 0.06, 0.025, 0.06, mat.keramiek), lokaalX, z0 - 0.0125, 0.02))
   }
   return g
 }

@@ -73,7 +73,7 @@ export async function importeerBackup(b: Backup, modus: ImportModus): Promise<vo
   if (modus === 'vervangen') {
     // foto's die nergens meer bij horen opruimen
     const nodig = new Set(projecten.flatMap((p) => p.fotos.map((f) => f.id)))
-    for (const id of await alleFotoIds().catch(() => [] as string[])) if (!nodig.has(id) && !id.startsWith('ontwerp3d:')) await verwijderFoto(id).catch(() => {})
+    for (const id of await alleFotoIds().catch(() => [] as string[])) if (!nodig.has(id) && !id.startsWith('ontwerp3d:') && !id.startsWith('onderlegger:')) await verwijderFoto(id).catch(() => {})
   }
 }
 

@@ -17,7 +17,8 @@ describe('uitgebreide catalogus', () => {
     const actief = CATALOGUS.filter((c) => !c.oud)
     expect(actief.length).toBeGreaterThan(250)
     expect(new Set(CATALOGUS.map((c) => c.id)).size).toBe(CATALOGUS.length)
-    for (const c of actief) expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
+    // casco-posten aanbouw hebben bewust géén richtprijs (aannemer vult eigen prijs in)
+    for (const c of actief) if (c.groep !== 'aanbouw') expect(VOORBEELD_PRIJZEN[c.id], c.id).toBeGreaterThan(0)
     for (const g of ['waterdicht', 'lijm-voeg', 'afwerking', 'leidingwerk', 'keuken']) expect(actief.filter((c) => c.groep === g).length).toBeGreaterThan(15)
   })
   it('berekening gebruikt losse fittingen in plaats van de set', () => {

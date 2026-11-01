@@ -1,6 +1,7 @@
 /** Overzicht van alle artikelen waarvoor een prijs kan worden ingesteld (zelfde groepen als de berekening). */
 import { REGELS, type Groep, type ProductId } from './calc'
 import { DETAIL_ARTIKELEN, SETS } from './artikelen'
+import { AANBOUW_POSTEN } from './aanbouw'
 
 export interface CatalogusItem {
   id: ProductId
@@ -88,6 +89,7 @@ const BASIS: CatalogusItem[] = [
 export const CATALOGUS: CatalogusItem[] = [
   ...BASIS.filter((b) => !(b.id in SETS)),
   ...DETAIL_ARTIKELEN.map(([id, groep, naam, eenheid]) => ({ id, groep: groep as Groep, naam, eenheid })),
+  ...AANBOUW_POSTEN.map(([id, naam, eenheid]): CatalogusItem => ({ id, groep: 'aanbouw', naam, eenheid, toelichting: 'Geen richtprijs: vul je eigen prijs in (bijv. incl. arbeid)' })),
   ...BASIS.filter((b) => b.id in SETS).map((b) => ({ ...b, naam: `${b.naam} (oude set)`, oud: true, toelichting: 'Vervangen door losse artikelen. Je eigen setprijs blijft gelden tot je de losse artikelen prijst.' })),
 ]
 

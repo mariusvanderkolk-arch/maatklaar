@@ -216,6 +216,17 @@ export function Symbool({ type, w, d, buiten = false, rechts = false }: { type: 
           <path d={`M${w / 2} ${d / 2}A${w - 2} ${w - 2} 0 0 1 ${x0 + 1.75} ${d / 2 + w - 2}`} fill="rgba(201,165,106,0.06)" stroke={KLEUR.lijnZacht} strokeWidth={0.6} strokeDasharray="3 2.5" vectorEffect="non-scaling-stroke" />
         </g>
       )
+    case 'schuifpui':
+      // twee panelen die langs elkaar schuiven, met pijl voor de schuifrichting
+      return (
+        <g>
+          <rect x={x0} y={y0} width={w} height={d} fill="#FBFAF7" {...sw} />
+          <line x1={x0 + 2} y1={-1.6} x2={2} y2={-1.6} stroke={KLEUR.glas} strokeWidth={1.1} vectorEffect="non-scaling-stroke" />
+          <line x1={-2} y1={1.6} x2={w / 2 - 2} y2={1.6} stroke={KLEUR.glas} strokeWidth={1.1} vectorEffect="non-scaling-stroke" />
+          <path d={`M${-w / 4} ${d / 2 + 8}h${w / 4}m-6 -4l6 4l-6 4`} fill="none" stroke={KLEUR.lijnZacht} strokeWidth={0.7} vectorEffect="non-scaling-stroke" />
+        </g>
+      )
+    case 'kozijn':
     case 'raam':
       return (
         <g>

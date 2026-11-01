@@ -129,7 +129,9 @@ export const voorbeeldPrijsBron: PrijsBron = {
 
 /** Producten die per m² geprijsd worden (overige per verpakking/stuk/m). */
 const PER_M2: ProductId[] = ['wandtegel', 'vloertegel', 'vv-mat', 'laminaat', 'pvc', 'pvc-plafond']
-export const prijsEenheid = (id: ProductId) => (PER_M2.includes(id) ? 'm²' : id === 'waterleiding' ? 'm' : id === 'afvalverwerking' || id.startsWith('stort-') ? 'm³' : 'st.')
+const AANBOUW_M2: ProductId[] = ['aanbouw-grondwerk', 'aanbouw-gevel', 'aanbouw-isolatie', 'aanbouw-dak', 'aanbouw-kozijn']
+const AANBOUW_M1: ProductId[] = ['aanbouw-fundering', 'aanbouw-daktrim', 'aanbouw-doorbraak']
+export const prijsEenheid = (id: ProductId) => (PER_M2.includes(id) || AANBOUW_M2.includes(id) ? 'm²' : AANBOUW_M1.includes(id) ? 'm¹' : id === 'waterleiding' ? 'm' : id === 'afvalverwerking' || id.startsWith('stort-') ? 'm³' : 'st.')
 
 /**
  * Winkels uit het oude prijsmodel (tot versie 1.2 kon je per winkel prijzen invullen).
