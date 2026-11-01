@@ -72,43 +72,92 @@ ${praktijk(s)}`,
   pag.push({
     pad: 'gratis-offerte-app/',
     titel: 'Gratis offerte-app voor aannemers en vakmensen | Maatklaar',
-    meta: 'Maatklaar is een gratis offerte-app voor aannemers: opmeten, 2D/3D-ontwerp, materialen berekenen, offerte via WhatsApp, meerwerkbon en factuur. Voor badkamer, keuken, toilet, tegelwerk en vloer. Zonder creditcard.',
+    meta: 'Maatklaar is een gratis offerte-app voor aannemers: opmeten, 2D/3D-ontwerp, materialen berekenen, offerte via WhatsApp, meerwerkbon en factuur. Voor badkamer, keuken, toilet, tegelwerk en vloer. Nu gratis.',
     h1: 'Gratis offerte-app voor aannemers en vakmensen',
     kruimel: [['Gratis offerte-app']],
     inhoud: `<p class="lead"><strong>Maatklaar is een gratis offerte-app voor aannemers, tegelzetters, installateurs, keukenmonteurs en klusbedrijven in Nederland.</strong> Je meet op bij de klant, ontwerpt de ruimte in 2D en 3D, laat materialen en arbeid uitrekenen met je eigen tarieven en stuurt de offerte via WhatsApp of e-mail. De klant geeft digitaal akkoord, en meerwerk en factuur maak je vanuit dezelfde offerte.</p>
 <h2>Eén app van opmeten tot factuur</h2><ol>
 <li><strong>Opmeten op locatie</strong>: wanden, vloer, ramen, deuren en aansluitpunten op je telefoon, ook door maten in te spreken.</li>
 <li><strong>2D-plattegrond en 3D-ontwerp</strong>: de klant ziet vooraf wat hij krijgt.</li>
-<li><strong>Materialen en arbeid berekenen</strong>: tegels, lijm, voeg, kit, plaatmateriaal en uren, op basis van de maten en jouw tarieven.</li>
+<li><strong>Materialen en arbeid berekenen</strong>: tegels, lijm, voeg, kit en uren, op basis van de maten en jouw tarieven.</li>
 <li><strong>Offerte met schets</strong>: met je eigen logo, direct vanaf de bouwplaats.</li>
 <li><strong>Akkoord via WhatsApp</strong>: de klant opent een link en tekent op zijn telefoon.</li>
 <li><strong>Meerwerkbon</strong>: extra werk vastleggen en laten aftekenen, zonder discussie achteraf.</li>
 <li><strong>Factuur</strong> vanuit de geaccepteerde offerte.</li></ol>
 <h2>Voor elk soort klus</h2>
 <h3>Badkamer</h3><p>Bad, douche, toilet en badmeubel plaatsen, tegels tot het plafond laten berekenen en de klant de nieuwe badkamer in 3D laten zien. <a href="@/gratis-offerte-app-badkamerrenovatie/">Meer over de badkamer-offerte</a>.</p>
-<h3>Keuken</h3><p>Wanden en hoeken opmeten, de keukenopstelling schetsen en montage, aansluitingen en tegelwerk achter het werkblad in één offerte zetten. <a href="@/keuken-offerte-maken/">Zo maak je een keukenofferte</a>.</p>
+<h3>Keuken</h3><p>Kasten, werkblad, inbouwapparatuur en achterwand opgeven, het keukenblok in 3D tonen en montage laten uitrekenen. <a href="@/gratis-offerte-app-keuken/">Gratis offerte-app voor keukens</a>.</p>
 <h3>Toilet</h3><p>Een kleine ruimte met veel details: hangtoilet, inbouwreservoir, fonteintje en tegelwerk, snel opgemeten en uitgerekend.</p>
 <h3>Tegelwerk en vloeren</h3><p>Vierkante meters, snijverlies, lijm en voeg automatisch berekend, voor wand- en vloertegels en andere vloeren. <a href="@/tegelzetter-offerte/">Offerte voor tegelzetters</a>.</p>
-<h3>Meerwerk</h3><p>Een rotte vloer of verouderde leiding? Leg het vast op een meerwerkbon en laat de klant direct akkoord geven. <a href="@/meerwerkbon-maken/">Zo maak je een meerwerkbon</a>.</p>
-<h3>Calculatie van een verbouwing</h3><p>Meerdere ruimtes in één project, met een overzicht per ruimte en per onderdeel. <a href="@/verbouwing-calculatie/">Verbouwing calculeren</a>.</p>
-<h2>Gratis, zonder creditcard</h2><p>Je begint direct in je browser, zonder installatie en zonder creditcard. Je hebt niet eens een account nodig: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p>
+<h3>Meerwerk</h3><p>Een rotte vloer of verouderde leiding? Leg het vast op een meerwerkbon en laat de klant via WhatsApp tekenen. <a href="@/gratis-offerte-app-meerwerk/">Gratis meerwerkbon-app</a>.</p>
+<h3>Totaalrenovatie</h3><p>Meerdere ruimtes offreer je nu per ruimte, als aparte projecten die je samen naar de klant stuurt. <a href="@/totaalrenovatie-offerte/">Totaalrenovatie-offerte opbouwen</a>.</p>
+<h2>Gratis, zonder betaalgegevens</h2><p>Maatklaar is op dit moment gratis met alle functies: je hoeft niets af te sluiten en geen betaalgegevens in te vullen. Je begint direct in je browser, zonder installatie. Je hebt niet eens een account nodig: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p>
 <h2>Wat Maatklaar niet is</h2><p>Maatklaar is geen boekhoudpakket of uitgebreide planningssoftware. Het is gemaakt om sneller en duidelijker van opmeten bij de klant naar een getekend akkoord te gaan.</p>
 <p><strong>Probeer het gratis op maatklaar.nl</strong></p>`,
     faq: [
-      ['Is Maatklaar gratis?', 'Ja. Je kunt gratis beginnen met opmeten, ontwerpen, offertes, meerwerkbonnen en facturen, zonder creditcard.'],
+      ['Is Maatklaar gratis?', 'Ja. Je kunt op dit moment gratis gebruiken met alle functies: opmeten, ontwerpen, offertes, meerwerkbonnen en facturen.'],
       ['Voor welke klussen is Maatklaar geschikt?', 'Voor badkamers, toiletten, keukens, tegelwerk en vloeren, en voor verbouwingen met meerdere ruimtes.'],
       ['Moet ik een app installeren?', 'Nee. Maatklaar werkt in de browser op telefoon, tablet en computer.'],
       ['Kan de klant via WhatsApp akkoord geven?', 'Ja. Je stuurt een link via WhatsApp of e-mail en de klant tekent digitaal.'],
       ['Kan ik meerwerk vastleggen?', 'Ja, met een meerwerkbon die de klant digitaal aftekent.'],
-      ['Kan ik vanuit de offerte factureren?', 'Ja, een geaccepteerde offerte zet je om in een factuur.'],
+      ['Kan ik vanuit de offerte factureren?', 'Ja, vanuit de offerte maak je een factuur, met getekend meerwerk als extra regels.'],
       ['Werk ik met mijn eigen prijzen?', 'Ja. Je stelt je eigen tarieven en materiaalprijzen in; Maatklaar rekent daarmee.'],
     ],
-    links: [['Per klus', [['gratis-offerte-app-badkamerrenovatie/', 'Gratis offerte-app voor badkamerrenovatie'], ...ondLinks]], ['Vergelijken', [['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Per regio', [['offerte-maken/', 'Alle provincies en steden']]]],
+    links: [['Per klus', [['gratis-offerte-app-badkamerrenovatie/', 'Gratis offerte-app voor badkamerrenovatie'], ['gratis-offerte-app-keuken/', 'Gratis offerte-app voor keukens'], ['gratis-offerte-app-meerwerk/', 'Gratis meerwerkbon-app'], ['totaalrenovatie-offerte/', 'Totaalrenovatie-offerte opbouwen'], ...ondLinks]], ['Vergelijken', [['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Per regio', [['offerte-maken/', 'Alle provincies en steden']]]],
+  })
+  pag.push({
+    pad: 'gratis-offerte-app-keuken/',
+    titel: 'Gratis offerte-app voor keukenmontage | Maatklaar',
+    meta: 'Maatklaar is een gratis offerte-app voor keukenmonteurs en aannemers: kasten, werkblad, apparatuur en achterwand berekenen, keuken in 3D en akkoord via WhatsApp.',
+    h1: 'Gratis offerte-app voor keukenmontage',
+    kruimel: [['Gratis offerte-app voor keukenmontage']],
+    inhoud: `<p class="lead"><strong>Maatklaar is een gratis offerte-app voor keukenmonteurs, aannemers en klusbedrijven.</strong> Je meet de keuken op bij de klant, geeft de lengte van onder- en bovenkasten, het werkblad en de inbouwapparatuur op, en Maatklaar rekent materiaal en montage uit met je eigen tarieven. De offerte stuur je via WhatsApp of e-mail en de klant tekent digitaal.</p>
+<h2>Wat je in een keukenofferte zet</h2><ul><li><strong>Kasten</strong>: strekkende meters onderkasten en bovenkasten (of geen bovenkasten).</li><li><strong>Werkblad</strong>: soort en dikte, met uitsparingen voor spoelbak en kookplaat.</li><li><strong>Inbouwapparatuur</strong>: kookplaat, oven, vaatwasser, koelkast en afzuigkap.</li><li><strong>Achterwand</strong>: tegels (zoals metrotegels of groot formaat), glas, composiet, RVS, HPL, microcement en meer, met het aantal stopcontacten in de achterwand.</li><li><strong>Arbeid</strong>: demontage van de oude keuken, montage, werkblad en uitsparingen, berekend met jouw uurtarief.</li></ul><h2>De keuken in 2D en 3D</h2><p>Je plaatst het keukenblok op de plattegrond en laat de klant de keuken in 3D zien op de offerte.</p><h2>Offerte, akkoord en meerwerk</h2><p>De offerte komt met je eigen bedrijfsgegevens en logo. De klant opent een link en tekent op zijn telefoon. Blijkt er tijdens de klus extra werk nodig, dan maak je een <a href="@/gratis-offerte-app-meerwerk/">meerwerkbon</a>. Vanuit de offerte maak je ook de factuur.</p><h2>Gratis</h2><p>Maatklaar is op dit moment gratis te gebruiken, met alle functies. Je hoeft niets af te sluiten en geen betaalgegevens in te vullen. Je begint in je browser, zonder installatie en zonder account: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p><p><strong>Probeer het gratis op maatklaar.nl</strong></p>`,
+    faq: [
+      ['Is Maatklaar gratis voor keukenofferte?', 'Ja, op dit moment is Maatklaar gratis met alle functies. Je hoeft niets af te sluiten.'],
+      ['Welke apparatuur kan ik opnemen?', 'Kookplaat, oven, vaatwasser, koelkast en afzuigkap.'],
+      ['Rekent Maatklaar de achterwand uit?', 'Ja. Je kiest het soort achterwand; bij tegels rekent de app de hoeveelheid uit, en het aantal stopcontacten wordt meegenomen.'],
+      ['Kan ik de klantkeuken in 3D tonen?', 'Ja, het keukenblok komt in de 3D-weergave op de offerte.'],
+      ['Kan ik een keuken en badkamer in één offerte zetten?', 'Nee, nu is één project één ruimte. Je maakt per ruimte een offerte; zie de gids totaalrenovatie-offerte.'],
+    ],
+    links: [['Meer', [['gratis-offerte-app/', 'Gratis offerte-app voor aannemers'], ['totaalrenovatie-offerte/', 'Totaalrenovatie-offerte opbouwen']]], ['Handige gidsen', ondLinks]],
+  })
+  pag.push({
+    pad: 'gratis-offerte-app-meerwerk/',
+    titel: 'Gratis meerwerkbon-app voor aannemers | Maatklaar',
+    meta: 'Met Maatklaar maak je gratis meer- en minderwerkbonnen bij je offerte, laat je ze via WhatsApp tekenen en verreken je getekende bonnen op de factuur.',
+    h1: 'Gratis meerwerkbon-app voor aannemers',
+    kruimel: [['Gratis meerwerkbon-app voor aannemers']],
+    inhoud: `<p class="lead"><strong>Met Maatklaar leg je meer- en minderwerk vast op een meerwerkbon</strong>, gekoppeld aan je offerte. De klant tekent de bon via een link in WhatsApp, en getekende bonnen neem je mee op de factuur. Zo is vooraf duidelijk wat er extra kost, of minder.</p>
+<h2>Zo werkt een meerwerkbon in Maatklaar</h2><ol><li><strong>Bon maken</strong>: kies meerwerk of minderwerk, schrijf wat er verandert en waarom, en voeg eventueel een foto toe.</li><li><strong>Bedrag</strong>: vul een vast bedrag in, of laat het uitrekenen uit materiaal (met je projectmarge) en uren maal je uurtarief.</li><li><strong>Nummer</strong>: elke bon krijgt een eigen nummer dat aan het offertenummer vastzit.</li><li><strong>Laten tekenen</strong>: stuur de bon via WhatsApp. De klant ziet duidelijk hoeveel de prijs hoger of lager wordt en tekent digitaal.</li><li><strong>Status</strong>: je ziet per bon of hij nog concept is, op een handtekening wacht of getekend is.</li><li><strong>Verrekenen</strong>: alleen getekende bonnen komen als regel op de factuur.</li></ol><h2>Waarom vooraf laten tekenen?</h2><p>Discussie over meerwerk ontstaat meestal achteraf. Een getekende bon met reden en bedrag voorkomt dat. Op de offerte zelf zet je daarnaast een blok met aannames en wat niet is inbegrepen.</p><h2>Gratis</h2><p>Maatklaar is op dit moment gratis te gebruiken, met alle functies. Je hoeft niets af te sluiten en geen betaalgegevens in te vullen. Je begint in je browser, zonder installatie en zonder account: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p><p><strong>Probeer het gratis op maatklaar.nl</strong></p>`,
+    faq: [
+      ['Is de meerwerkbon gratis?', 'Ja, op dit moment is Maatklaar gratis met alle functies, inclusief meerwerkbonnen.'],
+      ['Kan ik ook minderwerk vastleggen?', 'Ja. Een minderwerkbon verlaagt het bedrag en wordt na tekenen verrekend.'],
+      ['Hoe tekent de klant?', 'Je stuurt een link via WhatsApp; de klant opent de bon en tekent op zijn telefoon.'],
+      ['Komt meerwerk automatisch op de factuur?', 'Getekende bonnen kun je als regels op de factuur laten verrekenen.'],
+      ['Kan ik een foto toevoegen?', 'Ja, een foto per bon, bijvoorbeeld van de rotte vloer of de oude leiding.'],
+    ],
+    links: [['Meer', [['gratis-offerte-app/', 'Gratis offerte-app voor aannemers'], ['totaalrenovatie-offerte/', 'Totaalrenovatie-offerte opbouwen']]], ['Handige gidsen', ondLinks]],
+  })
+  pag.push({
+    pad: 'totaalrenovatie-offerte/',
+    titel: 'Totaalrenovatie-offerte opbouwen per ruimte | Maatklaar',
+    meta: 'Zo bouw je met Maatklaar een offerte voor een totaalrenovatie op: per ruimte een offerte voor badkamer, toilet, keuken en vloer, en die samen naar de klant sturen.',
+    h1: 'Totaalrenovatie-offerte opbouwen',
+    kruimel: [['Totaalrenovatie-offerte opbouwen']],
+    inhoud: `<p class="lead">Een totaalrenovatie bestaat uit meerdere ruimtes. In Maatklaar is <strong>één project nu één ruimte</strong>: een badkamer, toilet, keuken of vloer. Een renovatie met meerdere ruimtes maak je daarom als meerdere projecten, elk met een eigen offerte. Een gecombineerde offerte voor de hele woning zit nog niet in de app.</p>
+<h2>Stap voor stap</h2><ol><li><strong>Maak per ruimte een project</strong> met dezelfde klantnaam en hetzelfde adres, en geef de projecten een herkenbare naam (bijvoorbeeld "Fam. Jansen – badkamer" en "Fam. Jansen – keuken").</li><li><strong>Meet elke ruimte apart op</strong> en ontwerp hem in 2D en 3D.</li><li><strong>Controleer per ruimte</strong> de materialen, arbeid en het blok met aannames en wat niet is inbegrepen.</li><li><strong>Stuur de offertes samen</strong>: verstuur ze kort na elkaar via WhatsApp of e-mail en zet in je bericht welke offertes bij de renovatie horen. De klant tekent elke offerte apart.</li><li><strong>Meerwerk</strong> leg je vast op een meerwerkbon bij de ruimte waar het speelt.</li><li><strong>Factuur</strong>: je maakt per geaccepteerde offerte een factuur.</li></ol><h2>Voordeel van per ruimte</h2><p>De klant kan per ruimte beslissen, en je kunt ruimtes in fasen uitvoeren. Elke offerte blijft overzichtelijk.</p><h2>Gidsen per ruimte</h2><ul><li><a href="@/badkamer-offerte-maken/">Badkamer-offerte maken</a></li><li><a href="@/keuken-offerte-maken/">Keuken-offerte maken</a></li><li><a href="@/tegelzetter-offerte/">Offerte voor tegelwerk</a></li><li><a href="@/meerwerkbon-maken/">Meerwerkbon maken</a></li><li><a href="@/verbouwing-calculatie/">Verbouwing calculeren</a></li></ul><p><strong>Probeer het gratis op maatklaar.nl</strong></p>`,
+    faq: [
+      ['Kan ik een hele woning in één offerte zetten?', 'Nog niet. Eén project is één ruimte; je maakt per ruimte een offerte en stuurt die samen naar de klant.'],
+      ['Moet de klant elke offerte apart tekenen?', 'Ja, elke offerte heeft een eigen link en handtekening.'],
+      ['Welke ruimtes kan ik offreren?', 'Badkamer, toilet, keuken en vloer.'],
+    ],
+    links: [['Gratis', [['gratis-offerte-app/', 'Gratis offerte-app voor aannemers'], ['gratis-offerte-app-badkamerrenovatie/', 'Badkamer'], ['gratis-offerte-app-keuken/', 'Keuken'], ['gratis-offerte-app-meerwerk/', 'Meerwerk']]], ['Handige gidsen', ondLinks]],
   })
   pag.push({
     pad: 'gratis-offerte-app-badkamerrenovatie/',
     titel: 'Gratis offerte-app voor badkamerrenovatie | Maatklaar',
-    meta: 'Maatklaar is een gratis offerte-app voor aannemers en vakmensen: badkamer opmeten, 2D/3D-ontwerp, materialen berekenen en akkoord via WhatsApp. Zonder creditcard, zonder installatie.',
+    meta: 'Maatklaar is een gratis offerte-app voor aannemers en vakmensen: badkamer opmeten, 2D/3D-ontwerp, materialen berekenen en akkoord via WhatsApp. Nu gratis, zonder installatie.',
     h1: 'Gratis offerte-app voor badkamerrenovatie',
     kruimel: [['Gratis offerte-app badkamer']],
     inhoud: `<p class="lead"><strong>Maatklaar is een gratis offerte-app voor badkamerrenovatie</strong>, gemaakt voor aannemers, tegelzetters, installateurs en klusbedrijven in Nederland. Je meet de badkamer op bij de klant, ziet hem in 2D en 3D, laat materialen en arbeid uitrekenen met je eigen tarieven en stuurt de offerte via WhatsApp of e-mail. De klant geeft digitaal akkoord.</p>
@@ -119,13 +168,13 @@ ${praktijk(s)}`,
 <li><strong>Offerte met schets</strong>: een nette offerte met tekening, direct vanaf de bouwplaats verstuurd.</li>
 <li><strong>Akkoord via WhatsApp</strong>: de klant opent een link en tekent op zijn telefoon, zonder iets te installeren.</li>
 <li><strong>Meerwerkbon en factuur</strong> vanuit dezelfde offerte.</li></ol>
-<h2>Gratis, zonder creditcard</h2><p>Je begint direct in je browser. Er is geen creditcard en geen installatie nodig, en om te starten heb je zelfs geen account nodig: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p>
+<h2>Gratis, zonder betaalgegevens</h2><p>Maatklaar is op dit moment gratis met alle functies. Je begint direct in je browser, zonder betaalgegevens en zonder installatie, en om te starten heb je zelfs geen account nodig: je gegevens blijven standaard op je eigen apparaat. Met een optioneel gratis account worden ze beveiligd opgeslagen in een datacenter in de EU.</p>
 <h2>Voor wie is het?</h2><p>Voor vakmensen die badkamers, toiletten, keukens en vloeren renoveren en liever bij de klant een offerte maken dan 's avonds achter de laptop. Maatklaar is geen complete boekhouding of planningssoftware; het is gemaakt om sneller van opmeten naar akkoord te gaan.</p>
 <h2>Zo werkt het in 4 stappen</h2><ol><li>Open maatklaar.nl op je telefoon.</li><li>Meet de badkamer op en plaats het sanitair.</li><li>Controleer de berekende regels en pas je tarieven aan.</li><li>Stuur de offerte via WhatsApp en ontvang het akkoord digitaal.</li></ol>
 <p>Ook voor keuken, toilet, tegelwerk, meerwerk en factuur: zie de <a href="@/gratis-offerte-app/">gratis offerte-app voor aannemers</a>.</p>
 <p><strong>Probeer het gratis op maatklaar.nl</strong></p>`,
     faq: [
-      ['Is Maatklaar echt gratis?', 'Ja. Je kunt gratis beginnen met opmeten, ontwerpen en offertes maken, zonder creditcard.'],
+      ['Is Maatklaar echt gratis?', 'Ja. Je kunt op dit moment gratis gebruiken met alle functies, zonder iets af te sluiten.'],
       ['Moet ik een app installeren?', 'Nee. Maatklaar werkt in de browser op je telefoon, tablet of computer.'],
       ['Kan mijn klant de offerte via WhatsApp goedkeuren?', 'Ja. Je stuurt een link via WhatsApp of e-mail en de klant tekent digitaal op zijn telefoon.'],
       ['Rekent de app tegels en materialen uit?', 'Ja. Op basis van je maten berekent Maatklaar tegels, lijm, voeg en arbeid, met je eigen tarieven.'],
@@ -156,7 +205,7 @@ ${praktijk(s)}`,
     h1: 'Offerte maken: gidsen en tips per regio', kruimel: [['Per regio']],
     inhoud: '<p class="lead">Het Maatklaar-team verzamelt hier praktische gidsen voor vakmensen, en lokale aandachtspunten voor heel Nederland: van jaren-30 woningen in Groningen tot houten funderingen in de Zaanstreek.</p>',
     faq: [['Voor wie zijn deze gidsen?', 'Voor aannemers, tegelzetters, installateurs, keukenmonteurs en klusbedrijven die sneller en duidelijker offertes willen maken.']],
-    links: [['Gidsen', [['gratis-offerte-app/', 'Gratis offerte-app voor aannemers'], ['gratis-offerte-app-badkamerrenovatie/', 'Gratis offerte-app voor badkamerrenovatie'], ...ondLinks, ['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Provincies', provincies.map((p) => [`offerte-maken/provincie-${p.slug}/`, p.naam])], ['Steden', [...steden].sort((a, b) => a.naam.localeCompare(b.naam, 'nl')).map((s) => [`offerte-maken/${s.slug}/`, s.naam])]],
+    links: [['Gidsen', [['gratis-offerte-app/', 'Gratis offerte-app voor aannemers'], ['gratis-offerte-app-badkamerrenovatie/', 'Gratis offerte-app voor badkamerrenovatie'], ['gratis-offerte-app-keuken/', 'Gratis offerte-app voor keukens'], ['gratis-offerte-app-meerwerk/', 'Gratis meerwerkbon-app'], ['totaalrenovatie-offerte/', 'Totaalrenovatie-offerte opbouwen'], ...ondLinks, ['vergelijking-offerte-apps/', 'Maatklaar vs. andere offerte-apps']]], ['Provincies', provincies.map((p) => [`offerte-maken/provincie-${p.slug}/`, p.naam])], ['Steden', [...steden].sort((a, b) => a.naam.localeCompare(b.naam, 'nl')).map((s) => [`offerte-maken/${s.slug}/`, s.naam])]],
   })
   return pag
 }
@@ -186,7 +235,7 @@ ${p.inhoud.replaceAll('href="@/', `href="${base}`)}
 ${p.faq.map(([q, an]) => `<details><summary>${esc(q)}</summary><p>${esc(an)}</p></details>`).join('\n')}
 ${p.links.map(([kop, ls]) => `<h2>${esc(kop)}</h2><ul class="links">${ls.map(([h, t]) => `<li><a href="${a(h)}">${esc(t)}</a></li>`).join('')}</ul>`).join('\n')}
 </main>
-<footer><p><a href="${a('offerte-maken/')}">Alle gidsen en regio's</a> · <a href="${a('gratis-offerte-app/')}">Gratis offerte-app voor aannemers</a> · ${onderwerpen.map((o) => `<a href="${a(o.slug + '/')}">${esc(o.kort)}</a>`).join(' · ')}</p><p>© 2026 Maatklaar · gemaakt door het Maatklaar-team · <a href="${a('#/privacy')}">Privacy</a></p></footer>
+<footer><p><a href="${a('offerte-maken/')}">Alle gidsen en regio's</a> · <a href="${a('gratis-offerte-app/')}">Gratis offerte-app voor aannemers</a> · <a href="${a('gratis-offerte-app-keuken/')}">Keuken</a> · <a href="${a('gratis-offerte-app-meerwerk/')}">Meerwerkbon</a> · <a href="${a('totaalrenovatie-offerte/')}">Totaalrenovatie</a> · ${onderwerpen.map((o) => `<a href="${a(o.slug + '/')}">${esc(o.kort)}</a>`).join(' · ')}</p><p>© 2026 Maatklaar · gemaakt door het Maatklaar-team · <a href="${a('#/privacy')}">Privacy</a></p></footer>
 </body></html>
 `
 }

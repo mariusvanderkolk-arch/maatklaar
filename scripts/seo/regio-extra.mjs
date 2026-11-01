@@ -85,7 +85,7 @@ Object.assign(stadExtra, {
   arnhem: { praktijk: P(
     ['Wederopbouw', 'Na 1944 is een groot deel van Arnhem opnieuw opgebouwd. Daarnaast zijn er villawijken op de stuwwal en oudere buurten zoals het Spijkerkwartier.'],
     ['Grote opdrachten', 'In villawijken gaat het vaak om meerdere ruimtes tegelijk: badkamer, toilet en soms een tweede badkamer.']),
-    faq: ['Hoe houd ik een grote offerte overzichtelijk?', 'Splits per ruimte en per onderdeel, met een schets per ruimte.'] },
+    faq: ['Hoe houd ik een grote offerte overzichtelijk?', 'Maak per ruimte een aparte offerte met eigen schets, en stuur ze samen naar de klant.'] },
   zaanstad: { praktijk: P(
     ['Houten Zaanse huizen', 'Houten huizen werken mee met temperatuur en vocht. Tegelwerk vraagt om een stabiele ondergrond en flexibele materialen.'],
     ['Slappe bodem', 'Verzakkingen en houten funderingen komen voor; scheve vloeren zijn eerder regel dan uitzondering.']),
@@ -144,7 +144,7 @@ Object.assign(provExtra, {
   gelderland: { praktijk: P(['Veluwe, Betuwe en Achterhoek', 'Zandgrond met vrijstaande huizen op de Veluwe, rivierklei met vocht in de Betuwe en veel boerderijen in de Achterhoek.'], ['Steden', 'Arnhem en Nijmegen hebben veel wederopbouw en vooroorlogse wijken.']),
     faq: ['Waarom kijk ik in de Betuwe eerst in de kruipruimte?', 'Op rivierklei komen vocht en houtrot voor; dat bepaalt wat er aan de vloer moet gebeuren.'] },
   utrecht: { praktijk: P(['Verbouwen in plaats van verhuizen', 'Door de krappe woningmarkt kiezen veel eigenaren voor een grotere verbouwing, soms in fasen.'], ['Heuvelrug en Vechtstreek', 'Buiten de steden staan villa’s en oudere dorpswoningen met hun eigen eisen.']),
-    faq: ['Kan ik een verbouwing in fasen offreren?', 'Ja, splits de offerte per fase met een eigen planning, zodat de klant per stap kan beslissen.'] },
+    faq: ['Kan ik een verbouwing in fasen offreren?', 'Ja: maak per ruimte of fase een aparte offerte, zodat de klant per stap kan beslissen.'] },
   'zuid-holland': { praktijk: P(['Steden en polders', 'Van portiekflats in Rotterdam en herenhuizen in Den Haag tot polderdorpen en de kassen in het Westland.'], ['Slappe bodem', 'In grote delen van de provincie zijn verzakking en houten funderingen een aandachtspunt.']),
     faq: ['Waar let ik op bij woningen op slappe bodem?', 'Op scheve vloeren en scheuren; neem egaliseren en een stabiele ondergrond mee.'] },
   'noord-brabant': { praktijk: P(['Steden met een industrieel verleden', 'Eindhoven en Tilburg hebben veel arbeiderswoningen en omgebouwde fabrieken; Den Bosch en Breda historische vestingsteden.'], ['Dorpen', 'In de Brabantse dorpen staan veel vrijstaande woningen en voormalige boerderijen.']),
