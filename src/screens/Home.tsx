@@ -2,6 +2,7 @@ import { SnelstartKnop } from '../components/Snelstart'
 import { VeiligVideo } from '../components/VeiligVideo'
 import { VEILIG_PUNTEN } from '../lib/veiligheid'
 import { Welkom } from '../components/Welkom'
+import { HeroDemo } from '../components/HeroDemo'
 import { HuisIllustratie } from '../components/HuisIllustratie'
 import { useEffect, useRef, useState } from 'react'
 import { OpvolgBadge } from '../components/OpvolgBadge'
@@ -113,7 +114,12 @@ export function Home() {
                 </button>
               )}
             </div>
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200">
+            {groot && (
+              <div className="relative hidden border-l border-sand-200 bg-[#f7f0de] lg:block">
+                <HeroDemo />
+              </div>
+            )}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden lg:pointer-events-auto lg:relative lg:inset-auto lg:min-h-[360px] lg:border-l lg:border-sand-200">
               <div className="absolute inset-0 opacity-[0.15] [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_62%,black_76%,transparent_88%)] lg:opacity-100 lg:[mask-image:none] lg:bg-[#f7f0de]">
               <div className="absolute inset-0 lg:inset-[5%]" data-hero-compact>
               <img src={`${import.meta.env.BASE_URL}hero-loop-poster.webp`} alt="" width={600} height={634} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-contain object-bottom lg:object-contain lg:object-center" />
@@ -158,6 +164,11 @@ export function Home() {
             ))}
           </ol>
         </section>
+        {!groot && (
+          <section className="card mt-6 bg-[#f7f0de] p-5 lg:hidden" aria-label="Probeer de plattegrond">
+            <HeroDemo compact />
+          </section>
+        )}
         <div className="mt-6 empty:hidden">
           <Verhuiskaart />
           <Welkom />
