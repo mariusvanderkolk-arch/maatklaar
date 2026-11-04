@@ -207,8 +207,11 @@ export const KENNIS: HulpItem[] = [
   { id: 'fout', vraag: 'Ik zie een foutmelding of iets werkt niet', woorden: ['fout', 'error', 'bug', 'kapot', 'werkt niet', 'probleem', 'vastgelopen', 'crash'],
     antwoord: 'Probeer eerst de pagina opnieuw te laden. Werkt het daarna nog niet, open de app dan in Chrome en maak voor de zekerheid een back-up. Laat het ons weten (knop hieronder) met wat je deed; dan lossen we het op.',
     links: [P('Back-up', '/instellingen/backup')] },
-  { id: 'contact', vraag: 'Hoe neem ik contact op?', woorden: ['contact', 'maatklaar-team', 'vraag stellen', 'hulp nodig', 'feedback', 'idee', 'suggestie', 'telefoon'],
-    antwoord: 'Stuur het Maatklaar-team een bericht via WhatsApp of mail met de knoppen hieronder. Ideeën en feedback zijn heel welkom!' },
+  { id: 'contact', vraag: 'Hoe neem ik contact op?', woorden: ['contact', 'contact opnemen', 'maatklaar-team', 'vraag stellen', 'hulp nodig', 'feedback', 'idee', 'suggestie', 'telefoon', 'bellen', 'mailen', 'e-mail', 'bereiken', 'telefoonnummer', 'support', 'klantenservice'],
+    antwoord: 'Stuur het Maatklaar-team een bericht via WhatsApp of e-mail met de knoppen hieronder, of gebruik het feedbackformulier. We reageren zo snel mogelijk. Ideeën en feedback zijn heel welkom!' },
+  // Eigenaar-zin goedgekeurd door Marius (alleen voornaam; geen achternaam, werkgever of telefoon).
+  { id: 'eigenaar', vraag: 'Wie zit er achter Maatklaar?', woorden: ['eigenaar', 'wie is de eigenaar', 'wie zit erachter', 'wie zit er achter', 'oprichter', 'maker', 'wie heeft', 'gemaakt door', 'bedrijf achter', 'van wie'],
+    antwoord: 'Maatklaar wordt gemaakt door Marius, voor aannemers en klussers. Vragen of ideeën? Stuur gerust een bericht met de knoppen hieronder.' },
 ]
 
 export const kennisVan = (id: string) => KENNIS.find((k) => k.id === id)

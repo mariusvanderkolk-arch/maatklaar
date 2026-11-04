@@ -31,3 +31,18 @@ describe('heroDemo', () => {
     expect(schrijf).toEqual([])
   })
 })
+
+import { projectUitDemo } from './heroDemo'
+describe('projectUitDemo', () => {
+  it('neemt maten en sanitair mee', () => {
+    const s = wissel({ ...startStaat(), lengte: 3.1, breedte: 2 }, 'toilet')
+    const p = projectUitDemo(s, {}, 5)
+    expect(p.type).toBe('badkamer')
+    expect(p.afmetingen.lengte).toBe(3.1)
+    expect(p.afmetingen.breedte).toBe(2)
+    expect(p.scope.toilet).toBe(false)
+    expect(p.scope.inloopdouche).toBe(true)
+    expect(p.naam).toMatch(/3,1×2 m/)
+    expect(p.createdAt).toBe(5)
+  })
+})

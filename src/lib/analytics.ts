@@ -11,17 +11,21 @@ export const EVENT_NAMEN = [
   'chat_opened', 'chat_question_unanswered', 'feedback_opened', 'signup', 'review_submitted',
   // funnel (eerste minuut): één keer per sessie per project-weergave, zonder ID's of waarden
   'opmeten_gestart', 'maat_ingevuld', 'offerte_bekeken', 'snelstart_gestart', 'snelstart_offerte_klaar',
+  // homepage-demo + spraak (testsite; live pas na Supabase-allowlist, zie docs/analytics-demo-events.md)
+  'demo_bekeken', 'demo_interactie', 'demo_cta', 'spraak_gestart',
 ] as const
 export type EventNaam = (typeof EVENT_NAMEN)[number]
 
 /** Funnel-events tellen we hoogstens één keer per paginasessie, zodat het weekoverzicht 'mensen' telt en geen klikken. */
-export const FUNNEL_EVENTS: readonly EventNaam[] = ['opmeten_gestart', 'maat_ingevuld', 'offerte_bekeken', 'snelstart_gestart', 'snelstart_offerte_klaar']
+export const FUNNEL_EVENTS: readonly EventNaam[] = ['opmeten_gestart', 'maat_ingevuld', 'offerte_bekeken', 'snelstart_gestart', 'snelstart_offerte_klaar', 'demo_bekeken', 'demo_interactie', 'demo_cta', 'spraak_gestart']
 /** Vaste, niet-persoonlijke detailwaarden per event (alles anders wordt weggegooid). Spiegel van de RLS-policy. */
 export const VASTE_DETAILS: Partial<Record<EventNaam, readonly string[]>> = {
   maat_ingevuld: ['lengte', 'breedte', 'hoogte', 'tegelhoogte', 'spatwand', 'opening', 'overig'],
   snelstart_offerte_klaar: ['ai', 'regels'],
   offerte_shared: ['whatsapp', 'herinnering', 'ingetrokken'],
   factuur_created: ['na_tekenen'],
+  demo_interactie: ['maat', 'onderdeel'],
+  spraak_gestart: ['snelstart', 'geen_support'],
 }
 
 export interface Event {

@@ -2,7 +2,8 @@
  * Interactieve plattegrond in de homepage-hero. Puur in het geheugen: nooit opslaan
  * (geen localStorage/IndexedDB), net als src/lib/demo.ts.
  */
-import type { Afmetingen } from './types'
+import type { Afmetingen, Project } from './types'
+import { nieuwProject } from './defaults'
 import { demoProject } from './demo'
 
 export const HERO_ONDERDELEN = [
@@ -51,5 +52,20 @@ export function heroAfmetingen(s: HeroDemoStaat): Afmetingen {
     lengte: s.lengte,
     breedte: s.breedte,
     douche: { breedte: Math.min(0.9, s.lengte / 2), diepte: Math.min(1.2, s.breedte * 0.66) },
+  }
+}
+
+/** Demo-staat → concept-project (badkamer) met dezelfde maten en sanitair, zodat je niet leeg begint. */
+export function projectUitDemo(s: HeroDemoStaat, basis: Partial<Project> = {}, nu = Date.now()): Project {
+  const p = nieuwProject({ type: 'badkamer', ...basis })
+  const af = heroAfmetingen(s)
+  const naam = `Badkamer ${s.lengte.toLocaleString('nl-NL')}×${s.breedte.toLocaleString('nl-NL')} m`
+  return {
+    ...p,
+    naam,
+    afmetingen: { ...p.afmetingen, lengte: af.lengte, breedte: af.breedte, douche: af.douche },
+    scope: { ...p.scope, inloopdouche: s.aan.inloopdouche, toilet: s.aan.toilet, wastafelmeubel: s.aan.wastafelmeubel },
+    createdAt: nu,
+    updatedAt: nu,
   }
 }

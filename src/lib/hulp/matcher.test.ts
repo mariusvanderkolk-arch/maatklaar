@@ -63,9 +63,9 @@ describe('beantwoord', () => {
 })
 
 describe('kennisbank', () => {
-  it('40-60 unieke items, alle tips bestaan, links zijn geldig', () => {
+  it('40-65 unieke items, alle tips bestaan, links zijn geldig', () => {
     expect(KENNIS.length).toBeGreaterThanOrEqual(40)
-    expect(KENNIS.length).toBeLessThanOrEqual(60)
+    expect(KENNIS.length).toBeLessThanOrEqual(65)
     expect(new Set(KENNIS.map((k) => k.id)).size).toBe(KENNIS.length)
     for (const ids of Object.values(TIPS)) for (const id of ids) expect(kennisVan(id), id).toBeTruthy()
     for (const k of KENNIS) for (const l of k.links ?? []) expect(l.pad).toMatch(/^(\/[a-z/-]*|project:(opmeten|ontwerp|berekening|inkoop|offerte|planning))$/)
@@ -93,4 +93,12 @@ describe('AI-modus (optioneel)', async () => {
 describe('contact', async () => {
   const { whatsappLink } = await import('../feedback')
   it('WhatsApp-link zonder vast nummer', () => expect(whatsappLink('a b')).toBe('https://wa.me/?text=a%20b'))
+})
+
+describe('nieuwe hulpvragen', async () => {
+  const { beantwoord } = await import('./matcher')
+  it('contact en eigenaar worden herkend', () => {
+    const c = beantwoord('hoe kan ik contact opnemen?'); expect(c.soort === 'zeker' && c.item.id).toBe('contact')
+    const e = beantwoord('wie is de eigenaar?'); expect(e.soort === 'zeker' && e.item.id).toBe('eigenaar')
+  })
 })

@@ -33,7 +33,7 @@ export function snelstartProject(r: Inspraak, nu = Date.now()): Project {
 }
 
 export function SnelstartKnop({ className = '' }: { className?: string }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<false | 'typen' | 'spraak'>(false)
   return (
     <>
       <Button
@@ -43,17 +43,31 @@ export function SnelstartKnop({ className = '' }: { className?: string }) {
         data-testid="snelstart-knop"
         onClick={() => {
           track('snelstart_gestart')
-          setOpen(true)
+          setOpen('typen')
         }}
       >
         Eerste offerte in 1 minuut
       </Button>
-      {open && <SnelstartDialoog onClose={() => setOpen(false)} />}
+      <Button
+        size="lg"
+        variant="ghost"
+        className={className}
+        icon={<Mic className="h-4.5 w-4.5" />}
+        data-testid="vertel-de-klus"
+        onClick={() => {
+          track('snelstart_gestart')
+          track('spraak_gestart', { detail: spraakKlasse() ? 'snelstart' : 'geen_support' })
+          setOpen('spraak')
+        }}
+      >
+        Vertel de klus
+      </Button>
+      {open && <SnelstartDialoog autoSpraak={open === 'spraak'} onClose={() => setOpen(false)} />}
     </>
   )
 }
 
-function SnelstartDialoog({ onClose }: { onClose: () => void }) {
+function SnelstartDialoog({ onClose, autoSpraak = false }: { onClose: () => void; autoSpraak?: boolean }) {
   const [tekst, setTekst] = useState('')
   const [bezig, setBezig] = useState(false)
   const [luistert, setLuistert] = useState(false)
@@ -63,6 +77,7 @@ function SnelstartDialoog({ onClose }: { onClose: () => void }) {
   const Klasse = spraakKlasse()
   const toegang = useProjectToegang()
   useEffect(() => () => sr.current?.stop(), [])
+  const autoGestart = useRef(false)
 
   const start = () => {
     if (!Klasse) return
@@ -88,6 +103,13 @@ function SnelstartDialoog({ onClose }: { onClose: () => void }) {
       setFout('Spraak is niet beschikbaar. Typ je klus hieronder.')
     }
   }
+  useEffect(() => {
+    if (!autoSpraak || autoGestart.current) return
+    autoGestart.current = true
+    if (Klasse) start()
+    else setFout('Spraak werkt niet in deze browser (probeer Chrome of Safari). Typ je klus hieronder, bijv. "badkamer 2 bij 3, inloopdouche".')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const stop = () => {
     sr.current?.stop()
     setLuistert(false)

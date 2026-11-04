@@ -28,7 +28,8 @@ drop policy if exists events_insert_only on public.events;
 create policy events_insert_only on public.events for insert to anon, authenticated with check (
   name in ('page_view','project_created','offerte_shared','offerte_printed','factuur_created','design_opened',
            'chat_opened','chat_question_unanswered','feedback_opened','signup','review_submitted',
-           'opmeten_gestart','maat_ingevuld','offerte_bekeken','snelstart_gestart','snelstart_offerte_klaar')
+           'opmeten_gestart','maat_ingevuld','offerte_bekeken','snelstart_gestart','snelstart_offerte_klaar',
+           'demo_bekeken','demo_interactie','demo_cta','spraak_gestart')
   and coalesce(length(path), 0) <= 100
   and coalesce(length(referrer_host), 0) <= 100
   and coalesce(length(session), 0) <= 16
@@ -38,6 +39,8 @@ create policy events_insert_only on public.events for insert to anon, authentica
     or name = 'chat_question_unanswered'
     or (name = 'maat_ingevuld' and detail in ('lengte','breedte','hoogte','tegelhoogte','spatwand','opening','overig'))
     or (name = 'snelstart_offerte_klaar' and detail in ('ai','regels'))
+    or (name = 'demo_interactie' and detail in ('maat','onderdeel'))
+    or (name = 'spraak_gestart' and detail in ('snelstart','geen_support'))
     or (name = 'offerte_shared' and detail in ('whatsapp','herinnering','ingetrokken'))
     or (name = 'factuur_created' and detail in ('na_tekenen')))
 );
