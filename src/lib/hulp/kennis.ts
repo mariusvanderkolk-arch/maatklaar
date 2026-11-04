@@ -211,7 +211,7 @@ export const KENNIS: HulpItem[] = [
     antwoord: 'Stuur het Maatklaar-team een bericht via WhatsApp of e-mail met de knoppen hieronder, of gebruik het feedbackformulier. We reageren zo snel mogelijk. Ideeën en feedback zijn heel welkom!' },
   // Eigenaar-zin goedgekeurd door Marius (alleen voornaam; geen achternaam, werkgever of telefoon).
   { id: 'eigenaar', vraag: 'Wie zit er achter Maatklaar?', woorden: ['eigenaar', 'wie is de eigenaar', 'wie zit erachter', 'wie zit er achter', 'oprichter', 'maker', 'wie heeft', 'gemaakt door', 'bedrijf achter', 'van wie'],
-    antwoord: 'Maatklaar wordt gemaakt door Marius, die zelf in de afbouw werkt, voor aannemers en klussers. Vragen of ideeën? Stuur gerust een bericht met de knoppen hieronder.' },
+    antwoord: 'Maatklaar wordt gemaakt door Marius, voor aannemers en klussers. Vragen of ideeën? Stuur gerust een bericht met de knoppen hieronder.' },
 ]
 
 export const kennisVan = (id: string) => KENNIS.find((k) => k.id === id)

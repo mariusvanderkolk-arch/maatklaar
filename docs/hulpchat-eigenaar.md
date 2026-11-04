@@ -2,7 +2,7 @@
 
 Vraag "wie is de eigenaar / wie zit erachter?" krijgt nu (src/lib/hulp/kennis.ts, id `eigenaar`):
 
-> Maatklaar wordt gemaakt door Marius, die zelf in de afbouw werkt, voor aannemers en klussers. Vragen of ideeën? Stuur gerust een bericht met de knoppen hieronder.
+> Maatklaar wordt gemaakt door Marius, voor aannemers en klussers. Vragen of ideeën? Stuur gerust een bericht met de knoppen hieronder.
 
 - Alleen voornaam: geen achternaam, werkgever of telefoonnummer.
 
