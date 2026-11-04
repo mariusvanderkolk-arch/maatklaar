@@ -209,9 +209,9 @@ export const KENNIS: HulpItem[] = [
     links: [P('Back-up', '/instellingen/backup')] },
   { id: 'contact', vraag: 'Hoe neem ik contact op?', woorden: ['contact', 'contact opnemen', 'maatklaar-team', 'vraag stellen', 'hulp nodig', 'feedback', 'idee', 'suggestie', 'telefoon', 'bellen', 'mailen', 'e-mail', 'bereiken', 'telefoonnummer', 'support', 'klantenservice'],
     antwoord: 'Stuur het Maatklaar-team een bericht via WhatsApp of e-mail met de knoppen hieronder, of gebruik het feedbackformulier. We reageren zo snel mogelijk. Ideeën en feedback zijn heel welkom!' },
-  // CONCEPT — eigenaar-zin wacht op goedkeuring van Marius (zie docs/hulpchat-eigenaar.md). Geen naam/werkgever noemen zonder OK.
+  // Eigenaar-zin goedgekeurd door Marius (alleen voornaam; geen achternaam, werkgever of telefoon).
   { id: 'eigenaar', vraag: 'Wie zit er achter Maatklaar?', woorden: ['eigenaar', 'wie is de eigenaar', 'wie zit erachter', 'wie zit er achter', 'oprichter', 'maker', 'wie heeft', 'gemaakt door', 'bedrijf achter', 'van wie'],
-    antwoord: 'Maatklaar wordt gemaakt in Nederland door iemand uit de afbouw, voor aannemers en klussers. Vragen of ideeën? Stuur het team gerust een bericht met de knoppen hieronder.' },
+    antwoord: 'Maatklaar wordt gemaakt door Marius, die zelf in de afbouw werkt, voor aannemers en klussers. Vragen of ideeën? Stuur gerust een bericht met de knoppen hieronder.' },
 ]
 
 export const kennisVan = (id: string) => KENNIS.find((k) => k.id === id)
