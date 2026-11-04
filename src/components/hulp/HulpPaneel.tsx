@@ -11,6 +11,7 @@ import { projectStore } from '../../lib/store'
 import { sessieOpslag } from '../../lib/veiligeOpslag'
 import { sleutel } from '../../lib/modus'
 import { mailtoLink, whatsappLink } from '../../lib/feedback'
+import { meldHulpvraag } from '../../lib/hulp/melding'
 import { LogoMark } from '../Logo'
 import { track } from '../../lib/analytics'
 
@@ -54,10 +55,11 @@ function laad(): Bericht[] {
   }
 }
 
-function antwoordBericht(vraag: string): Bericht {
+function antwoordBericht(vraag: string, scherm = ''): Bericht {
   const a = beantwoord(vraag)
+  meldHulpvraag(vraag, a.soort === 'zeker', scherm)
   if (a.soort !== 'zeker') track('chat_question_unanswered', { detail: vraag })
-  if (a.soort === 'zeker') return { van: 'hulp', tekst: a.item.antwoord, links: a.item.links, opties: a.anders.map((x) => x.id), vraag, contact: a.item.id === 'contact' || a.item.id === 'fout' }
+  if (a.soort === 'zeker') return { van: 'hulp', tekst: a.item.antwoord, links: a.item.links, opties: a.anders.map((x) => x.id), vraag, contact: a.item.id === 'contact' || a.item.id === 'fout' || a.item.id === 'eigenaar' }
   if (a.opties.length)
     return { van: 'hulp', tekst: 'Weet ik niet zeker. Bedoel je een van deze?', opties: a.opties.map((x) => x.id), vraag, contact: true }
   return { van: 'hulp', tekst: 'Weet ik niet zeker. Probeer het anders te vragen, kies hieronder een onderwerp, of stel je vraag aan het Maatklaar-team.', opties: ['start', 'offerte', 'prijzen'], vraag, contact: true }
@@ -94,7 +96,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
   const stel = (vraag: string) => {
     const v = vraag.trim()
     if (!v) return
-    setBerichten((b) => [...b, { van: 'ik', tekst: v }, antwoordBericht(v)])
+    setBerichten((b) => [...b, { van: 'ik', tekst: v }, antwoordBericht(v, schermNaam(route))])
     setInvoer('')
   }
   const toonItem = (it: HulpItem) => setBerichten((b) => [...b, { van: 'ik', tekst: it.vraag }, { van: 'hulp', tekst: it.antwoord, links: it.links, vraag: it.vraag }])
