@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 import { Bell, BellRing, Eye, Link2Off, MessageCircle, PenLine, ReceiptText, Share2, Star } from 'lucide-react'
 import { Button, Card } from './ui'
 import { OpvolgBadge } from './OpvolgBadge'
+import { KlantVoorbeeld } from './KlantVoorbeeld'
 import { dagenSinds, herinneringNodig, herinneringTekst, opvolgstatus } from '../lib/opvolging'
 import { verwerkStatus, markeerGezien } from '../lib/opvolgingSync'
 import { meldingStand, vraagMeldingen } from '../lib/meldingen'
 import { geldigeTermijnen, TERMIJN_VOORSTELLEN } from '../lib/factuur'
 import { toast } from './Toast'
 import { codeerOfferte, metVorige, type OfferteData } from '../lib/offerte'
-import { deelVoorOndertekening, FOUT_TEKST, haalTekenStatus, tekenLink, trekLinkIn } from '../lib/ondertekenen'
+import { deelVoorOndertekening, FOUT_TEKST, type Fout, haalTekenStatus, tekenLink, trekLinkIn } from '../lib/ondertekenen'
 import { toegangsToken } from '../lib/cloud/sync'
 import { kopieer } from '../lib/share'
 import { projectStore } from '../lib/store'
@@ -26,6 +27,30 @@ const tijd = (iso: string) => new Date(iso).toLocaleString('nl-NL', { day: 'nume
 
 /** Is de huidige offerte nog gelijk aan de getekende/gedeelde versie? */
 export const zelfdeVersie = (t: Teken | undefined, d: OfferteData) => !!t && t.code === codeerOfferte(d)
+
+/** Bruikbare (gedeelde, niet-getekende, niet-ingetrokken, actuele) tekenlink van dit project, of null. */
+export function bestaandeTekenLink(p: Project, d: OfferteData): string | null {
+  const t = p.offerte?.teken
+  return t && !t.getekend && !t.ingetrokkenOp && zelfdeVersie(t, d) ? tekenLink(t.token) : null
+}
+
+/** Maakt (en bewaart) een nieuwe tekenlink voor deze offerteversie; de vorige niet-getekende link vervalt. */
+export async function maakTekenLink(p: Project, d: OfferteData): Promise<{ ok: true; url: string } | { ok: false; fout: Fout }> {
+  const t = p.offerte?.teken
+  const gewijzigd = !!t && !zelfdeVersie(t, d)
+  const jwt = await toegangsToken()
+  // herziene offerte: de vorige gedeelde versie gaat als vergelijking mee
+  const vorigeCode = gewijzigd ? t!.code : t?.vorigeCode
+  const r = await deelVoorOndertekening(metVorige(d, vorigeCode), fetch, jwt)
+  if (!r.ok) return r
+  projectStore.werkBij(p.id, (x) => ({
+    ...x,
+    offerte: { ...x.offerte, teken: { token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot, eigenaarGeheim: r.data.owner_secret, vorigeCode } as Teken },
+  }))
+  // de vorige, niet-getekende link vervalt: klant ziet dan "nieuwe versie, vraag de nieuwste link" (stil bij fouten)
+  if (t && !t.getekend && !t.ingetrokkenOp && t.token !== r.data.token) void trekLinkIn(t.token, t.eigenaarGeheim, fetch, jwt)
+  return { ok: true, url: tekenLink(r.data.token) }
+}
 
 async function deelLink(url: string, titel: string, tekst: string) {
   if (navigator.share) {
@@ -92,19 +117,13 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
   /** Maakt een nieuwe tekenlink; geeft de url terug (of null bij een fout). */
   const maakLink = async (): Promise<string | null> => {
     setBezig(true)
-    const jwt = await toegangsToken()
-    // herziene offerte: de vorige gedeelde versie gaat als vergelijking mee
-    const vorigeCode = gewijzigd ? t!.code : t?.vorigeCode
-    const r = await deelVoorOndertekening(metVorige(d, vorigeCode), fetch, jwt)
+    const r = await maakTekenLink(p, d)
     setBezig(false)
     if (!r.ok) {
       toast(r.fout === 'niet-beschikbaar' ? 'Digitaal tekenen is nog niet beschikbaar. Deel voorlopig de gewone offerte-link.' : FOUT_TEKST[r.fout], 'fout')
       return null
     }
-    zet({ token: r.data.token, hash: r.data.hash, nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot, getekend: undefined, bekekenOp: undefined, herinnerdOp: undefined, nieuwGetekend: undefined, eigenaarGeheim: r.data.owner_secret, ingetrokkenOp: undefined, vorigeCode })
-    // de vorige, niet-getekende link vervalt: klant ziet dan "nieuwe versie, vraag de nieuwste link" (stil bij fouten)
-    if (t && !t.getekend && !t.ingetrokkenOp && t.token !== r.data.token) void trekLinkIn(t.token, t.eigenaarGeheim, fetch, jwt)
-    return tekenLink(r.data.token)
+    return r.url
   }
 
   const viaWhatsapp = async () => {
@@ -287,6 +306,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
       )}
 
       <div className="mt-4 grid gap-2">
+        {!t?.getekend && !t?.ingetrokkenOp && <KlantVoorbeeld d={metVorige(d, gewijzigd ? t!.code : t?.vorigeCode)} />}
         {!t?.getekend && !t?.ingetrokkenOp && (
           <button
             type="button"

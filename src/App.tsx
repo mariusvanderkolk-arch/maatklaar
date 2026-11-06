@@ -2,6 +2,7 @@ import { Suspense, useEffect } from 'react'
 import { padVoor, track } from './lib/analytics'
 import { Shell } from './components/Shell'
 import { useRoute } from './lib/router'
+import { isVoorbeeld } from './lib/voorbeeld'
 import { projectStore } from './lib/store'
 import { Home } from './screens/Home'
 import { Toaster } from './components/Toast'
@@ -39,7 +40,9 @@ function Laden() {
 export default function App() {
   const route = useRoute()
   const pad = padVoor(route as { naam: string; stap?: string; sectie?: string })
-  useEffect(() => track('page_view', { path: pad }), [pad])
+  useEffect(() => {
+    if (!isVoorbeeld(location.hash)) track('page_view', { path: pad })
+  }, [pad])
   // Offerte-opvolging: bij openen en bij terugkeren naar de app de status van gedeelde offertes ophalen
   useEffect(() => {
     if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen') return

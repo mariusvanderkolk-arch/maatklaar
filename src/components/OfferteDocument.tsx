@@ -1,3 +1,4 @@
+import { qrSvg } from '../lib/qr'
 import { LogoMark } from './Logo'
 import { euro, getal } from '../lib/format'
 import { datumNl, type OfferteData } from '../lib/offerte'
@@ -38,6 +39,25 @@ export function HerzieningKader({ h, totaal }: { h: Herziening; totaal: number }
 }
 
 /** Professionele offerteweergave; gebruikt in de app én in de alleen-lezen klantweergave. */
+/** Voet op de geprinte offerte / PDF: link + QR naar de online versie (alleen zichtbaar bij afdrukken). */
+export function OnlineVoet({ url, getekend }: { url: string; getekend?: boolean }) {
+  const svg = qrSvg(url)
+  return (
+    <section className="avoid-break mt-6 hidden items-center gap-4 rounded-xl border border-sand-200 px-4 py-3 text-[0.78rem] print:flex" data-testid="online-voet">
+      {svg && <div className="h-24 w-24 shrink-0" aria-label="QR-code naar de online offerte" role="img" dangerouslySetInnerHTML={{ __html: svg }} />}
+      <div className="min-w-0">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-gold-700">Deze offerte staat ook online</p>
+        <p className="mt-1 text-ink-soft">
+          {getekend
+            ? 'Scan de code of open de link om de getekende offerte online terug te zien.'
+            : 'Liever digitaal? Scan de code met je telefoon of open de link. Je bekijkt de offerte dan online en kunt hem daar direct tekenen.'}
+        </p>
+        <p className="mt-1 font-mono text-[0.62rem] break-all text-ink-muted">{url}</p>
+      </div>
+    </section>
+  )
+}
+
 export interface Ondertekening {
   naam: string
   /** ISO-tijdstip */
@@ -46,7 +66,7 @@ export interface Ondertekening {
   hash?: string
 }
 
-export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3d, ondertekening }: { d: OfferteData; logo?: string; className?: string; beeld3d?: string | null; interactief3d?: boolean; ondertekening?: Ondertekening | null }) {
+export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3d, ondertekening, onlineLink }: { d: OfferteData; logo?: string; className?: string; beeld3d?: string | null; interactief3d?: boolean; ondertekening?: Ondertekening | null; onlineLink?: string | null }) {
   const b = d.bedrijf
   const heeftBedrijf = Boolean(b.naam)
   const gemengd = d.mat.some((m) => m[3])
@@ -327,6 +347,7 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
           Deze raming is indicatief en gebaseerd op opgegeven maten en vuistregels. {d.prijsTekst} Arbeidsuren zijn een schatting. Aan deze raming
           kunnen geen rechten worden ontleend; een definitieve offerte volgt na inspectie ter plaatse.
         </p>
+        {onlineLink && <OnlineVoet url={onlineLink} getekend={!!ondertekening} />}
         {registratie.length > 0 && (
           <p className="mt-4 border-t border-sand-200 pt-3 text-center text-[0.72rem] text-ink-muted">
             {[b.naam, ...registratie].filter(Boolean).join(' · ')}

@@ -47,7 +47,7 @@ export function cspPlugin(): Plugin {
           "worker-src 'self' blob:",
           "manifest-src 'self'",
           "media-src 'self' blob: data:",
-          "frame-src 'none'",
+          "frame-src 'self'",
           "object-src 'none'",
           "base-uri 'self'",
           "form-action 'self'",
