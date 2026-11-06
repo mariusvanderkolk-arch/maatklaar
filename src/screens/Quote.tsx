@@ -3,7 +3,8 @@ import { MeerwerkKaart } from '../components/MeerwerkKaart'
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
 import { VergeetCheck, vergeetPunten } from '../components/VergeetCheck'
-import { TekenKaart, zelfdeVersie } from '../components/TekenKaart'
+import { bestaandeTekenLink, maakTekenLink, TekenKaart, zelfdeVersie } from '../components/TekenKaart'
+import { MAX_QR_LENGTE } from '../lib/qr'
 import { reviewStatus } from '../lib/reviews'
 import { useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, ReceiptText, Building2, Copy, ExternalLink, Printer, Send } from 'lucide-react'
@@ -16,6 +17,7 @@ import { metVorige, offerteLink } from '../lib/offerte'
 import { maakOfferteData } from '../lib/offerteMaken'
 import { vandaag } from '../lib/planning'
 import { ga } from '../lib/router'
+import { tekenLink } from '../lib/ondertekenen'
 import { inkoopTekst, kopieer } from '../lib/share'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
@@ -51,6 +53,31 @@ export function Quote({ p }: { p: Project }) {
   const t = of.teken
   const weergave = useMemo(() => metVorige(data, t && !zelfdeVersie(t, data) ? t.code : t?.vorigeCode), [data, t])
 
+  // link + QR onderaan de PDF: altijd naar de online, tekenbare versie
+  const [printLink, setPrintLink] = useState<string | null>(null)
+  const getekendLink = of.teken?.getekend && zelfdeVersie(of.teken, data) ? tekenLink(of.teken.token) : null
+  const pdfLink = getekendLink ?? bestaandeTekenLink(p, data) ?? printLink
+  const [printBezig, setPrintBezig] = useState(false)
+  const drukAf = async () => {
+    track('offerte_printed')
+    reviewStatus.telOfferte()
+    if (!getekendLink && !bestaandeTekenLink(p, data)) {
+      // nog geen tekenlink: maak er één, zodat de QR op papier altijd werkt
+      setPrintBezig(true)
+      const r = await maakTekenLink(p, data)
+      setPrintBezig(false)
+      if (r.ok) setPrintLink(r.url)
+      else {
+        const gewoon = offerteLink(data)
+        setPrintLink(gewoon.length <= MAX_QR_LENGTE ? gewoon : null)
+        toast('Tekenlink maken lukte niet; de PDF krijgt nu geen tekenbare QR-code.', 'fout')
+      }
+      // even wachten tot de voet met QR op de pagina staat
+      await new Promise((ok) => setTimeout(ok, 80))
+    }
+    window.print()
+  }
+
   const [vergeetBevestig, setVergeetBevestig] = useState(false)
   const probeerDelen = () => {
     if (vergeetPunten(p).length) {
@@ -84,7 +111,7 @@ export function Quote({ p }: { p: Project }) {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
       <div className="order-2 lg:order-1">
-        <OfferteDocument d={weergave} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} ondertekening={of.teken?.getekend && zelfdeVersie(of.teken, data) ? { ...of.teken.getekend, hash: of.teken.hash } : null} />
+        <OfferteDocument d={weergave} logo={bedrijf.logo} beeld3d={data.ow ? beeld3d : null} ondertekening={of.teken?.getekend && zelfdeVersie(of.teken, data) ? { ...of.teken.getekend, hash: of.teken.hash } : null} onlineLink={pdfLink} />
       </div>
 
       <aside className="no-print order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
@@ -210,8 +237,8 @@ export function Quote({ p }: { p: Project }) {
             .
           </p>
           <div className="mt-4 grid gap-2">
-            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => { track('offerte_printed'); reviewStatus.telOfferte(); window.print() }}>
-              Afdrukken / PDF
+            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} disabled={printBezig} onClick={() => void drukAf()} data-testid="afdrukken">
+              {printBezig ? 'Online link maken…' : 'Afdrukken / PDF'}
             </Button>
             <Button
               variant="ghost"

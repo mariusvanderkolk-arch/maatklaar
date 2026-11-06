@@ -402,6 +402,7 @@ export function Dialog({
   sub,
   children,
   footer,
+  breed,
 }: {
   open: boolean
   onClose: () => void
@@ -409,6 +410,8 @@ export function Dialog({
   sub?: ReactNode
   children?: ReactNode
   footer?: ReactNode
+  /** Breder venster (bijv. voor een voorbeeldweergave). */
+  breed?: boolean
 }) {
   const venster = useRef<HTMLDivElement>(null)
   const titelId = useId()
@@ -433,7 +436,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={titelId}
         tabIndex={-1}
-        className="max-h-[92dvh] focus:outline-none w-full overflow-y-auto rounded-t-3xl border border-sand-300/70 bg-paper shadow-lift sm:max-w-lg sm:rounded-3xl"
+        className={`max-h-[92dvh] focus:outline-none w-full overflow-y-auto rounded-t-3xl border border-sand-300/70 bg-paper shadow-lift sm:rounded-3xl ${breed ? 'sm:max-w-5xl' : 'sm:max-w-lg'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 border-b border-sand-200 px-5 pt-5 pb-4 sm:px-6">
