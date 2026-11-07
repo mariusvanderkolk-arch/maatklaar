@@ -33,7 +33,7 @@ export function prijsTekstVoor(st: Berekening['inkoop']['prijsStatus'], datumTek
 
 export function oppervlakRegels(p: Project, o: Berekening['oppervlakken']): [string, string][] {
   const sc = effectieveScope(p)
-  if (isAfwerking(p)) return afwerkingVan(p).vlakken.slice(0, 4).map((v) => [v.naam, `${getal(v.m2)} m²`])
+  if (isAfwerking(p)) return afwerkingVan(p).vlakken.map((v) => [v.naam, `${getal(v.m2)} m²`])
   const m2 = (n: number) => `${getal(n)} m²`
   const m = (n: number) => `${getal(n)} m`
   if (p.type === 'vloer') return [['Vloer', m2(o.vloer)], ['Plinten', m(sc.plinten ? o.plintLengte : 0)], ['Omtrek', m(o.omtrek)], ['Snijverlies', `${getal(p.snijverlies, 1)} %`]]

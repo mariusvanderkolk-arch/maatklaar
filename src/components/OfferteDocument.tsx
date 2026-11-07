@@ -139,7 +139,7 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
               <li key={l} className="flex items-start gap-2">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400" aria-hidden />
                 <span>
-                  <span className="font-medium text-ink">{l}</span> — {o.toLowerCase()}
+                  <span className="font-medium text-ink">{l}</span> — {d.tarieven ? o : o.toLowerCase()}
                 </span>
               </li>
             ))}

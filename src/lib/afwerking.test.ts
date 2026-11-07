@@ -156,6 +156,27 @@ describe('schilderplattegrond en kleuren', () => {
     const ui = renderToStaticMarkup(createElement(AfwerkingForm, { p }))
     expect(ui).toContain(KLEUR_DISCLAIMER); expect(ui).toContain('Wand A'); expect(ui).toContain('Sikkens'); expect(ui).toContain('geen volledige waaier')
   })
+  it('offerte-oppervlakken tonen ook plafond na vier wanden, met alle netto m²', () => {
+    const p = planProject(); const k = p.schilderPlan!.kamers[0]
+    k.lengte = 5; k.breedte = 3; k.hoogte = 2.6; k.wanden[0].aftrek = 1.5
+    const d = decodeerOfferte(codeerOfferte(quote(p)))
+    expect(d.opp).toHaveLength(5)
+    expect(d.opp[4]).toEqual(['TEST ruimte · Plafond', '15 m²'])
+    expect(afwerkingVan(p).vlakken.reduce((s, v) => s + v.m2, 0)).toBeCloseTo(55.1)
+    const html = renderToStaticMarkup(createElement(OfferteDocument, { d }))
+    expect(html).toContain('15 m²')
+  })
+  it('werkbeschrijvingen behouden waaiernaam, kleurcode en kleurnaam in klantweergave/print', () => {
+    const p = planProject(); const k = p.schilderPlan!.kamers[0]
+    k.wanden[0].kleur = { ...KLEUR_SELECTIE[0] }
+    k.wanden[1].kleur = { waaier: 'ncs', code: 'S 1002-Y', naam: 'Eigen proefkleur', hex: '#dddccc' }
+    const d = decodeerOfferte(codeerOfferte(quote(p)))
+    const html = renderToStaticMarkup(createElement(OfferteDocument, { d }))
+    const werkzaamheden = html.slice(html.indexOf('Werkzaamheden'), html.indexOf('Oppervlakken'))
+    expect(werkzaamheden).toContain('RAL Classic RAL 9010 Zuiver wit')
+    expect(werkzaamheden).toContain('NCS S 1002-Y Eigen proefkleur')
+    expect(werkzaamheden).not.toContain('ral classic ral 9010')
+  })
   it('wijzigen afwerking/uren per planvlak behoudt geometrie en geen dubbele regels', () => {
     const p = planProject(); p.afwerking = { ...afwerkingVan(p), vlakken: afwerkingVan(p).vlakken.map((v) => ({ ...v, urenPerM2: 1 })) }
     p.schilderPlan!.kamers[0].lengte = 5
