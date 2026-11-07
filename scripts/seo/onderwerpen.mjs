@@ -1,5 +1,57 @@
 // Onderwerppagina's (SEO). Geen prijzen, geen betaalinformatie, geen persoonsnamen.
 export const onderwerpen = [
+{
+  "slug": "waar-let-je-op-bij-een-offerte",
+  "titel": "Waar let je op bij een offerte?",
+  "kort": "Offerte beoordelen",
+  "meta": "Een offerte beoordelen of opstellen? Bekijk de belangrijkste afspraken over werkzaamheden, materiaal, btw, planning, betaling en meerwerk.",
+  "h1": "Waar let je op bij een offerte?",
+  "intro": "Een goede offerte maakt duidelijk welk werk wordt uitgevoerd, wat het kost en welke afspraken daarbij horen. Dat helpt de vakman om helder aan te bieden en de opdrachtgever om offertes eerlijk te vergelijken. Kijk daarom niet alleen naar het eindbedrag. Een lage prijs zegt weinig als belangrijke werkzaamheden ontbreken.",
+  "secties": [
+    [
+      "De checklist",
+      "<p>Met deze checklist zie je welke onderdelen aandacht verdienen voordat je akkoord geeft.</p>"
+    ],
+    [
+      "1. Staat het werk duidelijk omschreven?",
+      "<p>“Badkamer verbouwen” is minder duidelijk dan een omschrijving van sloopwerk, leidingwerk, tegelwerk en montage. Benoem per onderdeel wat er gebeurt en in welke ruimte. Vermeld ook wie afvoert, opruimt en materialen aanlevert.</p><p>Vergelijk offertes op dezelfde werkzaamheden. Anders lijkt de ene aanbieding goedkoper, terwijl de andere meer omvat. Voeg waar nodig een tekening of foto toe om de afspraken concreet te maken.</p>"
+    ],
+    [
+      "2. Zijn materialen en hoeveelheden herkenbaar?",
+      "<p>Controleer welke materialen zijn opgenomen, met welke aantallen, maten of oppervlakten. Denk aan vierkante meters tegelwerk, het type plaatmateriaal of het gekozen sanitair.</p><p>Is een product nog niet gekozen? Leg dan vast welk uitgangspunt is gebruikt. Spreek ook af wie bestelt en wat er gebeurt als de uiteindelijke keuze duurder of goedkoper uitvalt.</p>"
+    ],
+    [
+      "3. Hoe zijn arbeid en btw verwerkt?",
+      "<p>Is arbeid onderdeel van een afgesproken totaalprijs, of wordt gewerkt met uren en een uurtarief? Vraag bij afrekening op uren naar de verwachte inzet en hoe de uren worden bijgehouden.</p><p>Controleer daarnaast of bedragen inclusief of exclusief btw zijn en welke btw-tarieven worden toegepast. Als consument wil je vooral helder zien wat je uiteindelijk betaalt.</p>"
+    ],
+    [
+      "4. Is het een vaste prijs, richtprijs of stelpost?",
+      "<p>Deze begrippen betekenen niet hetzelfde. Maak duidelijk voor welke werkzaamheden een vaste prijs geldt en waarop een richtprijs is gebaseerd.</p><p>Een stelpost is een voorlopig opgenomen bedrag voor een onderdeel dat nog niet definitief vaststaat. Vraag wat de stelpost dekt en hoe verschillen worden verrekend. Bijvoorbeeld: gaat het alleen om de aanschaf van tegels, of ook om het leggen?</p>"
+    ],
+    [
+      "5. Wat is niet inbegrepen?",
+      "<p>Uitsluitingen verdienen net zoveel aandacht als de werkzaamheden zelf. Denk aan herstel van verborgen gebreken, extra leidingwerk of werkzaamheden door andere partijen.</p><p>Noteer ook aannames: bijvoorbeeld dat de ondergrond geschikt is of dat de werkplek bereikbaar en vrij is. Bespreek wat er gebeurt als zo’n aanname niet klopt.</p>"
+    ],
+    [
+      "6. Welke afspraken gelden voor planning en betaling?",
+      "<p>Leg de verwachte start, doorlooptijd en afhankelijkheden vast. Is een datum definitief of voorlopig? Wie laat het weten als materialen vertraagd zijn?</p><p>Controleer ook de geldigheidsduur van de offerte, eventuele betaaltermijnen en de momenten waarop termijnen worden gefactureerd. Zo weten beide partijen waar ze aan toe zijn.</p>"
+    ],
+    [
+      "7. Hoe worden wijzigingen vastgelegd?",
+      "<p>Bespreek meer- en minderwerk voordat het wordt uitgevoerd. Noteer wat verandert, waarom, welk bedrag erbij komt of afgaat en wat het betekent voor de planning.</p><p>Laat de opdrachtgever de wijziging duidelijk bevestigen. Bij digitaal akkoord is het verstandig de geaccepteerde versie en de bevestiging samen te bewaren. Een handtekening vervangt geen duidelijke omschrijving.</p>"
+    ],
+    [
+      "Duidelijke afspraken, prettiger samenwerken",
+      "<p>Loop de offerte samen na en stel vragen over onduidelijke onderdelen. Dat kost vooraf even tijd, maar helpt misverstanden tijdens het werk te voorkomen.</p><p>Wil je meer- en minderwerk overzichtelijk bij een project vastleggen? <a href=\"https://maatklaar.nl/\">Probeer het gratis op maatklaar.nl.</a></p>"
+    ]
+  ],
+  "faq": [["Hoe worden wijzigingen vastgelegd?", "Bespreek meer- en minderwerk voordat het wordt uitgevoerd. Noteer wat verandert, waarom, welk bedrag erbij komt of afgaat en wat het betekent voor de planning."]],
+  "verwant": [
+    "badkamer-offerte-maken",
+    "meerwerkbon-maken",
+    "verbouwing-calculatie"
+  ]
+},
   {
     slug: 'badkamer-offerte-maken',
     titel: 'Badkamer offerte maken: stap voor stap, compleet en snel',
