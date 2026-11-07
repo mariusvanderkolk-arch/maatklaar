@@ -73,9 +73,9 @@ export interface ItemDef {
   max: [number, number]
 }
 
-const ALLE: ProjectType[] = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw']
+const ALLE: ProjectType[] = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw', 'stucwerk', 'schilderwerk']
 const NAT: ProjectType[] = ['badkamer', 'toilet']
-const WOON: ProjectType[] = ['vloer', 'aanbouw']
+const WOON: ProjectType[] = ['vloer', 'aanbouw', 'stucwerk', 'schilderwerk']
 
 export const ITEMS: Record<ItemType, ItemDef> = {
   'douche-inloop': { type: 'douche-inloop', naam: 'Inloopdouche', groep: 'sanitair', w: 100, d: 120, h: 200, z: 0, montage: 'aan', ruimtes: ['badkamer'], familie: 'douche', min: [70, 70], max: [200, 200] },
@@ -540,7 +540,7 @@ export function uitCompact(c: unknown): { ontwerp: Ontwerp; kamer: Kamer } | nul
   if (!isObj(c) || !Array.isArray(c.k) || !Array.isArray(c.i)) return null
   const [L, B, H, tegelH] = c.k as unknown[]
   if (![L, B, H].every(isNum)) return null
-  const type: ProjectType = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw'].includes(c.t as string) ? (c.t as ProjectType) : 'badkamer'
+  const type: ProjectType = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw', 'stucwerk', 'schilderwerk'].includes(c.t as string) ? (c.t as ProjectType) : 'badkamer'
   const kamer: Kamer = {
     L: Math.min(3000, Math.max(80, L as number)),
     B: Math.min(3000, Math.max(80, B as number)),

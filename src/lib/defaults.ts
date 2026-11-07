@@ -60,7 +60,7 @@ export function nieuwProject(velden: Partial<Project> = {}): Project {
     fotos: [],
     afgevinkt: {},
     notities: '',
-    aannames: STANDAARD_AANNAMES,
+    aannames: type === 'stucwerk' || type === 'schilderwerk' ? 'De werkplek is bereikbaar en vrij. Ondergrond, bereikbaarheid en droogtijden worden vooraf gecontroleerd.\nNiet inbegrepen: herstel van verborgen gebreken, steigers en werkzaamheden buiten de genoemde vlakken, tenzij apart vermeld. Wijzigingen vooraf afstemmen.' : STANDAARD_AANNAMES,
     ...velden,
   }
 }
@@ -137,7 +137,7 @@ export function voorbeeldProjecten(): Project[] {
 const OUDE_VOORBEELD_ADRESSEN = ['Lindenlaan 12, Amersfoort', 'Havenstraat 4, Zwolle', 'Kerkweg 31, Utrecht', 'Molenstraat 8, Deventer']
 
 export function normaliseerProject(ruw: Partial<Project> & { id: string }): Project {
-  const type: ProjectType = ruw.type && ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw'].includes(ruw.type) ? ruw.type : 'badkamer'
+  const type: ProjectType = ruw.type && ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw', 'stucwerk', 'schilderwerk'].includes(ruw.type) ? ruw.type : 'badkamer'
   const basis = nieuwProject({ type })
   const scope = { ...Object.fromEntries(ALLE_SCOPE_KEYS.map((k) => [k, false])), ...(ruw.scope ?? basis.scope) } as Scope
   return {

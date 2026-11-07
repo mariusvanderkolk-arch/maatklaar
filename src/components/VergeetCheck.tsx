@@ -19,6 +19,8 @@ const NAT: Regel[] = [
 
 /** Regels die per projecttype vaak vergeten worden op de offerte. */
 export const VERGEET_REGELS: Record<ProjectType, Regel[]> = {
+  stucwerk: [],
+  schilderwerk: [],
   badkamer: NAT,
   toilet: NAT,
   keuken: [

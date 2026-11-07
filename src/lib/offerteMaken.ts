@@ -1,3 +1,5 @@
+import { KLEUR_DISCLAIMER } from './schilderplan'
+import { afwerkingVan, afwerkRegelBtw, isAfwerking } from './afwerking'
 import { margeRegels } from './marge'
 /** Stelt de offertegegevens samen uit een project, de berekening en het bedrijfsprofiel. */
 import { effectieveScope } from './calc'
@@ -31,6 +33,7 @@ export function prijsTekstVoor(st: Berekening['inkoop']['prijsStatus'], datumTek
 
 export function oppervlakRegels(p: Project, o: Berekening['oppervlakken']): [string, string][] {
   const sc = effectieveScope(p)
+  if (isAfwerking(p)) return afwerkingVan(p).vlakken.slice(0, 4).map((v) => [v.naam, `${getal(v.m2)} m²`])
   const m2 = (n: number) => `${getal(n)} m²`
   const m = (n: number) => `${getal(n)} m`
   if (p.type === 'vloer') return [['Vloer', m2(o.vloer)], ['Plinten', m(sc.plinten ? o.plintLengte : 0)], ['Omtrek', m(o.omtrek)], ['Snijverlies', `${getal(p.snijverlies, 1)} %`]]
@@ -54,6 +57,11 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
   const mr = margeRegels(p, b.inkoop.regels)
   const matTotaal = Math.round(mr.reduce((x, r) => x + r.verkoop, 0) * 100) / 100
   const onvBedrag = Math.round(((matTotaal + arbTotaal) * onvPct) / 100 * 100) / 100
+  const matTarieven = b.inkoop.regels.map((r) => afwerkRegelBtw(p, r.sleutel ?? r.id))
+  const arbTarieven = metArbeid ? b.arbeid.map((a) => afwerkRegelBtw(p, a.scope)) : []
+  const grondslag9 = mr.reduce((s, r, i) => s + (matTarieven[i] === 9 ? r.verkoop : 0), 0) + (metArbeid ? b.arbeid.reduce((s, a, i) => s + (arbTarieven[i] === 9 ? a.uren * p.uurtarief : 0), 0) : 0)
+  const onv9 = Math.min(onvBedrag, Math.round(grondslag9 * onvPct) / 100)
+  const onvTarieven: [9 | 21, number][] = ([[9, onv9], [21, Math.round((onvBedrag - onv9) * 100) / 100]] as [9 | 21, number][]).filter((r) => r[1] > 0)
   return {
     v: 1,
     nr: p.offerte?.nummer ?? '—',
@@ -66,11 +74,12 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     adres: p.adres,
     project: p.naam,
     ruimte: ruimteLabel(p.type),
-    maten: `${getal(p.afmetingen.lengte)} × ${getal(p.afmetingen.breedte)}${p.type === 'vloer' ? '' : ` × ${getal(p.afmetingen.hoogte)}`} m`,
-    werk: scopeItems(p.type).filter((i) => sc[i.key]).map((i) => [i.label, i.omschrijving]),
+    maten: p.schilderPlan ? 'Zie de afzonderlijke schildervlakken en netto oppervlakken' : `${getal(p.afmetingen.lengte)} × ${getal(p.afmetingen.breedte)}${p.type === 'vloer' ? '' : ` × ${getal(p.afmetingen.hoogte)}`} m`,
+    ...(isAfwerking(p) ? { tarieven: { mat: matTarieven, arb: arbTarieven, ...(onvTarieven.length ? { onv: onvTarieven } : {}) } } : {}),
+    werk: isAfwerking(p) ? afwerkingVan(p).vlakken.filter(() => p.type === 'stucwerk' ? p.scope.stucwerk : p.scope.sauswerk).map((v) => [v.naam, `${v.kleur ? v.kleur + ' · ' : ''}${getal(v.m2)} m² netto · ${afwerkingVan(p).locatie} · ${v.ondergrond} · ${v.afwerking}${v.voorbereiding ? ' · incl. voorbereiding' : ''}`]) : scopeItems(p.type).filter((i) => sc[i.key]).map((i) => [i.label, i.omschrijving]),
     opp: oppervlakRegels(p, b.oppervlakken),
     mat: b.inkoop.regels.map((r, i) => [
-      `${r.naam}${r.spec ? ` · ${r.spec}` : ''}`,
+      `${r.naam}${r.spec ? ` · ${r.spec}` : ''}${isAfwerking(p) && !r.spec?.includes('% btw') ? ` · ${afwerkRegelBtw(p, r.sleutel ?? r.id)}% btw` : ''}`,
       `${r.koopAantal} × ${verpakkingKort(r.koopVerpakking)}`,
       mr[i].verkoop,
       gemengd && r.bron === 'voorbeeld' ? 1 : 0,
@@ -82,7 +91,7 @@ export function maakOfferteData(p: Project, b: Berekening, bedrijf: Bedrijf, dat
     ...(onvPct > 0 ? { onv: [onvPct, onvBedrag] as [number, number] } : {}),
     totaal: Math.round((matTotaal + arbTotaal + onvBedrag) * 100) / 100,
     notities: p.notities,
-    ...(aannamesVoor(p) ? { aannames: aannamesVoor(p) } : {}),
+    ...(isAfwerking(p) ? { aannames: `${p.schilderPlan ? KLEUR_DISCLAIMER + '\n' : ''}Netto oppervlakken en verbruik zijn ramingen; controleer ondergrond en productblad. Alle bedragen en het uurtarief zijn inclusief het per regel gekozen btw-tarief. Onvoorzien volgt naar verhouding de btw-tarieven van de werkzaamheden. Apart meerwerk standaard 21%; controleer dit voor akkoord. Niet-kwalificerende werkzaamheden en losse extra artikelen zijn 21%.\n${aannamesVoor(p)}` } : aannamesVoor(p) ? { aannames: aannamesVoor(p) } : {}),
     betaaltermijn: bedrijf.betaaltermijn.trim(),
     prijsTekst: prijsTekstVoor(st, datumTekst),
     ...(ontwerp && ontwerp.inOfferte && ontwerp.items.length ? { ow: compact(ontwerp, kamerVan(p)) } : {}),

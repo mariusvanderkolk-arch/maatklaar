@@ -50,7 +50,7 @@ export type ScopeKey =
 
 export type Scope = Record<ScopeKey, boolean>
 
-export type ProjectType = 'badkamer' | 'toilet' | 'keuken' | 'vloer' | 'aanbouw'
+export type ProjectType = 'badkamer' | 'toilet' | 'keuken' | 'vloer' | 'aanbouw' | 'stucwerk' | 'schilderwerk'
 
 /** Soort klikvloer (laminaat of PVC). Een tegelvloer loopt via de werkzaamheid 'vloertegels'. */
 export type VloerSoort = 'laminaat' | 'pvc'
@@ -188,6 +188,8 @@ export interface Project {
   klant: string
   adres: string
   type: ProjectType
+  afwerking?: import('./afwerking').AfwerkSpec
+  schilderPlan?: import('./schilderplan').SchilderPlan
   createdAt: number
   updatedAt: number
   scope: Scope

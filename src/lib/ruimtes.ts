@@ -173,6 +173,8 @@ export const RUIMTES: RuimteType[] = [
     afmetingen: { lengte: 4.0, breedte: 3.0, hoogte: 2.7, tegelhoogte: 0 },
     snijverlies: 7,
   },
+  { id: 'stucwerk', label: 'Stucwerk', omschrijving: 'Wanden en plafonds, ondergrond en afwerking', werk: ['stucwerk'], standaard: ['stucwerk'], teksten: { stucwerk: { label: 'Stucwerk', omschrijving: 'Los stucproject; oppervlakken en normen instellen bij opmeten' } }, afmetingen: { lengte: 4, breedte: 3, hoogte: 2.6, tegelhoogte: 0 }, snijverlies: 0 },
+  { id: 'schilderwerk', label: 'Schilderwerk', omschrijving: 'Binnen of buiten, voorbereiding en verflagen', werk: ['sauswerk'], standaard: ['sauswerk'], teksten: { sauswerk: { label: 'Schilderwerk', omschrijving: 'Los schilderproject; oppervlakken en lagen instellen bij opmeten' } }, afmetingen: { lengte: 4, breedte: 3, hoogte: 2.6, tegelhoogte: 0 }, snijverlies: 0 },
 ]
 
 export const ruimte = (id: ProjectType | undefined): RuimteType => RUIMTES.find((r) => r.id === id) ?? RUIMTES[0]

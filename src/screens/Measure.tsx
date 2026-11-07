@@ -1,3 +1,5 @@
+import { AfwerkingForm } from '../components/AfwerkingForm'
+import { isAfwerking } from '../lib/afwerking'
 import { track } from '../lib/analytics'
 import { InsprekenKnop } from '../components/Inspreken'
 import { pasInspraakToe } from '../lib/inspraak'
@@ -84,6 +86,8 @@ export function Measure({ p }: { p: Project }) {
     }))
   const toonTegelhoogte = s.wandtegels && (type === 'badkamer' || type === 'toilet')
   const [ar, setAr] = useState<'dicht' | 'open' | null>(null)
+
+  if (isAfwerking(p)) return <AfwerkingForm p={p} />
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">

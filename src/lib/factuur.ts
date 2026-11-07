@@ -2,7 +2,7 @@
  * Facturen: aangemaakt vanuit een offerte, met eigen nummering (los van offertenummers),
  * btw-specificatie (21% en optioneel 9% op arbeid) en betaalstatus. Pure functies (testbaar).
  *
- * Bedragen in de app (offerte) zijn incl. 21% btw. Op de factuur bewaren we per regel het bedrag
+ * Offertebedragen zijn inclusief het per regel vastgelegde btw-tarief (oude offertes: 21%). Op de factuur bewaren we per regel het bedrag
  * excl. btw; het btw-tarief wordt daarover berekend. Zet je arbeid op 9%, dan blijft de prijs
  * excl. btw gelijk en daalt het btw-bedrag.
  */
@@ -68,22 +68,20 @@ export function volgendFactuurnummer(prefix: string, teller: number, bestaande: 
 
 export const vervaldatumVoor = (datum: string, dagen: number) => plusDagen(datum, Math.max(0, Math.round(dagen || 14)))
 
-/** Maakt een (concept)factuur van de offertegegevens. Offertebedragen zijn incl. 21% btw. */
+/** Maakt een (concept)factuur van de offertegegevens. Offertebedragen zijn inclusief het per regel vastgelegde btw-tarief (legacy 21%). */
 export function maakFactuur(d: OfferteData, o: { id: string; nummer: string; projectId: string; datum: string; betaalDagen: number; nu: number; uid: () => string }): Factuur {
-  const excl = (incl: number) => cent(incl / 1.21)
-  const tariefExcl = d.tarief / 1.21
   const regels: FactuurRegel[] = [
-    ...d.mat.map(([oms, aantal, bedrag]) => ({ id: o.uid(), soort: 'materiaal' as const, omschrijving: oms, detail: aantal, excl: excl(bedrag), btw: 21 as BtwTarief })),
-    ...d.arb.map(([oms, uren]) => ({
+    ...d.mat.map(([oms, aantal, bedrag], i) => ({ id: o.uid(), soort: 'materiaal' as const, omschrijving: oms, detail: aantal, excl: cent(bedrag / (1 + (d.tarieven?.mat[i] ?? 21) / 100)), btw: (d.tarieven?.mat[i] ?? 21) as BtwTarief })),
+    ...d.arb.map(([oms, uren], i) => ({
       id: o.uid(),
       soort: 'arbeid' as const,
       omschrijving: oms,
-      detail: `${String(Math.round(uren * 10) / 10).replace('.', ',')} uur × € ${tariefExcl.toFixed(2).replace('.', ',')}`,
-      excl: cent(uren * tariefExcl),
-      btw: 21 as BtwTarief,
+      detail: `${String(Math.round(uren * 10) / 10).replace('.', ',')} uur × € ${(d.tarief / (1 + (d.tarieven?.arb[i] ?? 21) / 100)).toFixed(2).replace('.', ',')}`,
+      excl: cent(uren * d.tarief / (1 + (d.tarieven?.arb[i] ?? 21) / 100)),
+      btw: (d.tarieven?.arb[i] ?? 21) as BtwTarief,
     })),
     ...(d.onv && d.onv[1] > 0
-      ? [{ id: o.uid(), soort: 'materiaal' as const, omschrijving: `Onvoorzien (${String(d.onv[0]).replace('.', ',')}%)`, detail: 'stelpost', excl: excl(d.onv[1]), btw: 21 as BtwTarief }]
+      ? (d.tarieven?.onv ?? [[21, d.onv[1]] as [BtwTarief, number]]).map(([btw, bedrag]) => ({ id: o.uid(), soort: 'materiaal' as const, omschrijving: `Onvoorzien (${String(d.onv![0]).replace('.', ',')}%)`, detail: 'stelpost', excl: cent(bedrag / (1 + btw / 100)), btw }))
       : []),
   ]
   return {

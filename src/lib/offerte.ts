@@ -12,6 +12,8 @@ import { uitCompact, type CompactOntwerp } from './ontwerp/model'
 
 export interface OfferteData {
   v: 1
+  /** Per-regel tarieven voor nieuwe projecten; ontbrekend = legacy 21%. */
+  tarieven?: { mat: (9 | 21)[]; arb: (9 | 21)[]; onv?: [9 | 21, number][] }
   nr: string
   /** offertedatum YYYY-MM-DD */
   datum: string
@@ -101,6 +103,7 @@ export function leesOfferte(ruw: unknown): OfferteData {
       .filter((r): r is unknown[] => Array.isArray(r))
       .slice(0, 120)
       .map((r) => [str(r[0], 160), str(r[1], 60), isNum(r[2]) ? r[2] : 0, r[3] ? 1 : 0]),
+    ...(o.tarieven && typeof o.tarieven === 'object' ? { tarieven: leesTarieven(o.tarieven, indexen(o.mat, 120), indexen(o.arb, 40), Array.isArray(o.onv) && isNum(o.onv[1]) ? o.onv[1] : 0) } : {}),
     matTotaal: isNum(o.matTotaal) ? o.matTotaal : 0,
     arb: Array.isArray(o.arb) ? o.arb.filter((r): r is unknown[] => Array.isArray(r)).slice(0, 40).map((r) => [str(r[0], 120), isNum(r[1]) ? r[1] : 0]) : [],
     tarief: isNum(o.tarief) ? o.tarief : 0,
@@ -171,4 +174,17 @@ export function metVorige(d: OfferteData, vorigeCode: string | undefined): Offer
   } catch {
     return d
   }
+}
+
+/** Onbekende/ontbrekende tarieven worden nooit stilzwijgend 9%. */
+const indexen = (x: unknown, max: number): number[] => Array.isArray(x) ? x.map((r, i) => Array.isArray(r) ? i : -1).filter((i) => i >= 0).slice(0, max) : []
+function leesTarieven(x: unknown, mat: number[], arb: number[], onvBedrag: number): NonNullable<OfferteData['tarieven']> {
+  const o = x as { mat?: unknown[]; arb?: unknown[]; onv?: unknown[] }
+  const onv: [9 | 21, number][] = Array.isArray(o.onv) ? o.onv.filter((r): r is [9 | 21, number] => Array.isArray(r) && (r[0] === 9 || r[0] === 21) && isNum(r[1]) && r[1] >= 0).slice(0, 2) : []
+  return { mat: mat.map((i) => Array.isArray(o.mat) && o.mat[i] === 9 ? 9 : 21), arb: arb.map((i) => Array.isArray(o.arb) && o.arb[i] === 9 ? 9 : 21), ...(onv.length && Math.abs(onv.reduce((s, r) => s + r[1], 0) - onvBedrag) < .005 ? { onv } : {}) }
+}
+export function offerteBtwTekst(d: OfferteData): string {
+  if (!d.tarieven) return 'incl. 21% btw'
+  const tarieven = new Set([...d.tarieven.mat, ...d.tarieven.arb, ...(d.onv?.[1] ? d.tarieven.onv?.map((r) => r[0]) ?? [21] : [])])
+  return tarieven.has(9) ? tarieven.has(21) ? 'incl. 9% en 21% btw (per regel vermeld)' : 'incl. 9% btw' : 'incl. 21% btw'
 }

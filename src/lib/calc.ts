@@ -1,3 +1,5 @@
+import { schilderKamers } from './schilderplan'
+import { afwerkingVan, afwerkArbeid, afwerkMaterialen, isAfwerking } from './afwerking'
 /**
  * Rekenmodule van Maatklaar.
  *
@@ -299,8 +301,14 @@ export function berekenOppervlakken(a: Afmetingen, scope: Partial<Pick<Scope, 'i
 }
 
 /** Oppervlakken voor een project (houdt rekening met ruimtetype en scope). */
-export const oppervlakkenVan = (p: Pick<Project, 'afmetingen' | 'scope'> & { type?: ProjectType }) =>
-  berekenOppervlakken(p.afmetingen, effectieveScope(p), p.type ?? 'badkamer')
+export const oppervlakkenVan = (p: Project): Oppervlakken => {
+  const o = berekenOppervlakken(p.afmetingen, effectieveScope(p), p.type ?? 'badkamer')
+  if (!isAfwerking(p)) return o
+  const v = afwerkingVan(p).vlakken
+  const wand = v.filter((x) => x.soort === 'wand').reduce((s, x) => s + x.m2, 0)
+  const plafond = v.filter((x) => x.soort === 'plafond').reduce((s, x) => s + x.m2, 0)
+  return { ...o, wandNetto: wand, wandBruto: wand, wandBovenTegels: wand, plafond, vloer: p.schilderPlan ? schilderKamers(p).reduce((s, k) => s + k.lengte * k.breedte, 0) : o.vloer, tegelhoogte: 0 }
+}
 
 /** Tegels inclusief snijverlies, afgerond op hele dozen. */
 export function tegelBehoefte(m2: number, tegel: TileSpec, snijverliesPct: number) {
@@ -462,6 +470,8 @@ export type BasisId =
   | 'plafondprofielen'
 
 export interface MateriaalRegel {
+  /** Expliciete materiaalprijs incl. gekozen btw per verpakking in dit project. */
+  projectPrijs?: number
   id: ProductId
   groep: Groep
   naam: string
@@ -508,6 +518,7 @@ const fmtTegel = (t: TileSpec) => `${nl(t.lengte, 1)} × ${nl(t.breedte, 1)} cm`
 
 /** Berekent alle materialen voor een project. */
 export function berekenMaterialen(p: Project): MateriaalRegel[] {
+  if (isAfwerking(p)) return afwerkMaterialen(p)
   if ((p.type ?? 'badkamer') === 'aanbouw') return [...aanbouwMaterialen(p), ...berekenMaterialenRuimte(p)]
   return berekenMaterialenRuimte(p)
 }
@@ -1017,6 +1028,7 @@ export function kiesContainer(m3: number, k: ContainerKeuze = {}): { maat: Conta
 }
 
 export function berekenArbeid(p: Project): ArbeidRegel[] {
+  if (isAfwerking(p)) return afwerkArbeid(p)
   const s = effectieveScope(p)
   const type = p.type ?? 'badkamer'
   const o = berekenOppervlakken(p.afmetingen, s, type)

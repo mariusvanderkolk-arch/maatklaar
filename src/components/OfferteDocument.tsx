@@ -1,3 +1,4 @@
+import { offerteBtwTekst } from '../lib/offerte'
 import { qrSvg } from '../lib/qr'
 import { LogoMark } from './Logo'
 import { euro, getal } from '../lib/format'
@@ -278,7 +279,7 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
 
         {d.onv && d.onv[1] > 0 && (
           <div className="avoid-break mt-6 flex items-baseline justify-between border-t border-sand-200 pt-3 text-[0.9rem]">
-            <span className="text-ink-soft">Onvoorzien ({getal(d.onv[0], 1)}% stelpost over materiaal{d.arb.length ? ' en arbeid' : ''})</span>
+            <span className="text-ink-soft">Onvoorzien ({getal(d.onv[0], 1)}% stelpost over materiaal{d.arb.length ? ' en arbeid' : ''}){d.tarieven ? ' · ' + [...new Set(d.tarieven.onv?.map((r) => r[0]) ?? [21])].join('% / ') + '% btw' : ''}</span>
             <span className="tabnum font-semibold">
               {euro(d.onv[1])}
               {h?.onvWas !== undefined && <span className="block text-right text-[0.74rem] font-normal text-ink-muted">was {euro(h.onvWas)}</span>}
@@ -296,7 +297,7 @@ export function OfferteDocument({ d, logo, className = '', beeld3d, interactief3
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-gold-300">Totaal indicatief</p>
-              <p className="mt-1 text-xs text-sand-300">Materialen{d.arb.length ? ' + arbeid' : ''}{d.onv?.[1] ? ' + onvoorzien' : ''} · incl. 21% btw</p>
+              <p className="mt-1 text-xs text-sand-300">Materialen{d.arb.length ? ' + arbeid' : ''}{d.onv?.[1] ? ' + onvoorzien' : ''} · {offerteBtwTekst(d)}</p>
             </div>
             <div className="text-right">
               <p className="tabnum font-display text-[2.3rem] leading-none font-semibold">{euro(d.totaal)}</p>

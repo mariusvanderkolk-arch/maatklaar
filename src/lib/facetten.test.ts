@@ -1,3 +1,4 @@
+import { isAfwerking } from './afwerking'
 import { describe, expect, it } from 'vitest'
 import { berekenArbeid, berekenMaterialen, kiesContainer } from './calc'
 import { nieuwProject } from './defaults'
@@ -19,13 +20,13 @@ describe('volledige facetlijst per ruimte', () => {
       for (const m of mat) expect(voorbeeldPrijsBron.aanbod(m.id), m.id).toBeDefined()
       const metArbeid = new Set(arb.map((a) => a.scope))
       // elke gekozen werkzaamheid levert arbeid op (kitwerk op een vloer zonder kitnaden uitgezonderd)
-      for (const k of r.werk as ScopeKey[]) if (k !== 'container' && !(r.id === 'vloer' && k === 'kitwerk') && !CASCO.has(k)) expect(metArbeid.has(k), `${r.id}/${k}`).toBe(true)
+      for (const k of (isAfwerking(p) ? [] : r.werk) as ScopeKey[]) if (k !== 'container' && !(r.id === 'vloer' && k === 'kitwerk') && !CASCO.has(k)) expect(metArbeid.has(k), `${r.id}/${k}`).toBe(true)
       // checklist is volledig gegroepeerd
       expect(scopePerFase(r.id).flatMap((g) => g.items.map((i) => i.key)).sort()).toEqual([...r.werk].sort())
     })
   }
   it('huur container is een aparte, kiesbare post naast stortkosten en big bags (alle ruimtes)', () => {
-    for (const r of RUIMTES) {
+    for (const r of RUIMTES.filter((r) => !['stucwerk', 'schilderwerk'].includes(r.id))) {
       expect(r.werk, r.id).toContain('container')
       const basis = nieuwProject({ type: r.id })
       const ids = (c: boolean) => berekenMaterialen({ ...basis, scope: { ...basis.scope, sloopwerk: true, container: c } }).map((m) => m.id)

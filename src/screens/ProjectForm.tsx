@@ -11,7 +11,7 @@ import { Button, Card, CardHeader, PageTitle, TextField } from '../components/ui
 import { SCOPE_ICONS } from '../components/scopeIcons'
 import { RUIMTE_ICONS } from '../components/ruimteIcons'
 import { track } from '../lib/analytics'
-import { nieuwProject, standaardAfmetingen } from '../lib/defaults'
+import { nieuwProject, standaardAfmetingen, STANDAARD_AANNAMES } from '../lib/defaults'
 import { RUIMTES, ruimte, scopeItems, scopePerFase, scopeVoor } from '../lib/ruimtes'
 import { ga } from '../lib/router'
 import { projectStore, useProject } from '../lib/store'
@@ -65,13 +65,14 @@ export function ProjectForm({ id }: { id?: string }) {
         ...velden,
         // bij een ander ruimtetype: typische maten (spatwand, tegelhoogte) van het nieuwe type, lengte/breedte blijven
         afmetingen: maten(anderType ? { ...standaardAfmetingen(type), lengte: p.afmetingen.lengte, breedte: p.afmetingen.breedte, openingen: p.afmetingen.openingen } : p.afmetingen),
+        ...(anderType ? { afwerking: undefined, schilderPlan: undefined, ...(p.aannames === STANDAARD_AANNAMES ? { aannames: nieuwProject({ type }).aannames } : {}) } : {}),
         snijverlies: anderType ? ruimte(type).snijverlies : p.snijverlies,
       }))
       ga(`/project/${bestaand.id}/opmeten`)
     } else {
       const basis = nieuwProject({ type })
       const m = standaardMarge()
-      const p = { ...concept, ...velden, afmetingen: maten(basis.afmetingen), snijverlies: basis.snijverlies, ...(m > 0 ? { marge: m } : {}), createdAt: Date.now(), updatedAt: Date.now() }
+      const p = { ...concept, ...velden, aannames: basis.aannames, afmetingen: maten(basis.afmetingen), snijverlies: basis.snijverlies, ...(m > 0 ? { marge: m } : {}), createdAt: Date.now(), updatedAt: Date.now() }
       projectStore.voegToe(p)
       track('project_created')
       ga(`/project/${p.id}/opmeten`)
@@ -145,7 +146,7 @@ export function ProjectForm({ id }: { id?: string }) {
           </div>
           {bestaand && bestaand.type !== type && (
             <p className="-mt-1 px-5 pb-5 text-[0.8rem] text-ink-muted sm:px-6">
-              Bij opslaan krijgt het project de checklist en standaardmaten van een {ruimte(type).label.toLowerCase()}. Lengte, breedte en openingen blijven staan.
+              Bij opslaan krijgt het project de checklist en standaardmaten van een {ruimte(type).label.toLowerCase()}. Lengte, breedte en openingen blijven staan. Afwerkvlakken en een eventuele schilderplattegrond worden bij wisselen van projecttype gereset.
             </p>
           )}
         </Card>

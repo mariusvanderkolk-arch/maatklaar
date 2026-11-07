@@ -1,3 +1,4 @@
+import { SchilderPlan } from '../components/SchilderPlan'
 import { ArrowLeft, ArrowRight, Calculator, CalendarDays, Camera, FileText, MapPin, Pencil, ShoppingCart, SquareDashedMousePointer } from 'lucide-react'
 import { Badge, Button } from '../components/ui'
 import { OpslagIndicator } from '../components/Opslag'
@@ -103,7 +104,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
         <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-sand-200/70" aria-busy="true" aria-label="Laden" />}>
         {stap === 'opmeten' && <Measure p={p} />}
-        {stap === 'ontwerp' && <OntwerpScherm p={p} />}
+        {stap === 'ontwerp' && (p.type === 'schilderwerk' ? <SchilderPlan p={p} /> : <OntwerpScherm p={p} />)}
         {stap === 'berekening' && <Calculation p={p} />}
         {stap === 'inkoop' && <Shopping p={p} />}
         {stap === 'offerte' && <Quote p={p} />}

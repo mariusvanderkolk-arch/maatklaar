@@ -43,7 +43,7 @@ export function maakInkooplijst(materialen: MateriaalRegel[], bron: PrijsBron): 
   const status: PrijsStatus = { eigen: 0, voorbeeld: 0 }
   let zonderPrijs = 0
   const regels: InkoopRegel[] = materialen.map((m) => {
-    const a = bron.aanbod(m.id)
+    const a = m.projectPrijs != null && Number.isFinite(m.projectPrijs) && m.projectPrijs >= 0 ? { prijs: m.projectPrijs, bron: 'eigen' as const } : bron.aanbod(m.id)
     if (!a) {
       zonderPrijs++
       return { ...m, sleutel: m.sleutel ?? m.id, totaal: 0, koopAantal: m.aantal, koopVerpakking: m.verpakking, bron: 'geen' }

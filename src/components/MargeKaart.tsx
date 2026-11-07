@@ -43,7 +43,7 @@ export function MargeKaart({ p, b }: { p: Project; b: Pick<ReturnType<typeof ber
           {rij('Jouw verdiensten', o.verdiensten, true, `marge + arbeid · ${euro(o.exBtw.verdiensten)} excl. btw`)}
         </dl>
         <p className="flex items-start gap-2 rounded-xl bg-sand-50 px-3 py-2.5 text-[0.76rem] leading-relaxed text-ink-muted ring-1 ring-sand-200">
-          <EyeOff className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Bedragen incl. 21% btw. De marge wordt over het bedrag excl. btw gerekend; de btw komt er daarna weer bij.
+          <EyeOff className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Bedragen inclusief btw (het gekozen tarief op de offerte). De marge wordt over het bedrag excl. btw gerekend; de btw komt er daarna weer bij.
         </p>
         {regels.length > 0 && (
           <details className="group rounded-xl ring-1 ring-sand-200">

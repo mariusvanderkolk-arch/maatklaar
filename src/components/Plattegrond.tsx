@@ -1,3 +1,4 @@
+import { type SchilderWand, type WandZijde, kleurTekst } from '../lib/schilderplan'
 import { useId } from 'react'
 import type { Afmetingen, ProjectType, Scope, TileSpec } from '../lib/types'
 import { getal } from '../lib/format'
@@ -10,6 +11,7 @@ export function Plattegrond({
   type = 'badkamer',
   className = '',
   bg = '#FFFDF9',
+  schilderWanden, geselecteerdeWand, onWand,
 }: {
   afmetingen: Afmetingen
   scope: Partial<Pick<Scope, 'inloopdouche' | 'toilet' | 'wastafelmeubel' | 'fontein' | 'spatwand' | 'legvloer'>>
@@ -17,6 +19,9 @@ export function Plattegrond({
   type?: ProjectType
   className?: string
   bg?: string
+  schilderWanden?: SchilderWand[]
+  geselecteerdeWand?: WandZijde
+  onWand?: (zijde: WandZijde) => void
 }) {
   const arc = `arcering-${useId().replace(/:/g, '')}`
   const L = Math.max(0.5, afmetingen.lengte || 0.5)
@@ -67,14 +72,14 @@ export function Plattegrond({
   const aanrechtRechts = Math.min(Math.max(0, aanrechtL - W + diep), H - diep)
 
   return (
-    <svg viewBox={`0 0 ${vbW} ${vbH}`} className={className} role="img" aria-label={`Plattegrond ${getal(L)} bij ${getal(B)} meter`}>
+    <svg viewBox={`0 0 ${vbW} ${vbH}`} className={className} role={onWand ? "group" : "img"} aria-label={`Plattegrond ${getal(L)} bij ${getal(B)} meter`}>
       <defs>
         <pattern id={arc} width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1="0" y1="0" x2="0" y2="7" stroke="#C8A96A" strokeOpacity=".45" strokeWidth="1.4" />
         </pattern>
       </defs>
       <rect x={x0} y={y0} width={W} height={H} fill="#FFFDF9" />
-      <path d={lijnen.join('')} stroke={planken ? '#E6D9C2' : '#E2D5BF'} strokeWidth="1" />
+      <path d={schilderWanden ? '' : lijnen.join('')} stroke={planken ? '#E6D9C2' : '#E2D5BF'} strokeWidth="1" />
       {type === 'keuken' && aanrechtL > 0 && (
         <g>
           <path
@@ -153,6 +158,17 @@ export function Plattegrond({
           <path d={`M${deurX} ${y0 + H - deurW}A${deurW} ${deurW} 0 0 1 ${deurX + deurW} ${y0 + H}`} fill="none" stroke="#85796A" strokeWidth="1.2" strokeDasharray="4 4" />
         </g>
       )}
+      {schilderWanden && schilderWanden.map((wand) => {
+        const kant = wand.zijde
+        const d = kant === 'boven' ? `M${x0} ${y0}H${x0 + W}` : kant === 'rechts' ? `M${x0 + W} ${y0}V${y0 + H}` : kant === 'onder' ? `M${x0} ${y0 + H}H${x0 + W}` : `M${x0} ${y0}V${y0 + H}`
+        const label = `${kant === 'boven' ? 'A' : kant === 'rechts' ? 'B' : kant === 'onder' ? 'C' : kant === 'links' ? 'D' : 'Plafond'} · ${wand.kleur.code || wand.kleur.naam || 'kleur kiezen'}`
+        const tx = kant === 'links' ? x0 + 18 : kant === 'rechts' ? x0 + W - 18 : x0 + W / 2
+        const ty = kant === 'boven' ? y0 + 22 : kant === 'onder' ? y0 + H - 16 : y0 + H / 2
+        return <g key={kant} role={onWand ? 'button' : undefined} tabIndex={onWand ? 0 : undefined} aria-label={`${kant}: ${kleurTekst(wand.kleur)}`} onClick={() => onWand?.(kant)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onWand?.(kant) } }} style={{ cursor: onWand ? 'pointer' : undefined }}>
+          {kant === 'plafond' ? <rect x={x0 + W * .22} y={y0 + H * .3} width={W * .56} height={H * .4} fill={wand.schilderen ? wand.kleur.hex : '#eeeeee'} stroke={geselecteerdeWand === kant ? '#2B2623' : '#bbb'} strokeWidth="2" /> : <><path d={d} stroke={geselecteerdeWand === kant ? '#2B2623' : '#aaa'} strokeWidth="18" fill="none" /><path d={d} stroke={wand.schilderen ? wand.kleur.hex : '#eeeeee'} strokeWidth="12" fill="none" /></>}
+          <text x={tx} y={ty} transform={kant === 'links' || kant === 'rechts' ? `rotate(-90 ${tx} ${ty})` : undefined} textAnchor="middle" fontSize="9" fontWeight="600" stroke="#fff" strokeWidth="3" paintOrder="stroke" fill="#2B2623">{label.slice(0, 34)}</text>
+        </g>
+      })}
       {/* maatlijnen */}
       <g stroke="#B8955A" strokeWidth="1.2">
         <line x1={x0} y1={y0 - 24} x2={x0 + W} y2={y0 - 24} />

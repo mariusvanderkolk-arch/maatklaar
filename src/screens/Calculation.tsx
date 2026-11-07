@@ -1,3 +1,4 @@
+import { afwerkingVan, isAfwerking } from '../lib/afwerking'
 import { MargeKaart } from '../components/MargeKaart'
 import { Calculator, ChevronDown, Ruler, ListChecks } from 'lucide-react'
 import { Card, CardHeader, Stat, LeegStaat, Button } from '../components/ui'
@@ -14,7 +15,7 @@ export function Calculation({ p }: { p: Project }) {
   const groepen = GROEPEN.map((g) => ({ ...g, regels: materialen.filter((m) => m.groep === g.id) })).filter((g) => g.regels.length)
   const sc = effectieveScope(p)
   const type = p.type
-  const rijen: [string, string, boolean?][] = type === 'vloer'
+  const rijen: [string, string, boolean?][] = isAfwerking(p) ? afwerkingVan(p).vlakken.map((v) => [v.naam, `${getal(v.m2)} m²`, true]) : type === 'vloer'
     ? [
         ['Omtrek vloer', `${getal(o.omtrek)} m`],
         ['Af: deuren', `− ${getal(o.deurBreedte)} m`],
@@ -42,13 +43,13 @@ export function Calculation({ p }: { p: Project }) {
     <div className="space-y-5">
       <Card className="px-5 py-5 sm:px-7 sm:py-6">
         <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-4">
-          {type === 'vloer' ? (
+          {isAfwerking(p) ? <Stat label="Wanden netto" value={`${getal(o.wandNetto)} m²`} sub="ingestelde afwerkvlakken" /> : type === 'vloer' ? (
             <Stat label="Plinten" value={<>{getal(o.plintLengte, 1)}<span className="ml-1 font-sans text-[0.8rem] font-medium text-ink-muted">m</span></>} sub={`omtrek ${getal(o.omtrek, 1)} m`} />
           ) : (
             <Stat label={type === 'keuken' ? 'Spatwand' : 'Wand netto'} value={<>{getal(o.wandNetto, 1)}<span className="ml-1 font-sans text-[0.8rem] font-medium text-ink-muted">m²</span></>} sub={type === 'keuken' ? 'achter het aanrecht' : `bruto ${getal(o.wandBruto, 1)} m²`} />
           )}
-          <Stat label="Vloer" value={<>{getal(o.vloer, 1)}<span className="ml-1 font-sans text-[0.8rem] font-medium text-ink-muted">m²</span></>} sub={`${getal(p.afmetingen.lengte)} × ${getal(p.afmetingen.breedte)} m`} />
-          <Stat label="Snijverlies" value={<>{getal(p.snijverlies, 1)}<span className="ml-1 font-sans text-[0.8rem] font-medium text-ink-muted">%</span></>} sub="instelbaar bij Opmeten" />
+          <Stat label={isAfwerking(p) ? "Plafond netto" : "Vloer"} value={<>{getal(isAfwerking(p) ? o.plafond : o.vloer, 1)}<span className="ml-1 font-sans text-[0.8rem] font-medium text-ink-muted">m²</span></>} sub={`${getal(p.afmetingen.lengte)} × ${getal(p.afmetingen.breedte)} m`} />
+          <Stat label={isAfwerking(p) ? "Arbeidsraming (uren)" : "Snijverlies"} value={<>{getal(isAfwerking(p) ? ber.uren : p.snijverlies, 1)}<span className="ml-1 font-sans text-[0.8rem] font-medium text-ink-muted">{isAfwerking(p) ? "uur" : "%"}</span></>} sub="instelbaar bij Opmeten" />
           <Stat label="Materialen" value={materialen.length} sub={`in ${groepen.length} groepen`} />
         </div>
       </Card>
@@ -75,7 +76,7 @@ export function Calculation({ p }: { p: Project }) {
               </span>
               <ChevronDown className="h-4.5 w-4.5 text-ink-muted transition group-open:rotate-180" />
             </summary>
-            <ul className="space-y-2 border-t border-sand-200 px-5 py-4 text-[0.8rem] leading-relaxed text-ink-soft sm:px-6">
+            {isAfwerking(p) ? <p className="px-5 py-4 text-sm text-ink-soft">Stuc: netto m² × laagdikte × ingesteld kg/m²/mm. Verf: netto m² × lagen × ingesteld L/m²/laag. Voorstrijk/grondlaag: 0,15 L/m² als raming; pas product of aantallen aan. Arbeid: netto m² × eigen uurnorm inclusief voorbereiding. Verpakkingen naar boven afgerond. Controleer altijd productblad en ondergrond; geen gegarandeerde verbruiksnormen.</p> : <ul className="space-y-2 border-t border-sand-200 px-5 py-4 text-[0.8rem] leading-relaxed text-ink-soft sm:px-6">
               <li>Tegellijm: 3,5 kg/m² (≤ 30 cm), 4,5 kg/m² (≤ 60 cm), 5,5 kg/m² (groter), zakken van {REGELS.lijmZakKg} kg.</li>
               <li>Voegmiddel: (A + B) / (A × B) × voegbreedte × tegeldikte × 1,6 kg/m², + 10% reserve.</li>
               <li>Primer: {getal(REGELS.primerLPerM2)} L/m² op alle te betegelen en te stucen vlakken.</li>
@@ -86,7 +87,7 @@ export function Calculation({ p }: { p: Project }) {
               <li>Keuken: spatwand = lengte werkblad × hoogte; kit langs werkblad en beide zijkanten.</li>
               <li>Laminaat/PVC: vloer + snijverlies, afgerond op hele pakken. Ondervloer: + 5% overlap, rol à {REGELS.ondervloerRolM2} m².</li>
               <li>Plinten: omtrek − deuren + 10% zaagverlies, lengtes van {getal(REGELS.plintLengteM, 1)} m; montagekit ca. {REGELS.montagekitMPerKoker} m per koker.</li>
-            </ul>
+            </ul>}
           </details>
         </div>
 
