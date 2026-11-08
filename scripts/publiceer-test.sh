@@ -12,5 +12,6 @@ TEST_REPO="https://github.com/mariusvanderkolk-arch/maatklaar-test.git"
 git fetch -q origin
 SHA="$(git rev-parse "$REF")"
 echo "Publiceer $REF ($(git log -1 --format='%h %s' "$SHA")) naar de testlink…"
-git push -f "$TEST_REPO" "$SHA:refs/heads/main"
+# Alleen fast-forward: overschrijf nooit ongemerkt andermans testwerk.
+git push "$TEST_REPO" "$SHA:refs/heads/main"
 echo "Klaar. Over ±1 minuut live op https://mariusvanderkolk-arch.github.io/maatklaar-test/"

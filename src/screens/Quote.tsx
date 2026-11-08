@@ -1,8 +1,11 @@
+import { offerteControle } from '../lib/offerteControle'
+import { OfferteControle } from '../components/OfferteControle'
+import { useOffertePoort } from '../lib/useOffertePoort'
 import { STANDAARD_AANNAMES, uid } from '../lib/defaults'
 import { MeerwerkKaart } from '../components/MeerwerkKaart'
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { ArtikelToevoegenKnop } from '../components/Artikelen'
-import { VergeetCheck, vergeetPunten } from '../components/VergeetCheck'
+import { VergeetCheck } from '../components/VergeetCheck'
 import { bestaandeTekenLink, maakTekenLink, TekenKaart, zelfdeVersie } from '../components/TekenKaart'
 import { MAX_QR_LENGTE } from '../lib/qr'
 import { reviewStatus } from '../lib/reviews'
@@ -49,14 +52,16 @@ export function Quote({ p }: { p: Project }) {
   const ontwerp = useOntwerp(p)
   const beeld3d = use3dBeeld(p.id)
   const data = useMemo(() => maakOfferteData(p, berekening, bedrijf, datumIso, ontwerp), [p, berekening, bedrijf, ontwerp])
+  const controle = offerteControle(p, berekening, data)
+  const poort = useOffertePoort(controle)
   // herziene offerte: vergelijk met de laatst gedeelde tekenlink-versie (of, als die nog actueel is, met de versie daarvóór)
   const t = of.teken
   const weergave = useMemo(() => metVorige(data, t && !zelfdeVersie(t, data) ? t.code : t?.vorigeCode), [data, t])
 
   // link + QR onderaan de PDF: altijd naar de online, tekenbare versie
-  const [printLink, setPrintLink] = useState<string | null>(null)
+  const [printLink, setPrintLink] = useState<{ url: string; sleutel: string } | null>(null)
   const getekendLink = of.teken?.getekend && zelfdeVersie(of.teken, data) ? tekenLink(of.teken.token) : null
-  const pdfLink = getekendLink ?? bestaandeTekenLink(p, data) ?? printLink
+  const pdfLink = getekendLink ?? bestaandeTekenLink(p, data) ?? (printLink?.sleutel === controle.sleutel ? printLink.url : null)
   const [printBezig, setPrintBezig] = useState(false)
   const drukAf = async () => {
     track('offerte_printed')
@@ -66,29 +71,21 @@ export function Quote({ p }: { p: Project }) {
       setPrintBezig(true)
       const r = await maakTekenLink(p, data)
       setPrintBezig(false)
-      if (r.ok) setPrintLink(r.url)
+      if (!poort.isActueel()) return toast('Offerte gewijzigd. Kies Afdrukken / PDF opnieuw na controle.', 'fout')
+      if (r.ok) setPrintLink({ url: r.url, sleutel: controle.sleutel })
       else {
         const gewoon = offerteLink(data)
-        setPrintLink(gewoon.length <= MAX_QR_LENGTE ? gewoon : null)
+        setPrintLink(gewoon.length <= MAX_QR_LENGTE ? { url: gewoon, sleutel: controle.sleutel } : null)
         toast('Tekenlink maken lukte niet; de PDF krijgt nu geen tekenbare QR-code.', 'fout')
       }
       // even wachten tot de voet met QR op de pagina staat
       await new Promise((ok) => setTimeout(ok, 80))
     }
+    if (!poort.isActueel()) return toast('Offerte gewijzigd. Kies Afdrukken / PDF opnieuw na controle.', 'fout')
     window.print()
   }
 
-  const [vergeetBevestig, setVergeetBevestig] = useState(false)
-  const probeerDelen = () => {
-    if (vergeetPunten(p).length) {
-      setVergeetBevestig(true)
-      document.querySelector('[data-testid="vergeet-check"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return
-    }
-    void deel()
-  }
   const deel = async () => {
-    setVergeetBevestig(false)
     const metV = offerteLink(weergave)
     const url = metV.length < 11500 ? metV : offerteLink(data)
     setOfferte({ gedeeldOp: Date.now() })
@@ -133,7 +130,8 @@ export function Quote({ p }: { p: Project }) {
           </Notice>
         )}
 
-        <VergeetCheck p={p} bevestig={vergeetBevestig} onToch={() => void deel()} onAnnuleer={() => setVergeetBevestig(false)} />
+        <VergeetCheck p={p} />
+        <OfferteControle controle={controle} poort={poort} />
 
         <Card className="p-5">
           <div className="flex items-start justify-between gap-3">
@@ -153,7 +151,7 @@ export function Quote({ p }: { p: Project }) {
             </p>
           )}
           <div className="mt-4 grid gap-2">
-            <Button icon={<Send className="h-4 w-4" />} onClick={probeerDelen} data-testid="deel-offerte">
+            <Button icon={<Send className="h-4 w-4" />} onClick={() => poort.vraag(deel, 'Offerte-link delen')} data-testid="deel-offerte">
               Deel offerte-link
             </Button>
             <Button variant="secondary" icon={<ExternalLink className="h-4 w-4" />} onClick={() => window.open(offerteLink(data), '_blank', 'noopener')}>
@@ -179,7 +177,7 @@ export function Quote({ p }: { p: Project }) {
           </div>
         </Card>
 
-        <TekenKaart p={p} d={data} />
+        <TekenKaart p={p} d={data} voorActie={poort.vraag} />
         <MeerwerkKaart p={p} d={data} />
 
         <Card className="p-5">
@@ -237,7 +235,7 @@ export function Quote({ p }: { p: Project }) {
             .
           </p>
           <div className="mt-4 grid gap-2">
-            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} disabled={printBezig} onClick={() => void drukAf()} data-testid="afdrukken">
+            <Button variant="secondary" icon={<Printer className="h-4 w-4" />} disabled={printBezig} onClick={() => poort.vraag(drukAf, 'Afdrukken / PDF')} data-testid="afdrukken">
               {printBezig ? 'Online link maken…' : 'Afdrukken / PDF'}
             </Button>
             <Button

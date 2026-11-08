@@ -1,67 +1,11 @@
 import { Check, ListChecks, Plus, X } from 'lucide-react'
 import { Button, Card } from './ui'
 import { projectStore } from '../lib/store'
-import { ruimte } from '../lib/ruimtes'
+import { vergeetLijst } from '../lib/vergeetCheck'
 import { toast } from './Toast'
-import type { Project, ProjectType, ScopeKey } from '../lib/types'
+import type { Project, ScopeKey } from '../lib/types'
 
-type Regel = { key: ScopeKey; label: string; waarom: string }
-
-const NAT: Regel[] = [
-  { key: 'sloopwerk', label: 'Sloopwerk', waarom: 'oude tegels, sanitair en leidingen eruit' },
-  { key: 'container', label: 'Afvoer van puin', waarom: 'container of puinzakken afvoeren' },
-  { key: 'kitwerk', label: 'Kitwerk', waarom: 'afkitten van sanitair, hoeken en naden' },
-  { key: 'waterdicht', label: 'Waterdichting', waarom: 'vloer en douchewand waterdicht maken' },
-  { key: 'leidingwerk', label: 'Leidingwerk', waarom: 'aan- en afvoer verleggen of vernieuwen' },
-  { key: 'elektra', label: 'Elektra', waarom: 'verlichting, stopcontacten, aarding' },
-  { key: 'ventilatie', label: 'Ventilatie', waarom: 'afzuiging tegen vocht en schimmel' },
-]
-
-/** Regels die per projecttype vaak vergeten worden op de offerte. */
-export const VERGEET_REGELS: Record<ProjectType, Regel[]> = {
-  stucwerk: [],
-  schilderwerk: [],
-  badkamer: NAT,
-  toilet: NAT,
-  keuken: [
-    { key: 'keukenDemontage', label: 'Demontage oude keuken', waarom: 'oude keuken eruit en afvoeren' },
-    { key: 'keukenMontage', label: 'Keukenmontage', waarom: 'kasten, fronten en apparatuur plaatsen' },
-    { key: 'werkblad', label: 'Werkblad', waarom: 'werkblad op maat en plaatsen' },
-    { key: 'leidingwerk', label: 'Leidingwerk', waarom: 'water en afvoer naar de nieuwe plek' },
-    { key: 'perilex', label: 'Perilex-aansluiting', waarom: 'krachtstroom voor de kookplaat' },
-    { key: 'elektra', label: 'Elektra', waarom: 'extra groepen en stopcontacten' },
-  ],
-  vloer: [
-    { key: 'ondervloer', label: 'Ondervloer', waarom: 'geluid- en vochtwerend onder de vloer' },
-    { key: 'plinten', label: 'Plinten', waarom: 'afwerking langs de wanden' },
-    { key: 'deurenInkorten', label: 'Deuren inkorten', waarom: 'deuren passend maken op de nieuwe vloer' },
-  ],
-  aanbouw: [
-    { key: 'grondwerk', label: 'Grondwerk', waarom: 'ontgraven en grond afvoeren of aanvullen' },
-    { key: 'hwa', label: 'Hemelwaterafvoer', waarom: 'regenwater van het nieuwe dak afvoeren' },
-    { key: 'gevelDoorbraak', label: 'Doorbraak bestaande gevel', waarom: 'opening naar het huis, met ligger volgens constructeur' },
-    { key: 'isolatie', label: 'Isolatie', waarom: 'spouw en dak (Rc-eisen Bbl); vloer zit in de systeemvloer' },
-    { key: 'elektra', label: 'Elektra', waarom: 'groepen, verlichting en stopcontacten in de aanbouw' },
-  ],
-}
-
-/** Alle check-regels voor dit project (alleen keys die bij de ruimte horen), met status. */
-export function vergeetLijst(p: Project) {
-  if (p.voorbeeld || !p.type || !VERGEET_REGELS[p.type]) return []
-  const werk = ruimte(p.type).werk
-  const weg = p.offerte?.vergeetNietNodig ?? []
-  return VERGEET_REGELS[p.type]
-    .filter((r) => werk.includes(r.key))
-    .map((r) => ({ ...r, inScope: Boolean(p.scope?.[r.key]), weg: weg.includes(r.key) }))
-    .filter((r) => r.inScope || !r.weg)
-}
-
-/** Openstaande vergeet-punten: niet in de scope en niet weggeklikt. */
-export function vergeetPunten(p: Project) {
-  return vergeetLijst(p).filter((r) => !r.inScope)
-}
-
-export function VergeetCheck({ p, bevestig, onToch, onAnnuleer }: { p: Project; bevestig?: boolean; onToch?: () => void; onAnnuleer?: () => void }) {
+export function VergeetCheck({ p }: { p: Project }) {
   const lijst = vergeetLijst(p)
   if (!lijst.length) return null
   const open = lijst.filter((r) => !r.inScope)
@@ -76,7 +20,7 @@ export function VergeetCheck({ p, bevestig, onToch, onAnnuleer }: { p: Project; 
       <p className="flex items-center gap-1.5 text-[0.98rem] font-semibold">
         <ListChecks className="h-4 w-4 text-gold-700" aria-hidden="true" /> Niets vergeten?
       </p>
-      <p className="mt-0.5 text-[0.82rem] leading-snug text-ink-muted">Even checken vóór je deelt. Posten die al op de offerte staan zie je afgevinkt.</p>
+      <p className="mt-0.5 text-[0.82rem] leading-snug text-ink-muted">Mogelijke aandachtspunten bij je gekozen werk, geen verplichte extra posten. Staat het elders of doet de klant het zelf? Kies Niet nodig.</p>
       <ul className="mt-3 space-y-2">
         {lijst.map((r) =>
           r.inScope ? (
@@ -88,7 +32,7 @@ export function VergeetCheck({ p, bevestig, onToch, onAnnuleer }: { p: Project; 
             <li key={r.key} className="flex items-center justify-between gap-2 rounded-xl bg-sand-50 px-3 py-2 ring-1 ring-sand-200" data-testid={`vergeet-open-${r.key}`}>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-ink">{r.label}</p>
-                <p className="text-[0.76rem] text-ink-muted">{r.waarom}</p>
+                <p className="text-[0.76rem] text-ink-muted">Controleer of dit nodig is: {r.waarom}.</p>
               </div>
               <div className="flex shrink-0 gap-1">
                 <Button size="sm" icon={<Plus className="h-4 w-4" />} onClick={() => voegToe(r.key, r.label)} data-testid={`vergeet-toevoegen-${r.key}`}>
@@ -109,15 +53,7 @@ export function VergeetCheck({ p, bevestig, onToch, onAnnuleer }: { p: Project; 
       ) : (
         <p className="mt-2 text-[0.82rem] font-medium text-sage-700" data-testid="vergeet-compleet">Alles gecheckt.</p>
       )}
-      {bevestig && open.length > 0 && (
-        <div className="mt-3 rounded-xl bg-gold-100 px-3 py-3 ring-1 ring-gold-200" role="alert" data-testid="vergeet-bevestig">
-          <p className="text-sm font-medium">Er staan nog mogelijke posten open. Toch delen?</p>
-          <div className="mt-2 flex gap-2">
-            <Button size="sm" onClick={onToch} data-testid="vergeet-toch-delen">Toch delen</Button>
-            <Button size="sm" variant="secondary" onClick={onAnnuleer} data-testid="vergeet-eerst-checken">Eerst checken</Button>
-          </div>
-        </div>
-      )}
+
     </Card>
   )
 }

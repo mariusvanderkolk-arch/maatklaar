@@ -34,6 +34,7 @@
     "@types/three": "^0.186.0",
     "@types/webxr": "^0.5.24",
     "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^31.0.0",
     "oxlint": "^1.81.0",
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",

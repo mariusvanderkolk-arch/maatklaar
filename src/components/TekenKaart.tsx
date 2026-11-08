@@ -1,3 +1,4 @@
+import type { ControleActie } from '../lib/offerteControle'
 import { meerwerkFactuurRegels } from '../lib/meerwerk'
 import { uid } from '../lib/defaults'
 import { useEffect, useState } from 'react'
@@ -64,7 +65,7 @@ async function deelLink(url: string, titel: string, tekst: string) {
   toast((await kopieer(url)) === 'gekopieerd' ? 'Tekenlink gekopieerd' : 'Kopiëren mislukt')
 }
 
-export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
+export function TekenKaart({ p, d, voorActie = (actie) => { void actie() } }: { p: Project; d: OfferteData; voorActie?: (actie: ControleActie, label?: string) => void }) {
   const t = p.offerte?.teken
   const [bezig, setBezig] = useState(false)
   const gewijzigd = !!t && !zelfdeVersie(t, d)
@@ -310,7 +311,7 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
         {!t?.getekend && !t?.ingetrokkenOp && (
           <button
             type="button"
-            onClick={viaWhatsapp}
+            onClick={() => voorActie(viaWhatsapp, 'WhatsApp openen')}
             disabled={bezig}
             data-testid="deel-whatsapp"
             className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#1ebe5a] active:scale-[.98] disabled:opacity-45"
@@ -319,11 +320,11 @@ export function TekenKaart({ p, d }: { p: Project; d: OfferteData }) {
           </button>
         )}
         {t && !t.getekend && !gewijzigd && !t.ingetrokkenOp ? (
-          <Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => deelLink(tekenLink(t.token), `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`)}>
+          <Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => voorActie(() => deelLink(tekenLink(t.token), `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`), 'Tekenlink opnieuw delen')}>
             Tekenlink opnieuw delen
           </Button>
         ) : (
-          <Button variant="secondary" icon={<PenLine className="h-4 w-4" />} disabled={bezig} onClick={nieuw}>
+          <Button variant="secondary" icon={<PenLine className="h-4 w-4" />} disabled={bezig} onClick={() => voorActie(nieuw, 'Tekenlink delen')}>
             {bezig ? 'Link maken…' : t ? 'Nieuwe tekenlink delen' : 'Tekenlink delen'}
           </Button>
         )}
