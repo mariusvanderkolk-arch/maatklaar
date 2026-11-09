@@ -10,7 +10,7 @@ import { bestaandeTekenLink, maakTekenLink, TekenKaart, zelfdeVersie } from '../
 import { MAX_QR_LENGTE } from '../lib/qr'
 import { reviewStatus } from '../lib/reviews'
 import { useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, ReceiptText, Building2, Copy, ExternalLink, Printer, Send } from 'lucide-react'
+import { BadgeCheck, ReceiptText, Building2, Copy, ExternalLink, MessageCircle, Printer, Send } from 'lucide-react'
 import { OfferteDocument } from '../components/OfferteDocument'
 import { Badge, Button, Card, Notice, NumberField, Switch, TextField } from '../components/ui'
 import { toast } from '../components/Toast'
@@ -27,6 +27,7 @@ import { useBerekening } from '../lib/useCalc'
 import type { OfferteStatus, Project } from '../lib/types'
 import type { OfferteData } from '../lib/offerte'
 import { track } from '../lib/analytics'
+import { offerteWhatsappTekst, openWhatsapp, whatsappUrl } from '../lib/whatsapp'
 import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
 import { useOntwerp } from '../lib/ontwerp/store'
 import { use3dBeeld } from '../lib/ontwerp/beeld'
@@ -105,6 +106,36 @@ export function Quote({ p }: { p: Project }) {
     toast((await kopieer(url)) === 'gekopieerd' ? 'Offerte-link gekopieerd' : 'Kopiëren mislukt', 'ok')
   }
 
+  // WhatsApp als hoofdroute: liefst een (korte, tekenbare) tekenlink, anders de gewone offerte-link. Nooit een vast telefoonnummer.
+  const [waBezig, setWaBezig] = useState(false)
+  const viaWhatsapp = async () => {
+    const bestaand = bestaandeTekenLink(p, data)
+    // venster meteen openen (binnen de tik), anders blokkeren browsers het na het wachten op de link
+    const venster = bestaand ? null : window.open('', '_blank')
+    let link = bestaand
+    let tekenbaar = true
+    if (!link) {
+      setWaBezig(true)
+      const r = await maakTekenLink(p, data)
+      setWaBezig(false)
+      if (!poort.isActueel()) {
+        venster?.close()
+        return toast('Offerte gewijzigd. Kies Stuur via WhatsApp opnieuw na controle.', 'fout')
+      }
+      if (r.ok) link = r.url
+      else {
+        const metV = offerteLink(weergave)
+        link = metV.length < 11500 ? metV : offerteLink(data)
+        tekenbaar = false
+        toast('Tekenlink maken lukte niet; je stuurt nu de gewone offerte-link (de klant kan via die link akkoord geven).', 'fout')
+      }
+    }
+    setOfferte({ gedeeldOp: Date.now() })
+    track('offerte_shared', { detail: 'whatsapp' })
+    reviewStatus.telOfferte()
+    openWhatsapp(whatsappUrl(offerteWhatsappTekst(p.klant, p.naam, link, tekenbaar, bedrijf.naam)), venster)
+  }
+
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
       <div className="order-2 lg:order-1">
@@ -131,7 +162,7 @@ export function Quote({ p }: { p: Project }) {
         )}
 
         <VergeetCheck p={p} />
-        <OfferteControle controle={controle} poort={poort} />
+        <OfferteControle controle={controle} poort={poort} projectId={p.id} />
 
         <Card className="p-5">
           <div className="flex items-start justify-between gap-3">
@@ -147,11 +178,21 @@ export function Quote({ p }: { p: Project }) {
           </div>
           {!of.gedeeldOp && !of.akkoord && (
             <p className="mt-3 rounded-xl bg-gold-100/60 px-3.5 py-2.5 text-[0.82rem] leading-snug text-ink-soft ring-1 ring-gold-300" data-testid="deel-tip">
-              Tip: stuur de link meteen via WhatsApp. De klant leest de offerte op zijn telefoon en kan direct akkoord geven, dat scheelt vaak dagen wachten.
+              Tip: stuur de offerte meteen via WhatsApp. De klant leest de offerte op zijn telefoon en kan direct akkoord geven, dat scheelt vaak dagen wachten.
             </p>
           )}
           <div className="mt-4 grid gap-2">
-            <Button icon={<Send className="h-4 w-4" />} onClick={() => poort.vraag(deel, 'Offerte-link delen')} data-testid="deel-offerte">
+            <button
+              type="button"
+              onClick={() => poort.vraag(viaWhatsapp, 'Stuur via WhatsApp')}
+              disabled={waBezig}
+              data-testid="stuur-whatsapp"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#1ebe5a] active:scale-[.98] disabled:opacity-45"
+            >
+              <MessageCircle className="h-5 w-5" aria-hidden="true" /> {waBezig ? 'Link maken…' : 'Stuur via WhatsApp'}
+            </button>
+            <p className="-mt-0.5 text-center text-[0.74rem] leading-snug text-ink-muted" data-testid="stuur-whatsapp-uitleg">Opent WhatsApp met een kant-en-klaar bericht en de link. Jij kiest de klant en verstuurt zelf.</p>
+            <Button variant="secondary" icon={<Send className="h-4 w-4" />} onClick={() => poort.vraag(deel, 'Offerte-link delen')} data-testid="deel-offerte">
               Deel offerte-link
             </Button>
             <Button variant="secondary" icon={<ExternalLink className="h-4 w-4" />} onClick={() => window.open(offerteLink(data), '_blank', 'noopener')}>

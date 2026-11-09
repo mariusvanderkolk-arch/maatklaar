@@ -4,7 +4,7 @@ import { track } from '../lib/analytics'
 import { InsprekenKnop } from '../components/Inspreken'
 import { pasInspraakToe } from '../lib/inspraak'
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
-import { AppWindow, ScanLine, CookingPot, DoorOpen, Layers, LayoutGrid, Plus, Ruler, Settings2, ShowerHead, Trash2 } from 'lucide-react'
+import { AppWindow, Camera, ChevronDown, ScanLine, CookingPot, DoorOpen, Layers, LayoutGrid, Plus, Ruler, Settings2, ShowerHead, Trash2 } from 'lucide-react'
 import { Fotos } from '../components/Fotos'
 
 const AiAnalyse = lazy(() => import('../components/AiAnalyse'))
@@ -86,17 +86,13 @@ export function Measure({ p }: { p: Project }) {
     }))
   const toonTegelhoogte = s.wandtegels && (type === 'badkamer' || type === 'toilet')
   const [ar, setAr] = useState<'dicht' | 'open' | null>(null)
+  const [fotoOpen, setFotoOpen] = useState(() => p.fotos.length > 0 || !!p.aiAnalyse)
 
   if (isAfwerking(p)) return <AfwerkingForm p={p} />
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-5">
-        <Fotos p={p} />
-        <Suspense fallback={<div className="card h-40 animate-pulse" aria-hidden="true" />}>
-          <AiAnalyse p={p} />
-        </Suspense>
-
         <Card>
           <CardHeader
             icon={<Ruler className="h-5 w-5" />}
@@ -165,6 +161,28 @@ export function Measure({ p }: { p: Project }) {
             </Card>
           )
         })()}
+
+        {/* Maten eerst (mobiel niet ver scrollen); foto's en AI-analyse eronder, inklapbaar. */}
+        <details open={fotoOpen} onToggle={(e) => setFotoOpen(e.currentTarget.open)} className="group rounded-2xl" data-testid="fotos-ai-sectie">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border border-sand-300/70 bg-paper px-5 py-3 text-[0.95rem] font-semibold shadow-card [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2">
+              <Camera className="h-5 w-5 text-gold-600" aria-hidden="true" />
+              Foto's &amp; AI-analyse
+              {p.fotos.length > 0 && <span className="text-[0.8rem] font-medium text-ink-muted">({p.fotos.length})</span>}
+            </span>
+            <span className="flex items-center gap-1 text-[0.8rem] font-medium text-ink-muted">
+              <span className="group-open:hidden">Tonen</span>
+              <span className="hidden group-open:inline">Verbergen</span>
+              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </span>
+          </summary>
+          <div className="mt-3 space-y-5">
+            <Fotos p={p} />
+            <Suspense fallback={<div className="card h-40 animate-pulse" aria-hidden="true" />}>
+              <AiAnalyse p={p} />
+            </Suspense>
+          </div>
+        </details>
 
         {type === 'keuken' && s.spatwand && (
           <Card>

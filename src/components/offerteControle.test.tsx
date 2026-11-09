@@ -126,3 +126,62 @@ describe('echte Quote/TekenKaart knoppen door dezelfde offertecheck', () => {
     expect(button('offerte-controle-doorgaan')).toBeNull(); expect(box.share).toHaveBeenCalledOnce()
   })
 })
+
+describe('Stuur via WhatsApp als hoofdknop bij Delen met de klant', () => {
+  const tekst = () => decodeURIComponent(String(box.whatsapp.mock.calls[0][0]).split('?text=')[1])
+  it('staat boven de gewone deelknop en gaat door dezelfde offertecheck', async () => {
+    await render()
+    const wa = button('stuur-whatsapp'), deel = button('deel-offerte')
+    expect(wa.textContent).toContain('Stuur via WhatsApp')
+    expect(wa.compareDocumentPosition(deel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    await click(wa)
+    expect(window.open).not.toHaveBeenCalled(); expect(box.teken).not.toHaveBeenCalled(); expect(box.whatsapp).not.toHaveBeenCalled()
+    expect(host.textContent).toContain('Gekozen actie: Stuur via WhatsApp')
+    await click(button('offerte-controle-doorgaan'))
+    expect(box.teken).toHaveBeenCalledOnce(); expect(box.whatsapp).toHaveBeenCalledOnce(); expect(box.share).not.toHaveBeenCalled()
+  })
+  it('opent wa.me zonder telefoonnummer met kant-en-klare tekst en tekenlink', async () => {
+    box.p = { ...box.p, klant: 'Fam. Test', naam: 'Woonkamer verven' }
+    await render(); await click(button('stuur-whatsapp')); await click(button('offerte-controle-doorgaan'))
+    const url = String(box.whatsapp.mock.calls[0][0])
+    expect(url.startsWith('https://wa.me/?text=')).toBe(true)
+    expect(tekst()).toContain('Hoi Fam. Test, hierbij de offerte voor Woonkamer verven')
+    expect(tekst()).toContain('digitaal ondertekenen')
+    expect(tekst()).toContain('#/offerte-tekenen/' + 'a'.repeat(48))
+  })
+  it('valt terug op de gewone offerte-link als een tekenlink niet lukt', async () => {
+    box.teken.mockResolvedValue({ ok: false, fout: 'niet-beschikbaar' })
+    await render(); await click(button('stuur-whatsapp')); await click(button('offerte-controle-doorgaan'))
+    expect(box.whatsapp).toHaveBeenCalledOnce()
+    expect(tekst()).toContain('akkoord geven')
+    expect(tekst()).toContain('#/offerte-bekijken/'); expect(tekst()).not.toContain('#/offerte-tekenen/')
+  })
+  it('hergebruikt een bestaande actuele tekenlink zonder nieuwe aan te maken', async () => {
+    Object.assign(box.b.inkoop.regels[0], { prijs: 0, bron: 'eigen', totaal: 0 })
+    const d = maakOfferteData(box.p, box.b, standaardBedrijf(), (iso) => formatDatum({ day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }, isoDatum(iso)))
+    box.p.offerte!.teken = { token: 'b'.repeat(48), hash: 'hash', nr: d.nr, code: codeerOfferte(d), gedeeldOp: Date.now(), geldigTot: d.geldigTot }
+    await render(); await click(button('stuur-whatsapp'))
+    expect(box.teken).not.toHaveBeenCalled(); expect(window.open).not.toHaveBeenCalled()
+    expect(box.whatsapp).toHaveBeenCalledOnce(); expect(tekst()).toContain('b'.repeat(48))
+  })
+})
+
+describe('offertecheck bij onveranderde standaardmaten', () => {
+  it('toont een maten-waarschuwing met knop naar Opmeten; bewust doorgaan blijft mogelijk', async () => {
+    box.p = nieuwProject({ type: 'badkamer', offerte: { nummer: 'TEST', datum: '2026-11-08', metArbeid: false } })
+    box.b = berekenAlles(box.p, voorbeeldPrijsBron, [])
+    await render()
+    const maten = host.querySelector('[data-testid="offerte-controle-maten"]')
+    expect(maten?.textContent).toContain('2,5 × 2,0 m')
+    expect(maten?.textContent).toContain('Naar Opmeten')
+    await click(button('deel-offerte')); expect(box.share).not.toHaveBeenCalled()
+    await click(button('offerte-controle-doorgaan')); expect(box.share).toHaveBeenCalledOnce()
+  })
+  it('geen maten-waarschuwing als de maten zijn aangepast', async () => {
+    box.p = nieuwProject({ type: 'badkamer', offerte: { nummer: 'TEST', datum: '2026-11-08', metArbeid: false } })
+    box.p.afmetingen = { ...box.p.afmetingen, lengte: 3.2, breedte: 2.1 }
+    box.b = berekenAlles(box.p, voorbeeldPrijsBron, [])
+    await render()
+    expect(host.querySelector('[data-testid="offerte-controle-maten"]')).toBeNull()
+  })
+})

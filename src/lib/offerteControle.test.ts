@@ -4,7 +4,7 @@ import { standaardBedrijf } from './bedrijf'
 import { berekenAlles } from './useCalc'
 import { voorbeeldPrijsBron } from './prices'
 import { maakOfferteData } from './offerteMaken'
-import { offerteControle, OffertePoort } from './offerteControle'
+import { offerteControle, OffertePoort, standaardMatenOngewijzigd } from './offerteControle'
 import { vergeetPunten } from './vergeetCheck'
 import type { Project, ProjectType } from './types'
 
@@ -118,5 +118,70 @@ describe('expliciete actiepoort', () => {
   })
   it('zonder punten geen extra klik', () => {
     const send = vi.fn(); new OffertePoort(false).vraag(send); expect(send).toHaveBeenCalledOnce()
+  })
+})
+
+describe('waarschuwing bij onveranderde standaardmaten', () => {
+  const metData = (p: Project) => {
+    const b = berekenAlles(p, voorbeeldPrijsBron, [])
+    return offerteControle(p, b, maakOfferteData(p, b, standaardBedrijf(), (s) => s))
+  }
+  it.each(['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw'] as const)('%s met standaardmaten geeft één maten-waarschuwing (geen invoerfout)', (type) => {
+    const p = nieuwProject({ type })
+    expect(standaardMatenOngewijzigd(p)).not.toBeNull()
+    const maten = metData(p).punten.filter((x) => x.soort === 'maten')
+    expect(maten).toHaveLength(1)
+    expect(maten[0].id).toBe('standaardmaten')
+    expect(maten[0].tekst).toContain('standaardmaten')
+  })
+  it('noemt de standaardmaten van het type in Nederlandse notatie', () => {
+    expect(metData(nieuwProject({ type: 'badkamer' })).punten.find((x) => x.soort === 'maten')!.tekst).toContain('2,5 × 2,0 m')
+    expect(metData(nieuwProject({ type: 'toilet' })).punten.find((x) => x.soort === 'maten')!.tekst).toContain('1,3 × 0,9 m')
+  })
+  it('geen waarschuwing zodra lengte óf breedte is aangepast', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    p.afmetingen = { ...p.afmetingen, lengte: 2.4 }
+    expect(standaardMatenOngewijzigd(p)).toBeNull()
+    expect(metData(p).punten.some((x) => x.soort === 'maten')).toBe(false)
+    p.afmetingen = { ...p.afmetingen, lengte: 2.5, breedte: 1.8 }
+    expect(standaardMatenOngewijzigd(p)).toBeNull()
+  })
+  it('alleen de hoogte op standaard laten is geen reden voor een waarschuwing', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    p.afmetingen = { ...p.afmetingen, lengte: 3.1, breedte: 2.2 }
+    expect(standaardMatenOngewijzigd(p)).toBeNull()
+  })
+  it('afrondingsruis telt als ongewijzigd, echte afwijking niet', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    p.afmetingen = { ...p.afmetingen, lengte: 2.5000001 }
+    expect(standaardMatenOngewijzigd(p)).not.toBeNull()
+    p.afmetingen = { ...p.afmetingen, lengte: 2.51 }
+    expect(standaardMatenOngewijzigd(p)).toBeNull()
+  })
+  it('geen waarschuwing voor losse stuc-/schilderprojecten en voorbeeldprojecten', () => {
+    expect(standaardMatenOngewijzigd(nieuwProject({ type: 'schilderwerk' }))).toBeNull()
+    expect(standaardMatenOngewijzigd(nieuwProject({ type: 'stucwerk' }))).toBeNull()
+    expect(standaardMatenOngewijzigd({ ...nieuwProject({ type: 'badkamer' }), voorbeeld: true })).toBeNull()
+  })
+  it('ongeldige maten crashen niet', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    p.afmetingen = { ...p.afmetingen, lengte: NaN }
+    expect(standaardMatenOngewijzigd(p)).toBeNull()
+  })
+  it('alleen waarschuwen: project, maten en berekening blijven ongewijzigd; poort laat bewust doorgaan toe', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    const voor = JSON.stringify(p)
+    const c = metData(p)
+    expect(JSON.stringify(p)).toBe(voor)
+    expect(c.heeftPunten).toBe(true)
+    const gate = new OffertePoort(c.heeftPunten, c.sleutel); const send = vi.fn()
+    gate.vraag(send); expect(send).not.toHaveBeenCalled()
+    gate.bevestig(); expect(send).toHaveBeenCalledOnce()
+  })
+  it('nieuwe maten geven een nieuwe controleversie', () => {
+    const p = nieuwProject({ type: 'badkamer' })
+    const key = metData(p).sleutel
+    p.afmetingen = { ...p.afmetingen, lengte: 3 }
+    expect(metData(p).sleutel).not.toBe(key)
   })
 })

@@ -3,10 +3,29 @@ import type { Project } from './types'
 import type { OfferteData } from './offerte'
 import type { berekenAlles } from './useCalc'
 import { vergeetPunten } from './vergeetCheck'
+import { ruimte } from './ruimtes'
+import { isAfwerking } from './afwerking'
 
 type Berekening = ReturnType<typeof berekenAlles>
-export interface ControlePunt { id: string; soort: 'waarde' | 'prijs'; tekst: string }
+export interface ControlePunt { id: string; soort: 'waarde' | 'prijs' | 'maten'; tekst: string }
 export type ControleActie = () => void | Promise<unknown>
+
+const MAAT_TOLERANTIE = 0.005
+const zelfde = (a: unknown, b: unknown) => typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) < MAAT_TOLERANTIE
+
+/**
+ * Staan lengte en breedte nog op de voorbeeldmaten van dit projecttype (bijv. badkamer 2,5 × 2,0 m)?
+ * Alleen een waarschuwing: de maten kunnen best kloppen. Losse stuc-/schilderprojecten rekenen met eigen vlakken en vallen erbuiten.
+ */
+export function standaardMatenOngewijzigd(p: Pick<Project, 'type' | 'afmetingen' | 'voorbeeld'>): { lengte: number; breedte: number } | null {
+  if (p.voorbeeld || isAfwerking(p)) return null
+  const std = ruimte(p.type).afmetingen
+  const a = p.afmetingen
+  if (!a || std.lengte == null || std.breedte == null) return null
+  return zelfde(a.lengte, std.lengte) && zelfde(a.breedte, std.breedte) ? { lengte: std.lengte, breedte: std.breedte } : null
+}
+
+const m = (n: number) => n.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
 
 export function offerteControle(p: Project, b: Berekening, d: OfferteData) {
   const punten: ControlePunt[] = []
@@ -37,6 +56,10 @@ export function offerteControle(p: Project, b: Berekening, d: OfferteData) {
   }
   if (![d.totaal, d.matTotaal, d.arbTotaal, ...d.mat.map((r) => r[2]), ...d.arb.map((r) => r[1]), ...(d.onv ? [d.onv[1]] : [])].every(Number.isFinite)) {
     meld('totaal', 'waarde', 'Een offertetotaal is ongeldig. Herstel de invoer vóór je een klantversie gebruikt.')
+  }
+  const std = standaardMatenOngewijzigd(p)
+  if (std) {
+    meld('standaardmaten', 'maten', `De ruimte staat nog op de standaardmaten ${m(std.lengte)} × ${m(std.breedte)} m. Klopt dit, of ben je vergeten de echte maten in te vullen bij Opmeten? Er wordt niets aangepast.`)
   }
   const herinneringen = vergeetPunten(p)
   // Deel-/tekenstatus en opslagmoment zijn bewust uitgesloten; inhoud en onderliggende prijsstatus niet.

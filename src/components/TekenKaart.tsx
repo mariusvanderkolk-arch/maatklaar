@@ -309,15 +309,10 @@ export function TekenKaart({ p, d, voorActie = (actie) => { void actie() } }: { 
       <div className="mt-4 grid gap-2">
         {!t?.getekend && !t?.ingetrokkenOp && <KlantVoorbeeld d={metVorige(d, gewijzigd ? t!.code : t?.vorigeCode)} />}
         {!t?.getekend && !t?.ingetrokkenOp && (
-          <button
-            type="button"
-            onClick={() => voorActie(viaWhatsapp, 'WhatsApp openen')}
-            disabled={bezig}
-            data-testid="deel-whatsapp"
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 font-semibold text-white shadow-sm transition-all duration-150 hover:bg-[#1ebe5a] active:scale-[.98] disabled:opacity-45"
-          >
-            <MessageCircle className="h-5 w-5" /> {bezig ? 'Link maken…' : 'Deel via WhatsApp'}
-          </button>
+          // secundair: de opvallende groene WhatsApp-knop staat bij 'Delen met de klant'
+          <Button variant="secondary" icon={<MessageCircle className="h-4 w-4" />} onClick={() => voorActie(viaWhatsapp, 'WhatsApp openen')} disabled={bezig} data-testid="deel-whatsapp">
+            {bezig ? 'Link maken…' : 'Tekenlink via WhatsApp'}
+          </Button>
         )}
         {t && !t.getekend && !gewijzigd && !t.ingetrokkenOp ? (
           <Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => voorActie(() => deelLink(tekenLink(t.token), `Offerte ${d.nr}`, `Beste ${p.klant || 'klant'}, hierbij de offerte voor ${p.naam}. Je kunt hem bekijken en digitaal tekenen via deze link:`), 'Tekenlink opnieuw delen')}>

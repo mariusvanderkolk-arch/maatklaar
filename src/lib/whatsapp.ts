@@ -4,6 +4,17 @@ export function whatsappTekst(klant: string, project: string, link: string): str
   return `Hoi${k ? ` ${k}` : ''}, hierbij de offerte voor ${project.trim() || 'je project'}. Je kunt hem hier bekijken en digitaal ondertekenen: ${link}`
 }
 
+/**
+ * Kant-en-klaar WhatsApp-bericht vanaf het offertescherm. Met tekenlink: bekijken + digitaal tekenen;
+ * zonder (gewone offerte-link): bekijken + akkoord geven. Bevat nooit een telefoonnummer; de aannemer kiest zelf het gesprek.
+ */
+export function offerteWhatsappTekst(klant: string, project: string, link: string, tekenbaar: boolean, bedrijf = ''): string {
+  const k = klant.trim()
+  const b = bedrijf.trim()
+  const actie = tekenbaar ? 'bekijken en direct digitaal ondertekenen' : 'bekijken en direct akkoord geven'
+  return `Hoi${k ? ` ${k}` : ''}, hierbij de offerte voor ${project.trim() || 'je project'}. Je kunt hem op je telefoon ${actie} via deze link:\n${link}\n\nVragen? Stuur gerust een berichtje.${b ? `\n\nGroet,\n${b}` : ''}`
+}
+
 /** Vriendelijk reviewverzoek met de eigen Google-reviewlink van de aannemer. */
 export function reviewTekst(klant: string, bedrijf: string, link: string): string {
   const k = klant.trim()
