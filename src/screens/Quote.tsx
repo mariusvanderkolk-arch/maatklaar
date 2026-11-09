@@ -200,7 +200,7 @@ export function Quote({ p }: { p: Project }) {
             </Button>
           </div>
           <p className="mt-3 text-[0.76rem] leading-relaxed text-ink-muted">
-            Er is geen server: de offerte zit in de link zelf. Iedereen met de link kan hem lezen. Pas je iets aan, deel dan een nieuwe link.
+            WhatsApp stuurt een tekenlink: de klant kan daarmee bekijken en digitaal tekenen. De offerte-link bevat de offerte zelf, zonder server. Iedereen met een link kan de offerte lezen. Pas je iets aan, deel dan een nieuwe link.
             {of.gedeeldOp ? ` Laatst gedeeld op ${kortDatum(of.gedeeldOp)}.` : ''}
           </p>
           <div className="mt-4 rounded-xl bg-sand-50 px-3.5 py-3 ring-1 ring-sand-200">
