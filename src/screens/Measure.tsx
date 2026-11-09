@@ -90,6 +90,15 @@ export function Measure({ p }: { p: Project }) {
 
   if (isAfwerking(p)) return <AfwerkingForm p={p} />
 
+  const maatKnoppen = (
+    <>
+      <InsprekenKnop type={type} onToepassen={(r) => (upd((x) => pasInspraakToe(x, r)), toast('Overgenomen uit je inspraak'))} />
+      <Button size="sm" variant="secondary" icon={<ScanLine className="h-4 w-4" />} onClick={() => setAr('open')} title="Meten met de camera via WebXR (beta)">
+        AR <span className="text-[0.75rem] font-semibold tracking-wide text-gold-700 uppercase">beta</span>
+      </Button>
+    </>
+  )
+
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-5">
@@ -98,15 +107,9 @@ export function Measure({ p }: { p: Project }) {
             icon={<Ruler className="h-5 w-5" />}
             title="Afmetingen ruimte"
             sub={type === 'vloer' ? 'Binnenmaten van de vloer in meters, van wand tot wand.' : 'Binnenmaten in meters, gemeten van wand tot wand.'}
-            action={
-              <div className="flex flex-wrap justify-end gap-2">
-              <InsprekenKnop type={type} onToepassen={(r) => (upd((x) => pasInspraakToe(x, r)), toast('Overgenomen uit je inspraak'))} />
-              <Button size="sm" variant="secondary" icon={<ScanLine className="h-4 w-4" />} onClick={() => setAr('open')} title="Meten met de camera via WebXR (beta)">
-                AR <span className="text-[0.75rem] font-semibold tracking-wide text-gold-700 uppercase">beta</span>
-              </Button>
-              </div>
-            }
           />
+          {/* knoppen onder de titel, zodat de titel op mobiel niet wordt platgedrukt */}
+          <div className="flex flex-wrap gap-2 px-5 pt-4 sm:px-6">{maatKnoppen}</div>
           {ar && (
             <Suspense fallback={null}>
               <ArMeten
