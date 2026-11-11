@@ -147,13 +147,13 @@ export function beantwoord(vraag: string): Antwoord {
 
 /** Contextuele tips per scherm (route-naam of projectstap). */
 export const TIPS: Record<string, string[]> = {
-  home: ['start', 'voorbeeld', 'gratis'],
+  home: ['start', 'snel-offerte', 'gratis'],
   nieuw: ['ruimtes', 'werkzaamheden'],
   opmeten: ['opmeten', 'tegelformaat', 'ai-foto'],
   ontwerp: ['ontwerp-bediening', 'ontwerp-tegels', 'ontwerp-offerte'],
   berekening: ['berekening', 'rekenregels', 'tegelformaat'],
   inkoop: ['inkoop', 'voorbeeldprijzen', 'prijzen'],
-  offerte: ['offerte-link', 'bedrijf', 'pdf'],
+  offerte: ['offerte-link', 'snel-offerte', 'pdf'],
   planning: ['planning', 'uren', 'factuur'],
   prijzen: ['prijzen', 'prijs-bulk', 'prijzen-export'],
   facturen: ['factuur', 'factuur-betaald', 'btw'],

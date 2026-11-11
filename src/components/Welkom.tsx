@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Hand, PlayCircle, Plus, Route, X } from 'lucide-react'
+import { ShoppingCart } from 'lucide-react'
 import { Button } from './ui'
 import { ga } from '../lib/router'
 import { useCloud } from '../lib/cloud/sync'
 import { RONDLEIDING_EVENT, markeerTerug, markeerWelkom, terugGetoond, welkomGezien, welkomStand, welkomTekst } from '../lib/welkom'
+import { EIGEN_PRIJZEN_TIP, NAAR_PRIJZEN_LABEL, PRIJZEN_PAD } from '../lib/prijzenUitleg'
 
 export function Welkom() {
   const cloud = useCloud()
@@ -39,6 +41,7 @@ export function Welkom() {
         {welkomTekst.nieuwTitel}
       </h2>
       <p className="mt-1.5 max-w-xl text-[0.95rem] leading-relaxed text-ink-soft">{welkomTekst.nieuw}</p>
+      <p className="mt-2 max-w-xl text-[0.9rem] leading-relaxed text-ink-soft" data-testid="welkom-prijzen-tip">{EIGEN_PRIJZEN_TIP}</p>
       <p className="mt-1 text-[0.8rem] text-ink-muted">— {welkomTekst.afzender}</p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <Button
@@ -75,6 +78,19 @@ export function Welkom() {
           }}
         >
           Korte rondleiding (3 stappen)
+        </Button>
+        <Button
+          size="lg"
+          variant="secondary"
+          className="w-full sm:w-auto"
+          icon={<ShoppingCart className="h-4.5 w-4.5" />}
+          data-testid="welkom-prijzen"
+          onClick={() => {
+            klaar()
+            ga(PRIJZEN_PAD)
+          }}
+        >
+          {NAAR_PRIJZEN_LABEL}
         </Button>
       </div>
     </section>

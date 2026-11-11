@@ -43,6 +43,8 @@ describe('juiste antwoord', () => {
     ['op meerdere apparaten werken', 'cloud'],
     ['factuur betaald zetten', 'factuur-betaald'],
     ['droogtijden planning', 'planning'],
+    ['hoe word ik snel klaar met een offerte?', 'snel-offerte'],
+    ['waar zet ik mijn prijzen?', 'prijzen'],
   ]
   for (const [v, id] of gevallen) it(`"${v}" → ${id}`, () => expect(top(v)).toBe(id))
 })
@@ -93,6 +95,39 @@ describe('AI-modus (optioneel)', async () => {
 describe('contact', async () => {
   const { whatsappLink } = await import('../feedback')
   it('WhatsApp-link zonder vast nummer', () => expect(whatsappLink('a b')).toBe('https://wa.me/?text=a%20b'))
+})
+
+describe('uitleg eigen prijzen en WhatsApp-delen', () => {
+  it('legt uit dat een offerte pas snel is na eigen prijzen en uurtarief', () => {
+    const a = beantwoord('hoe word ik snel klaar met een offerte?')
+    expect(a.soort).toBe('zeker')
+    if (a.soort !== 'zeker') return
+    expect(a.item.id).toBe('snel-offerte')
+    expect(a.item.antwoord).toContain('Prijzen')
+    expect(a.item.antwoord).toContain('inkoopprijzen')
+    expect(a.item.antwoord).toContain('uurtarief')
+    expect(a.item.antwoord).toContain('Offerte')
+    expect(a.item.antwoord).not.toMatch(/€|\d+,\d\d/)
+  })
+  it('wijst "waar zet ik mijn prijzen?" naar Prijzen en noemt het uurtarief bij Offerte', () => {
+    const a = beantwoord('waar zet ik mijn prijzen?')
+    expect(a.soort).toBe('zeker')
+    if (a.soort !== 'zeker') return
+    expect(a.item.id).toBe('prijzen')
+    expect(a.item.antwoord).toContain('Prijzen')
+    expect(a.item.antwoord).toContain('uurtarief')
+    expect(a.item.links?.some((l) => l.pad === '/prijzen')).toBe(true)
+  })
+  it('noemt Stuur via WhatsApp en zegt niet meer "Er is geen server"', () => {
+    const a = beantwoord('Hoe stuur ik de offerte naar de klant?')
+    expect(a.soort).toBe('zeker')
+    if (a.soort !== 'zeker') return
+    expect(a.item.id).toBe('offerte-link')
+    expect(a.item.antwoord).toContain('Stuur via WhatsApp')
+    expect(a.item.antwoord).toContain('Deel offerte-link')
+    expect(a.item.antwoord).toContain('tekenlink')
+    expect(a.item.antwoord).not.toContain('Er is geen server')
+  })
 })
 
 describe('nieuwe hulpvragen', async () => {

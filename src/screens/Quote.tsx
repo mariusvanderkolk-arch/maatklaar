@@ -27,6 +27,7 @@ import { useBerekening } from '../lib/useCalc'
 import type { OfferteStatus, Project } from '../lib/types'
 import type { OfferteData } from '../lib/offerte'
 import { track } from '../lib/analytics'
+import { NAAR_PRIJZEN_LABEL, PRIJZEN_PAD, VOORBEELDPRIJZEN_HINT } from '../lib/prijzenUitleg'
 import { offerteWhatsappTekst, openWhatsapp, whatsappUrl } from '../lib/whatsapp'
 import { factuurVanOfferte, useFacturen } from '../lib/factuurStore'
 import { useOntwerp } from '../lib/ontwerp/store'
@@ -144,8 +145,8 @@ export function Quote({ p }: { p: Project }) {
 
       <aside className="no-print order-1 space-y-4 lg:sticky lg:top-24 lg:order-2">
         {berekening.inkoop.prijsStatus?.voorbeeld && (
-          <Notice title="Voorbeeldprijzen (fictief)" action={<Button size="sm" variant="secondary" onClick={() => ga('/prijzen')}>Eigen prijzen</Button>}>
-            <span data-testid="offerte-fictief">Deze offerte rekent met fictieve, indicatieve voorbeeldprijzen. Vul je eigen prijzen in en controleer de maten (Opmeten) voordat je hem naar een klant stuurt.</span>
+          <Notice title="Voorbeeldprijzen (fictief)" action={<Button size="sm" variant="secondary" onClick={() => ga(PRIJZEN_PAD)}>{NAAR_PRIJZEN_LABEL}</Button>}>
+            <span data-testid="offerte-fictief">{VOORBEELDPRIJZEN_HINT}</span>
           </Notice>
         )}
         {!bedrijf.naam && (

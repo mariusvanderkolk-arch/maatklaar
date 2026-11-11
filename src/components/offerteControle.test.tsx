@@ -11,6 +11,7 @@ import { Quote } from '../screens/Quote'
 import { maakOfferteData } from '../lib/offerteMaken'
 import { codeerOfferte } from '../lib/offerte'
 import { formatDatum, isoDatum } from '../lib/format'
+import { NAAR_PRIJZEN_LABEL, VOORBEELDPRIJZEN_HINT } from '../lib/prijzenUitleg'
 
 const box = vi.hoisted(() => ({ p: null as unknown as Project, b: null as unknown as ReturnType<typeof berekenAlles>, share: vi.fn(), print: vi.fn(), teken: vi.fn(), whatsapp: vi.fn(), fetch: vi.fn() }))
 vi.mock('../lib/useCalc', async (original) => ({ ...await original<typeof import('../lib/useCalc')>(), useBerekening: () => box.b }))
@@ -183,5 +184,26 @@ describe('offertecheck bij onveranderde standaardmaten', () => {
     box.b = berekenAlles(box.p, voorbeeldPrijsBron, [])
     await render()
     expect(host.querySelector('[data-testid="offerte-controle-maten"]')).toBeNull()
+  })
+})
+
+describe('non-blocking hint bij voorbeeldprijzen', () => {
+  it('toont de hint op de offertescherm en blokkeert delen niet', async () => {
+    box.p = nieuwProject({ type: 'schilderwerk', offerte: { nummer: 'TEST', datum: '2026-11-08', metArbeid: false } })
+    box.b = berekenAlles(box.p, voorbeeldPrijsBron, [])
+    expect(box.b.inkoop.prijsStatus.voorbeeld).toBeGreaterThan(0)
+    await render()
+    const hint = host.querySelector('[data-testid="offerte-fictief"]')
+    expect(hint?.textContent).toBe(VOORBEELDPRIJZEN_HINT)
+    expect(host.textContent).toContain(NAAR_PRIJZEN_LABEL)
+    expect(button('offerte-controle-doorgaan')).toBeNull()
+    await click(button('deel-offerte'))
+    expect(box.share).toHaveBeenCalledOnce()
+  })
+  it('toont de hint niet als alle gebruikte prijzen eigen zijn', async () => {
+    Object.assign(box.b.inkoop.regels[0], { prijs: 12, bron: 'eigen', totaal: 12, koopAantal: 1, prijsAantal: 1 })
+    box.b = { ...box.b, inkoop: { ...box.b.inkoop, prijsStatus: { eigen: 1, voorbeeld: 0 } } }
+    await render()
+    expect(host.querySelector('[data-testid="offerte-fictief"]')).toBeNull()
   })
 })

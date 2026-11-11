@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { ArrowLeft, ArrowRight, Calculator, Camera, FileSignature, ShieldCheck, ShoppingCart, Sparkles } from 'lucide-react'
 import { Button, useFocusVal } from './ui'
 import { ga } from '../lib/router'
+import { EIGEN_PRIJZEN_TIP, NAAR_PRIJZEN_LABEL, PRIJZEN_PAD } from '../lib/prijzenUitleg'
 import { projectStore } from '../lib/store'
 import { sleutel } from '../lib/modus'
 import { APP_VERSIE_KORT } from '../lib/versie'
@@ -28,7 +29,7 @@ const SCHERMEN = [
     icon: FileSignature,
     bij: [ShieldCheck],
     titel: 'Offerte, akkoord en planning',
-    tekst: 'Stuur de klant een offerte-link, maak een factuur en plan de uren. Vul onder Prijzen je eigen inkoop in. Alles blijft op dit apparaat — de app is gratis (versie ' + APP_VERSIE_KORT + '). Maak af en toe een back-up.',
+    tekst: 'Stuur de klant een offerte via WhatsApp, maak een factuur en plan de uren. ' + EIGEN_PRIJZEN_TIP + ' Alles blijft op dit apparaat — de app is gratis (versie ' + APP_VERSIE_KORT + '). Maak af en toe een back-up.',
   },
 ]
 
@@ -134,9 +135,14 @@ export function Onboarding() {
                   Volgende <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
-                <Button data-autofocus variant="gold" onClick={sluit}>
-                  Aan de slag
-                </Button>
+                <>
+                  <Button variant="secondary" data-testid="onboarding-prijzen" onClick={() => { sluit(); ga(PRIJZEN_PAD) }}>
+                    {NAAR_PRIJZEN_LABEL}
+                  </Button>
+                  <Button data-autofocus variant="gold" onClick={sluit}>
+                    Aan de slag
+                  </Button>
+                </>
               )}
             </div>
           </div>

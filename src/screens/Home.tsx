@@ -20,6 +20,7 @@ import { sleutel } from '../lib/modus'
 import { iosZonderBeginscherm } from '../lib/vasteOpslag'
 import { euro, getal, kortDatum } from '../lib/format'
 import { ga } from '../lib/router'
+import { EIGEN_PRIJZEN_TIP, NAAR_PRIJZEN_LABEL, PRIJZEN_PAD } from '../lib/prijzenUitleg'
 import { useProjecten } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
 import { actieveScope, ruimteLabel } from '../lib/ruimtes'
@@ -445,9 +446,15 @@ function LeegOverzicht() {
       <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
         Start je eerste project: badkamer, toilet, keuken of vloer. Binnen een paar minuten heb je oppervlakken, materialen en een inkooplijst.
       </p>
+      <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-soft" data-testid="leeg-prijzen-tip">
+        {EIGEN_PRIJZEN_TIP}
+      </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2.5">
         <Button icon={<Plus className="h-4 w-4" />} onClick={() => ga('/nieuw')}>
           Nieuw project
+        </Button>
+        <Button variant="secondary" icon={<ShoppingCart className="h-4 w-4" />} data-testid="leeg-prijzen" onClick={() => ga(PRIJZEN_PAD)}>
+          {NAAR_PRIJZEN_LABEL}
         </Button>
         <Button variant="secondary" icon={<ArrowRight className="h-4 w-4" />} onClick={() => ga('/over')}>
           Hoe werkt het?
