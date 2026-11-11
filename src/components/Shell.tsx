@@ -84,7 +84,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
       <main id="inhoud" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
-      <footer className={`no-print border-t border-sand-300/60 ${route.naam === 'home' || route.naam === 'over' || route.naam === 'prijzen' || route.naam === 'instellingen' || route.naam === 'facturen' || route.naam === 'account' || route.naam === 'privacy' || route.naam === 'voorwaarden' ? '' : 'pb-20'}`}>
+      <footer className={`no-print border-t border-sand-300/60 ${route.naam === 'home' || route.naam === 'over' || route.naam === 'prijzen' || route.naam === 'instellingen' || route.naam === 'facturen' || route.naam === 'account' || route.naam === 'privacy' || route.naam === 'voorwaarden' || route.naam === 'abonnement' ? '' : 'pb-20'}`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
             © 2026 Maatklaar – alle rechten voorbehouden · {TEST_MODUS ? 'testversie' : `versie ${APP_VERSIE_KORT}`} ·{' '}

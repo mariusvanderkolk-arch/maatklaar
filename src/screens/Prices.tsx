@@ -229,10 +229,10 @@ export function Prices({ terugNaar }: { terugNaar?: string }) {
               onChange={(e) => setZoek(e.target.value)}
               placeholder="Zoek artikel, productnaam of leverancier…"
               aria-label="Zoek in prijslijst"
-              className="h-12 w-full rounded-2xl border border-sand-300 bg-white/90 pr-10 pl-10 text-[0.95rem] placeholder:text-ink-muted/70 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+              className="h-12 w-full rounded-2xl border border-sand-300 bg-white/90 pr-10 pl-10 text-base placeholder:text-ink-muted/70 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
             />
             {zoek && (
-              <button type="button" aria-label="Zoekopdracht wissen" onClick={() => setZoek('')} className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full p-1 text-ink-muted hover:bg-sand-100">
+              <button type="button" aria-label="Zoekopdracht wissen" onClick={() => setZoek('')} className="absolute top-1/2 right-2 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full text-ink-muted hover:bg-sand-100">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -528,7 +528,7 @@ function PrijsDetails({ item, eigen, onClose }: { item: CatalogusItem; eigen: Ei
   const vb = vbPrijs(item.id)
   const zet = (w: Partial<Omit<EigenPrijs, 'bijgewerkt'>>) => prijsStore.zet(item.id, w)
   const linkOk = !!e?.link && /^https?:\/\/\S+\.\S+/.test(e.link)
-  const veld = 'h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 text-[0.92rem] placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none'
+  const veld = 'h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 text-base placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none'
   return (
     <Dialog
       open
@@ -611,7 +611,7 @@ function BulkDialog({ eigen, onClose }: { eigen: EigenPrijzen; onClose: () => vo
   const p = leesOfNull(procent.replace('-', '')) ?? 0
   const pct = procent.trim().startsWith('-') ? -p : p
   const levs = leveranciers(eigen)
-  const sel = 'h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-[0.92rem] focus:border-gold-400 focus:outline-none'
+  const sel = 'h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3 text-base focus:border-gold-400 focus:outline-none'
   return (
     <Dialog
       open

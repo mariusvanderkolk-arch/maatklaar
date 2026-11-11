@@ -35,7 +35,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
   return (
     <div className="pb-28">
       <div className="no-print border-b border-sand-300/60 bg-grain">
-        <div className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-7">
+        <div className="mx-auto max-w-6xl pl-4 pr-[4.75rem] pt-5 sm:px-6 sm:pt-7">
           <div className="flex items-center justify-between gap-3">
             <a href="#/" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink">
               <ArrowLeft className="h-4 w-4" /> Projecten
@@ -64,8 +64,8 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
               </>
             )}
           </p>
-          <nav className="-mx-2 mt-6 sm:mx-0" aria-label="Stappen">
-            <ol className="grid grid-cols-6 sm:flex sm:gap-2">
+          <nav className="-mx-2 mt-6 lg:mx-0" aria-label="Stappen">
+            <ol className="grid grid-cols-6 lg:flex lg:gap-2">
               {STAPPEN.map((s, i) => {
                 const actief = s.id === stap
                 const klaar = i < index
@@ -74,7 +74,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
                     <a
                       href={`#/project/${p.id}/${s.id}`}
                       aria-current={actief ? 'step' : undefined}
-                      className={`relative flex flex-col items-center justify-center gap-1 px-0.5 pt-2 pb-3 text-[0.75rem] font-medium transition sm:flex-row sm:justify-start sm:gap-2 sm:px-3.5 sm:pb-3.5 sm:text-sm ${
+                      className={`relative flex min-h-11 flex-col items-center justify-center gap-1 px-0.5 pt-2 pb-3 text-[0.75rem] font-medium transition lg:flex-row lg:justify-start lg:gap-2 lg:px-3.5 lg:pb-3.5 lg:text-sm ${
                         actief ? 'text-ink' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
@@ -89,8 +89,8 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
                       >
                         {i + 1}
                       </span>
-                      <span className="sm:hidden">{s.kort}</span>
-                      <span className="hidden sm:inline">{s.label}</span>
+                      <span className="lg:hidden">{s.kort}</span>
+                      <span className="hidden lg:inline">{s.label}</span>
                       {actief && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gold-500" />}
                     </a>
                   </li>
@@ -101,7 +101,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
+      <div className="mx-auto max-w-6xl pl-4 pr-[4.75rem] pt-6 sm:px-6 sm:pt-8">
         <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-sand-200/70" aria-busy="true" aria-label="Laden" />}>
         {stap === 'opmeten' && <Measure p={p} />}
         {stap === 'ontwerp' && (p.type === 'schilderwerk' ? <SchilderPlan p={p} /> : <OntwerpScherm p={p} />)}

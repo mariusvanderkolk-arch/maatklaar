@@ -19,11 +19,13 @@ export type Route =
   | { naam: 'account' }
   | { naam: 'privacy' }
   | { naam: 'demo'; stap: 'maten' | 'offerte' | 'klant' | 'klaar' }
+  | { naam: 'abonnement'; preview?: string; terug?: boolean }
 
 const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning']
 
 export function parse(hash: string): Route {
-  const [pad] = hash.replace(/^#\/?/, '').split('?')
+  const [pad, query] = hash.replace(/^#\/?/, '').split('?')
+  const q = new URLSearchParams(query || '')
   const delen = pad.split('/').filter(Boolean)
   if (delen[0] === 'demo') {
     const st = (['maten', 'offerte', 'klant', 'klaar'] as const).find((x) => x === delen[1]) ?? 'maten'
@@ -35,6 +37,7 @@ export function parse(hash: string): Route {
   if (delen[0] === 'account') return { naam: 'account' }
   if (delen[0] === 'privacy') return { naam: 'privacy' }
   if (delen[0] === 'voorwaarden') return { naam: 'voorwaarden' }
+  if (delen[0] === 'abonnement') return { naam: 'abonnement', preview: q.get('preview') || undefined, terug: q.get('terug') === '1' }
   if (delen[0] === 'offerte-tekenen' && delen[1]) return { naam: 'offerte-tekenen', token: delen[1] }
   if (delen[0] === 'factuur' && delen[1]) return { naam: 'factuur', id: delen[1] }
   if (delen[0] === 'prijzen') return { naam: 'prijzen', terugNaar: delen[1] }

@@ -35,7 +35,7 @@ export function BeoordeelDialoog() {
   const [toestemming, setToestemming] = useState(false)
   const [bezig, setBezig] = useState(false)
   useEffect(() => reviewDialoog.abonneer(setOpen), [])
-  const veld = 'h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 text-[0.92rem] placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none'
+  const veld = 'h-11 w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 text-base placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none'
   const verstuur = async () => {
     setBezig(true)
     const r = await verstuurReview({ stars: sterren, text: tekst, name: naam, company: bedrijf, consent: toestemming })
@@ -75,7 +75,7 @@ export function BeoordeelDialoog() {
             value={tekst}
             onChange={(e) => setTekst(e.target.value)}
             placeholder="Bijv. wat werkt goed, wat mis je?"
-            className="w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 py-2.5 text-[0.92rem] placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+            className="w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 py-2.5 text-base placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
           />
           <span className="mt-1 block text-right text-xs text-ink-muted">
             {tekst.length}/{MAX_TEKST}

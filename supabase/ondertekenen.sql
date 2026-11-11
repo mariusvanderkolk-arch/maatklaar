@@ -60,7 +60,7 @@ begin
     if exists (select 1 from public.offerte_signatures where token = p_token and signed_at is not null) then
       raise exception 'al getekend' using errcode = 'P0001';
     end if;
-    raise exception 'offerte niet gevonden of gewijzigd' using errcode = 'P0002';
+    raise exception 'offerte niet gevonden of gewijzigd' using errcode = '22023';
   end if;
   return jsonb_build_object('signed_at', r.signed_at, 'signer_name', r.signer_name);
 end $$;

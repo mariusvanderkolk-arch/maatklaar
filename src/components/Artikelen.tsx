@@ -146,7 +146,7 @@ function ArtikelToevoegenDialoog({ p, onClose }: { p: Project; onClose: () => vo
         <div className="space-y-2.5">
           <label className="flex items-center gap-2 rounded-xl border border-sand-300 bg-white px-3 py-2 focus-within:border-gold-400">
             <Search className="h-4 w-4 text-ink-muted" />
-            <input autoFocus value={zoek} onChange={(e) => setZoek(e.target.value)} placeholder="Zoek, bijv. knelkoppeling, kimband, kit…" aria-label="Zoek artikel" className="w-full bg-transparent text-[0.92rem] outline-none" />
+            <input autoFocus value={zoek} onChange={(e) => setZoek(e.target.value)} placeholder="Zoek, bijv. knelkoppeling, kimband, kit…" aria-label="Zoek artikel" className="w-full bg-transparent text-base outline-none" />
           </label>
           <ul className="max-h-[50vh] divide-y divide-sand-100 overflow-y-auto rounded-xl ring-1 ring-sand-200" data-testid="artikel-keuze">
             {lijst.map((k) => (

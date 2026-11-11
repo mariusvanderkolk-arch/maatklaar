@@ -8,8 +8,11 @@ describe('billing-vlag', () => {
     expect(BILLING_AAN).toBe(false)
     expect(magNieuwProject({ aan: BILLING_AAN, abo: null, aantal: 999 }).mag).toBe(true)
   })
-  it('abonnementsroute is uitgeschakeld (valt terug op home)', () => {
-    expect(parse('#/abonnement?preview=1')).toEqual(parse('#/'))
+  it('abonnementsroute bestaat, maar toont zonder vlag geen betaalscherm in de app', () => {
+    expect(parse('#/abonnement')).toEqual({ naam: 'abonnement', preview: undefined, terug: false })
+    expect(parse('#/abonnement?preview=trial&terug=1')).toEqual({ naam: 'abonnement', preview: 'trial', terug: true })
+    // Prijzen-pagina (inkoopprijzen van de aannemer) blijft gewoon bereikbaar.
     expect(parse('#/prijzen')).toEqual({ naam: 'prijzen', terugNaar: undefined })
+    expect(BILLING_AAN).toBe(false)
   })
 })

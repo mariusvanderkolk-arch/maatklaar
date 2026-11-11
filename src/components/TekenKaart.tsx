@@ -276,7 +276,7 @@ export function TekenKaart({ p, d, voorActie = (actie) => { void actie() } }: { 
               onChange={(e) => zetEigen(e.target.value)}
               inputMode="decimal"
               placeholder="25/25/50"
-              className="mt-1 block h-11 w-full rounded-xl bg-paper px-3 text-[0.95rem] text-ink ring-1 ring-sand-300 ring-inset focus:ring-2 focus:ring-gold-400 focus:outline-none"
+              className="mt-1 block h-11 w-full rounded-xl bg-paper px-3 text-base text-ink ring-1 ring-sand-300 ring-inset focus:ring-2 focus:ring-gold-400 focus:outline-none"
               aria-invalid={!!eigen && !geldigeTermijnen(termijnen)}
             />
           </label>

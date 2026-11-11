@@ -184,7 +184,7 @@ function KlantVoorbeeld({ d }: { d: ReturnType<typeof demoOfferte> }) {
                   onChange={(e) => setNaam(e.target.value.slice(0, 60))}
                   placeholder="Bijv. J. de Boer"
                   autoComplete="off"
-                  className="mt-1 w-full rounded-xl border border-sand-300 bg-white px-3.5 py-2.5 text-[0.95rem] focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-sand-300 bg-white px-3.5 py-2.5 text-base focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
                 />
                 <Button type="submit" className="mt-3 w-full" disabled={!naam.trim()} icon={<PenLine className="h-4 w-4" />}>
                   Akkoord (demo)

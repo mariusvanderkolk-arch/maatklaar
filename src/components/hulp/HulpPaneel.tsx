@@ -152,11 +152,11 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
           <p className="mt-1 text-[0.75rem] text-ink-muted">{ai ? 'Offline hulp · AI-antwoord mogelijk' : 'Werkt offline · gratis'}</p>
         </div>
         {berichten.length > 0 && (
-          <button type="button" onClick={() => setBerichten([])} className="grid h-9 w-9 place-items-center rounded-full text-ink-muted hover:bg-sand-100 hover:text-ink" aria-label="Gesprek wissen" title="Gesprek wissen">
+          <button type="button" onClick={() => setBerichten([])} className="grid h-11 w-11 place-items-center rounded-full text-ink-muted hover:bg-sand-100 hover:text-ink" aria-label="Gesprek wissen" title="Gesprek wissen">
             <RotateCcw className="h-4 w-4" />
           </button>
         )}
-        <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-ink-muted hover:bg-sand-100 hover:text-ink" aria-label="Hulp sluiten">
+        <button type="button" onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full text-ink-muted hover:bg-sand-100 hover:text-ink" aria-label="Hulp sluiten">
           <X className="h-5 w-5" />
         </button>
       </header>
@@ -167,7 +167,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
         </Ballon>
         <div className="flex flex-wrap gap-1.5" role="list" aria-label="Voorgestelde vragen">
           {CHIPS.map(([label, vraag]) => (
-            <button key={label} type="button" role="listitem" onClick={() => stel(vraag)} className="rounded-full bg-sand-100 px-3 py-1.5 text-[0.8rem] font-medium text-ink-soft ring-1 ring-sand-300 transition hover:bg-gold-100 hover:ring-gold-300">
+            <button key={label} type="button" role="listitem" onClick={() => stel(vraag)} className="min-h-11 rounded-full bg-sand-100 px-3 py-2.5 text-[0.8rem] font-medium text-ink-soft ring-1 ring-sand-300 transition hover:bg-gold-100 hover:ring-gold-300">
               {label}
             </button>
           ))}
@@ -256,7 +256,7 @@ export function HulpPaneel({ open, onClose, route, hoog }: { open: boolean; onCl
           placeholder="Stel je vraag…"
           autoComplete="off"
           enterKeyHint="send"
-          className="h-11 min-w-0 flex-1 rounded-xl border border-sand-300 bg-paper px-3.5 text-[0.95rem] outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-200"
+          className="h-11 min-w-0 flex-1 rounded-xl border border-sand-300 bg-paper px-3.5 text-base outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-200"
         />
         <button type="submit" disabled={!invoer.trim()} aria-label="Versturen" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-ink text-paper disabled:opacity-40">
           <Send className="h-4.5 w-4.5" />

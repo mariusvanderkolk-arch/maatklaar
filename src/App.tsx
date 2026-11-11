@@ -13,6 +13,7 @@ import { CloudToestemming } from './components/CloudToestemming'
 import { InAppBanner } from './components/InAppBanner'
 import { HulpKnop } from './components/hulp/HulpKnop'
 import { toast } from './components/Toast'
+import { BILLING_AAN } from './lib/billing/config'
 
 const ProjectForm = laadLater(() => import('./screens/ProjectForm').then((m) => m.ProjectForm))
 const ProjectScreen = laadLater(() => import('./screens/ProjectScreen').then((m) => m.ProjectScreen))
@@ -27,6 +28,7 @@ const FactuurScherm = laadLater(() => import('./screens/Facturen').then((m) => m
 const Instellingen = laadLater(() => import('./screens/Instellingen').then((m) => m.Instellingen))
 const Account = laadLater(() => import('./screens/Account').then((m) => m.Account))
 const Privacy = laadLater(() => import('./screens/Privacy').then((m) => m.Privacy))
+const AbonnementScherm = laadLater(() => import('./screens/Abonnement').then((m) => m.AbonnementScherm))
 
 function Laden() {
   return (
@@ -102,6 +104,9 @@ export default function App() {
           {route.naam === 'account' && <Account />}
           {route.naam === 'privacy' && <Privacy />}
           {route.naam === 'voorwaarden' && <Voorwaarden />}
+          {route.naam === 'abonnement' && (
+            <AbonnementScherm preview={import.meta.env.DEV ? route.preview : undefined} terug={BILLING_AAN && Boolean(route.terug)} />
+          )}
           {route.naam === 'demo' && <Demo stap={route.stap} />}
         </Suspense>
       </Foutgrens>

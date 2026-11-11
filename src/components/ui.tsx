@@ -84,8 +84,10 @@ export function PageTitle({ eyebrow, title, sub, action }: { eyebrow?: ReactNode
   )
 }
 
+/** 16px: kleiner en iOS zoomt bij focus. */
+export const INVOER_TEKSTKLASSE = 'text-base'
 const inputBase =
-  'w-full rounded-xl border border-sand-300 bg-white/80 px-3.5 text-[0.95rem] text-ink placeholder:text-ink-muted/60 transition focus:border-gold-400 focus:bg-white focus:ring-4 focus:ring-gold-200/50 focus:outline-none'
+  `w-full rounded-xl border border-sand-300 bg-white/80 px-3.5 ${INVOER_TEKSTKLASSE} text-ink placeholder:text-ink-muted/60 transition focus:border-gold-400 focus:bg-white focus:ring-4 focus:ring-gold-200/50 focus:outline-none`
 
 export function TextField({
   label,
@@ -281,7 +283,7 @@ export function Tip({ tekst, label }: { tekst: string; label?: string }) {
         onClick={() => setOpen((o) => !o)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        className="relative grid h-5 w-5 place-items-center rounded-full text-ink-muted before:absolute before:-inset-3 before:content-[''] hover:text-gold-700"
+        className="relative -m-2.5 grid h-11 w-11 place-items-center rounded-full text-ink-muted hover:text-gold-700"
       >
         <Info className="h-3.5 w-3.5" />
       </button>
@@ -446,7 +448,7 @@ export function Dialog({
             </h2>
             {sub && <p className="mt-0.5 text-[0.82rem] text-ink-muted">{sub}</p>}
           </div>
-          <button type="button" aria-label="Sluiten" onClick={onClose} className="-mr-1 grid h-11 w-11 sm:h-9 sm:w-9 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-sand-100 hover:text-ink">
+          <button type="button" aria-label="Sluiten" onClick={onClose} className="-mr-1 grid h-11 w-11 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-sand-100 hover:text-ink">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -471,9 +473,11 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] ${checked ? 'bg-gold-500' : 'bg-sand-300'}`}
+      className="relative grid h-11 w-11 shrink-0 place-items-center"
     >
-      <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition ${checked ? 'translate-x-5' : ''}`} />
+      <span className={`relative block h-6 w-11 rounded-full transition ${checked ? 'bg-gold-500' : 'bg-sand-300'}`}>
+        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition ${checked ? 'translate-x-5' : ''}`} />
+      </span>
     </button>
   )
 }

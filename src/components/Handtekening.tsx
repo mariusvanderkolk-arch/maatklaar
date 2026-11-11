@@ -92,7 +92,7 @@ export function HandtekeningVeld({ onChange }: { onChange: (png: string | null) 
         {leeg && <span className="pointer-events-none absolute inset-0 grid place-items-center text-sm text-ink-muted/70">Teken hier je handtekening</span>}
         <span className="pointer-events-none absolute inset-x-5 bottom-8 border-b border-dashed border-sand-300" />
       </div>
-      <button type="button" onClick={wis} className="mt-1.5 inline-flex items-center gap-1.5 text-[0.78rem] font-medium text-ink-muted hover:text-ink">
+      <button type="button" onClick={wis} className="mt-1 inline-flex min-h-11 min-w-11 items-center gap-1.5 px-1 text-[0.78rem] font-medium text-ink-muted hover:text-ink">
         <Eraser className="h-3.5 w-3.5" /> Wissen
       </button>
     </div>

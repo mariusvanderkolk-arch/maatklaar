@@ -7,7 +7,7 @@ import { kopieer } from '../lib/share'
 import { GEBRUIKEN_LABEL, feedbackIngevuld, feedbackTekst, legeFeedback, mailtoLink, whatsappLink, type Feedback, type Gebruiken } from '../lib/feedback'
 
 const veld =
-  'w-full rounded-xl border border-sand-300 bg-paper px-3.5 py-2.5 text-[0.95rem] text-ink placeholder:text-ink-muted/70 focus:border-gold-400 focus:ring-4 focus:ring-gold-300/25 focus:outline-none'
+  'w-full rounded-xl border border-sand-300 bg-paper px-3.5 py-2.5 text-base text-ink placeholder:text-ink-muted/70 focus:border-gold-400 focus:ring-4 focus:ring-gold-300/25 focus:outline-none'
 
 /** Banner bovenaan de testversie, met de knop om feedback te geven. */
 export function TestBanner() {

@@ -27,12 +27,14 @@ Deno.serve(async (req) => {
   const waNr = (Deno.env.get('WHATSAPP_TO') ?? '').replace(/\D/g, ''), waKey = Deno.env.get('CALLMEBOT_APIKEY')
   const mail = Boolean(key && naar), wa = Boolean(waNr && waKey)
   if (!mail && !wa) return new Response('niet ingesteld', { status: 503, headers: cors })
-  if (Date.now() - venster.start > 3600_000) venster = { start: Date.now(), aantal: 0 }
-  if (++venster.aantal > 30) return new Response('limiet', { status: 429, headers: cors })
   let b: { vraag?: string; beantwoord?: boolean; scherm?: string; site?: string }
   try { b = await req.json() } catch { return new Response('json', { status: 400, headers: cors }) }
   const vraag = anoniem(b.vraag ?? '')
   if (!vraag) return new Response('leeg', { status: 400, headers: cors })
+  // Limiet pas na een geldige vraag: lege/ongeldige requests tellen niet mee.
+  if (Date.now() - venster.start > 3600_000) venster = { start: Date.now(), aantal: 0 }
+  if (venster.aantal >= 30) return new Response('limiet', { status: 429, headers: cors })
+  venster.aantal++
   const status = b.beantwoord ? 'beantwoord door de hulp' : 'NIET beantwoord – mogelijk even reageren'
   const site = b.site === 'test' ? 'testsite' : 'maatklaar.nl'
   const taken: Promise<boolean>[] = []

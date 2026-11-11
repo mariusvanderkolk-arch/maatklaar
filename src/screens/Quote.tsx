@@ -247,7 +247,7 @@ export function Quote({ p }: { p: Project }) {
               rows={3}
               value={p.notities}
               onChange={(e) => projectStore.werkBij(p.id, (x) => ({ ...x, notities: e.target.value }))}
-              className="w-full resize-none rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-sm focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+              className="w-full resize-none rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-base focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
               placeholder="Bijv. afspraken of uitgangspunten"
             />
           </label>
@@ -265,7 +265,7 @@ export function Quote({ p }: { p: Project }) {
               maxLength={2000}
               value={p.aannames ?? ''}
               onChange={(e) => projectStore.werkBij(p.id, (x) => ({ ...x, aannames: e.target.value }))}
-              className="w-full resize-y rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-sm focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+              className="w-full resize-y rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-base focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
               placeholder="Eén punt per regel. Leeg laten = blok niet op de offerte."
             />
           </label>

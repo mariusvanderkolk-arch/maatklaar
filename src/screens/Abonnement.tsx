@@ -30,7 +30,7 @@ const VOORDELEN = [
 
 export function AbonnementScherm({ preview, terug }: { preview?: string; terug?: boolean }) {
   const echt = useAbonnement()
-  const vb = preview ? voorbeeld(preview) : null
+  const vb = import.meta.env.DEV && preview ? voorbeeld(preview) : null
   const abo = vb ? vb.abo : echt.abo
   const ingelogd = vb ? vb.ingelogd : !!echt.gebruiker
   const [plan, setPlan] = useState<Plan>('jaar')

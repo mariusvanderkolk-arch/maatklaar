@@ -170,7 +170,7 @@ function SnelstartDialoog({ onClose, autoSpraak = false }: { onClose: () => void
           value={tekst}
           onChange={(e) => setTekst(e.target.value.slice(0, 600))}
           placeholder={VOORBEELD_ZIN}
-          className="w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 py-2.5 text-[0.92rem] placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+          className="w-full rounded-xl border border-sand-300 bg-white/90 px-3.5 py-2.5 text-base placeholder:text-ink-muted/60 focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
         />
         <div className="rounded-xl bg-sand-50 px-3.5 py-3 text-[0.78rem] leading-relaxed text-ink-soft ring-1 ring-sand-200">
           <p className="flex items-center gap-1.5 font-semibold text-ink">

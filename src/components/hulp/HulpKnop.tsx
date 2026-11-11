@@ -1,5 +1,5 @@
 /** Zwevende hulpknop (klein, in de hoofdbundel). Het chatpaneel wordt pas geladen bij de eerste klik. */
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { MessageCircleQuestion, X } from 'lucide-react'
 import type { Route } from '../../lib/router'
 import { laadLater } from '../../lib/lazy'
@@ -7,13 +7,37 @@ import { track } from '../../lib/analytics'
 
 const HulpPaneel = laadLater(() => import('./HulpPaneel').then((m) => m.HulpPaneel))
 
-/** Schermen met een vaste balk onderaan: knop daarboven zetten. */
+/** Schermen met een vaste balk onderaan: knop daarboven zetten en uit het formulier houden. */
 const MET_BALK = new Set(['project', 'nieuw', 'bewerken'])
+
+function isTekstveld(el: EventTarget | null) {
+  if (!(el instanceof HTMLElement)) return false
+  const t = el.tagName
+  if (t === 'TEXTAREA' || t === 'SELECT') return true
+  if (t !== 'INPUT') return false
+  const typ = (el as HTMLInputElement).type
+  return typ !== 'checkbox' && typ !== 'radio' && typ !== 'hidden' && typ !== 'button' && typ !== 'submit' && typ !== 'reset' && typ !== 'file' && typ !== 'range' && typ !== 'color'
+}
 
 export function HulpKnop({ route }: { route: Route }) {
   const [open, setOpen] = useState(false)
   const [geladen, setGeladen] = useState(false)
-  if (route.naam === 'offerte-bekijken') return null
+  const [invoerFocus, setInvoerFocus] = useState(false)
+  useEffect(() => {
+    const aan = (e: FocusEvent) => {
+      if (isTekstveld(e.target)) setInvoerFocus(true)
+    }
+    const uit = (e: FocusEvent) => {
+      if (isTekstveld(e.target)) setInvoerFocus(false)
+    }
+    document.addEventListener('focusin', aan)
+    document.addEventListener('focusout', uit)
+    return () => {
+      document.removeEventListener('focusin', aan)
+      document.removeEventListener('focusout', uit)
+    }
+  }, [])
+  if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen') return null
   const hoog = MET_BALK.has(route.naam)
   return (
     <>
@@ -28,7 +52,8 @@ export function HulpKnop({ route }: { route: Route }) {
         aria-label={open ? 'Hulp sluiten' : 'Hulp en tips'}
         aria-expanded={open}
         aria-controls="maatklaar-hulp"
-        className={`no-print fixed right-4 z-40 grid h-13 w-13 place-items-center rounded-full bg-gradient-to-br from-[#F6EBD5] to-[#E3CB98] text-ink shadow-[0_10px_28px_-10px_rgba(80,60,30,.6)] ring-1 ring-gold-300 transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-600 active:scale-95 sm:right-6 ${hoog ? 'bottom-[5.6rem]' : 'bottom-5 sm:bottom-6'} ${open ? 'max-sm:hidden' : ''}`}
+        data-testid="hulp-knop"
+        className={`no-print fixed right-3 z-40 grid h-13 w-13 place-items-center rounded-full bg-gradient-to-br from-[#F6EBD5] to-[#E3CB98] text-ink shadow-[0_10px_28px_-10px_rgba(80,60,30,.6)] ring-1 ring-gold-300 transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-600 active:scale-95 sm:right-6 ${hoog ? 'bottom-[5.6rem]' : 'bottom-5 sm:bottom-6'} ${open ? 'max-sm:hidden' : ''} ${invoerFocus && !open ? 'invisible pointer-events-none' : ''}`}
         style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {open ? <X className="h-5.5 w-5.5" /> : <MessageCircleQuestion className="h-6 w-6" />}
@@ -41,3 +66,5 @@ export function HulpKnop({ route }: { route: Route }) {
     </>
   )
 }
+
+export { isTekstveld, MET_BALK }

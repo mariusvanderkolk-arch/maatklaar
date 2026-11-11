@@ -54,6 +54,12 @@
   input, select, textarea, button {
     font: inherit;
   }
+  /* iOS zoomt invoervelden onder 16px bij focus. Utilities zoals text-base blijven 16px. */
+  input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='range']):not([type='color']):not([type='button']):not([type='submit']):not([type='reset']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
   :focus-visible {
     outline: 2px solid var(--color-gold-600);
     outline-offset: 2px;

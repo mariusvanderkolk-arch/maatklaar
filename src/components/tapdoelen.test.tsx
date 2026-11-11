@@ -10,6 +10,6 @@ describe('tapdoelen op mobiel (>= 44px)', () => {
   })
   it('schakelaar heeft een vergroot tikvlak', () => {
     const html = renderToStaticMarkup(<Switch checked={false} onChange={() => {}} label="Test" />)
-    expect(html).toContain('before:-inset-y-2.5')
+    expect(html).toContain('h-11 w-11')
   })
 })

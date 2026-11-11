@@ -177,7 +177,7 @@ function AkkoordFormulier({ d, onAkkoord }: { d: OfferteData; onAkkoord: (a: Akk
             rows={2}
             value={opmerking}
             onChange={(e) => setOpmerking(e.target.value)}
-            className="w-full resize-none rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-sm focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+            className="w-full resize-none rounded-xl border border-sand-300 bg-white/80 px-3.5 py-2.5 text-base focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
             placeholder="Bijv. gewenste startdatum"
           />
         </label>
