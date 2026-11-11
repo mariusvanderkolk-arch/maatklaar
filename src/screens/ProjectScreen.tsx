@@ -35,7 +35,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
   return (
     <div className="pb-28">
       <div className="no-print border-b border-sand-300/60 bg-grain">
-        <div className="mx-auto max-w-6xl pl-4 pr-[4.75rem] pt-5 sm:px-6 sm:pt-7">
+        <div className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-7">
           <div className="flex items-center justify-between gap-3">
             <a href="#/" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink">
               <ArrowLeft className="h-4 w-4" /> Projecten
@@ -101,7 +101,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl pl-4 pr-[4.75rem] pt-6 sm:px-6 sm:pt-8">
+      <div className="mx-auto max-w-6xl pl-4 pr-[4.75rem] pt-6 sm:pl-6 lg:px-6 sm:pt-8">
         <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-sand-200/70" aria-busy="true" aria-label="Laden" />}>
         {stap === 'opmeten' && <Measure p={p} />}
         {stap === 'ontwerp' && (p.type === 'schilderwerk' ? <SchilderPlan p={p} /> : <OntwerpScherm p={p} />)}

@@ -87,7 +87,7 @@ export function ProjectForm({ id }: { id?: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl pl-4 pr-[4.75rem] pt-6 pb-32 sm:px-6 sm:pt-10">
+    <div className="mx-auto max-w-3xl pl-4 pr-[4.75rem] pt-6 pb-32 sm:pl-6 lg:px-6 sm:pt-10">
       <button
         type="button"
         onClick={() => (bestaand ? ga(`/project/${bestaand.id}/opmeten`) : ga('/'))}
