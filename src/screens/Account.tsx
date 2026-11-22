@@ -23,6 +23,9 @@ import {
   verwijderCloudGegevens,
 } from '../lib/cloud/sync'
 
+/** Nieuw wachtwoord: minstens 10 tekens met minstens één letter en één cijfer. */
+const sterkGenoeg = (ww: string) => ww.length >= 10 && /[A-Za-z]/.test(ww) && /\d/.test(ww)
+
 type Db = 'onbekend' | 'klaar' | 'geen-tabel' | 'offline' | 'fout'
 
 const GEEN_TABEL =
@@ -155,7 +158,7 @@ function Inloggen() {
           <TextField label="E-mailadres" type="email" inputMode="email" autoComplete="email" value={email} onChange={setEmail} placeholder="naam@bedrijf.nl" />
           {modus === 'wachtwoord' && (
             <TextField
-              label={nieuw ? 'Kies een wachtwoord (min. 6 tekens)' : 'Wachtwoord'}
+              label={nieuw ? 'Kies een wachtwoord (min. 10 tekens, letters én cijfers)' : 'Wachtwoord'}
               type="password"
               autoComplete={nieuw ? 'new-password' : 'current-password'}
               value={ww}
@@ -164,7 +167,7 @@ function Inloggen() {
           )}
           {fout && <p className="text-sm text-rust" role="alert">{fout}</p>}
           {klaar && <p className="rounded-xl bg-sage/10 px-3.5 py-2.5 text-sm text-[#4f6b4a] ring-1 ring-sage/25" role="status">{klaar}</p>}
-          <Button type="submit" variant="gold" className="w-full" disabled={bezig || (modus === 'wachtwoord' && ww.length < (nieuw ? 6 : 1))} icon={modus === 'link' ? <Mail className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}>
+          <Button type="submit" variant="gold" className="w-full" disabled={bezig || (modus === 'wachtwoord' && (nieuw ? !sterkGenoeg(ww) : ww.length < 1))} icon={modus === 'link' ? <Mail className="h-4 w-4" /> : <KeyRound className="h-4 w-4" />}>
             {bezig ? 'Even geduld…' : modus === 'link' ? 'Stuur inloglink' : nieuw ? 'Account maken' : 'Inloggen'}
           </Button>
         </form>
@@ -208,10 +211,10 @@ function NieuwWachtwoord() {
       <p className="font-semibold">Kies een nieuw wachtwoord</p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
         <div className="flex-1">
-          <TextField label="Nieuw wachtwoord (min. 6 tekens)" type="password" autoComplete="new-password" value={ww} onChange={setWw} fout={fout} />
+          <TextField label="Nieuw wachtwoord (min. 10 tekens, letters én cijfers)" type="password" autoComplete="new-password" value={ww} onChange={setWw} fout={fout} />
         </div>
         <Button
-          disabled={ww.length < 6}
+          disabled={!sterkGenoeg(ww)}
           onClick={async () => {
             try {
               await nieuwWachtwoord(ww)
