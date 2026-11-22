@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bedragVan, bonNummer, leesMeerwerkInfo, maakMeerwerkData, meerwerkFactuurRegels, meerwerkStatus, meerwerkTotaal, metTeken, volgendNr, waarschuwing, type MeerwerkItem } from './meerwerk'
+import { bedragVan, bonNummer, leesMeerwerkInfo, maakMeerwerkData, meerwerkFactuurRegels, meerwerkStatus, meerwerkTotaal, metTeken, volgendNr, voorstelVanPlanning, waarschuwing, type MeerwerkItem } from './meerwerk'
 import { leesOfferte, codeerOfferte, decodeerOfferte } from './offerte'
 import { maakFactuur, maakTermijnen } from './factuur'
 import { standaardBedrijf } from './bedrijf'
@@ -67,5 +67,24 @@ describe('factuurVanOfferte met meerwerk', () => {
     const laatste = lijst.find((x) => x.regels.some((r) => r.omschrijving.startsWith('Meerwerk')))
     expect(laatste?.nummer).not.toBe(f.nummer)
     expect(lijst.filter((x) => x.regels.some((r) => r.omschrijving.startsWith('Meerwerk')))).toHaveLength(1)
+  })
+})
+
+describe('voorstelVanPlanning', () => {
+  it('telt openstaande uren en bonnen op tot een vast bedrag, zonder materiaalmarge', () => {
+    const p = { ...nieuwProject(), uurtarief: 50, marge: 100, planning: { dagUren: 8, weekend: false, dagen: {}, droogdagen: {}, logs: [{ id: 'l1', datum: '2026-11-20', uren: 2, omschrijving: 'tegelwerk' }], kosten: [{ id: 'k1', datum: '2026-11-20', omschrijving: 'lijm', soort: 'materiaal' as const, bedrag: 12.1 }] } }
+    const b = voorstelVanPlanning(p, { id: 'mw1', datum: '2026-11-22' })
+    expect(b).not.toBeNull()
+    expect(b!.modus).toBe('bedrag')
+    expect(b!.bedrag).toBe(100 + 12.1)
+    expect(b!.bronIds).toEqual(['l1', 'k1'])
+    expect(b!.omschrijving).toMatch(/Extra uren/)
+    expect(b!.reden).toMatch(/tegelwerk/)
+    expect(b!.reden).toMatch(/lijm/)
+  })
+
+  it('slaat uren en bonnen over die al in een bon zitten', () => {
+    const p = { ...nieuwProject(), uurtarief: 50, planning: { dagUren: 8, weekend: false, dagen: {}, droogdagen: {}, logs: [{ id: 'l1', datum: '2026-11-20', uren: 2, omschrijving: '' }], kosten: [] }, meerwerk: [{ id: 'oud', nr: 1, datum: '2026-11-21', soort: 'meer' as const, omschrijving: 'x', reden: '', modus: 'bedrag' as const, bedrag: 100, materiaal: 0, uren: 0, bronIds: ['l1'] }] }
+    expect(voorstelVanPlanning(p, { id: 'mw2', datum: '2026-11-22' })).toBeNull()
   })
 })

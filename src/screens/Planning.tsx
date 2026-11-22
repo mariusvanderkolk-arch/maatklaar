@@ -1,11 +1,14 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { CalendarDays, Clock, Hourglass, Minus, Plus, Receipt, RotateCcw, Trash2, Gauge, TrendingUp, Wallet, ListChecks } from 'lucide-react'
+import { CalendarDays, Clock, ClipboardPlus, Hourglass, MessageCircle, Minus, Plus, Printer, Receipt, RotateCcw, Share2, Trash2, Gauge, TrendingUp, Wallet, ListChecks } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, DateField, NumberField, SelectField, Switch, TextField, LeegStaat } from '../components/ui'
 import { ga } from '../lib/router'
 import { toast } from '../components/Toast'
 import { uid } from '../lib/defaults'
 import { euro, formatDatum, getal, isoDatum } from '../lib/format'
-import { maakBudget, maakDagplanning, planTaken, plusDagen, standaardPlanning, vandaag, type BudgetRegel } from '../lib/planning'
+import { maakBudget, maakDagplanning, planTaken, planningTekst, plusDagen, standaardPlanning, vandaag, type BudgetRegel } from '../lib/planning'
+import { openstaandePlanning, voorstelVanPlanning } from '../lib/meerwerk'
+import { deelOfKopieer } from '../lib/share'
+import { openWhatsapp, whatsappUrl } from '../lib/whatsapp'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
 import type { KostSoort, Planning, Project } from '../lib/types'
@@ -149,11 +152,13 @@ export function PlanningScherm({ p }: { p: Project }) {
               </ol>
             )}
           </Card>
+          <PlanningDelen p={p} dagen={dagen} taken={taken} />
         </div>
 
         <div className="space-y-5 lg:sticky lg:top-24">
           <UrenKaart p={p} pl={pl} upd={upd} taken={taken.map((t) => ({ value: t.id, label: t.naam }))} perTaak={budget.perTaak} overigeUren={budget.overigeUren} />
           <KostenKaart pl={pl} upd={upd} />
+          <MeerwerkUitPlanning p={p} />
         </div>
       </div>
     </div>
@@ -377,6 +382,68 @@ function KostenKaart({ pl, upd }: { pl: Planning; upd: (f: (x: Planning) => Plan
           ))}
         </ul>
       )}
+    </Card>
+  )
+}
+
+
+function PlanningDelen({ p, dagen, taken }: { p: Project; dagen: ReturnType<typeof maakDagplanning>; taken: ReturnType<typeof planTaken> }) {
+  const tekst = planningTekst(p, dagen, taken)
+  return (
+    <Card className="no-print p-5">
+      <p className="text-[0.98rem] font-semibold">Planning delen</p>
+      <p className="mt-1 text-[0.82rem] leading-snug text-ink-muted">Stuur de dag-voor-dagplanning naar de klant of een maat. WhatsApp opent een conceptbericht; je verstuurt het zelf.</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button
+          icon={<MessageCircle className="h-4 w-4" />}
+          onClick={() => openWhatsapp(whatsappUrl(tekst))}
+          data-testid="deel-planning-whatsapp"
+        >
+          WhatsApp
+        </Button>
+        <Button
+          variant="secondary"
+          icon={<Share2 className="h-4 w-4" />}
+          onClick={async () => {
+            const r = await deelOfKopieer(`Planning ${p.naam || 'project'}`, tekst)
+            if (r === 'gekopieerd') toast('Planning gekopieerd')
+            else if (r === 'mislukt') toast('Delen mislukt', 'fout')
+          }}
+        >
+          Delen of kopiëren
+        </Button>
+        <Button variant="secondary" icon={<Printer className="h-4 w-4" />} onClick={() => window.print()} data-testid="planning-pdf">
+          Afdrukken / PDF
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function MeerwerkUitPlanning({ p }: { p: Project }) {
+  const open = openstaandePlanning(p)
+  const voorstel = voorstelVanPlanning(p, { id: 'voorbeeld', datum: vandaag() })
+  if (!voorstel) return null
+  const maak = () => {
+    const m = voorstelVanPlanning(p, { id: uid(), datum: vandaag() })
+    if (!m) return
+    const ok = projectStore.werkBij(p.id, (x) => ({ ...x, meerwerk: [...(x.meerwerk ?? []), m].sort((a, b) => a.nr - b.nr) }))
+    if (!ok) return toast('Opslaan mislukt: opslag vol.', 'fout')
+    toast('Concept-meerwerkbon aangemaakt. Controleer hem en stuur hem daarna naar de klant.')
+    ga(`/project/${p.id}/offerte`)
+  }
+  return (
+    <Card className="no-print p-5">
+      <p className="text-[0.98rem] font-semibold">Omzetten naar meerwerkbon</p>
+      <p className="mt-1 text-[0.82rem] leading-snug text-ink-muted">
+        {open.logs.length ? `${open.logs.length} ${open.logs.length === 1 ? 'urenregel' : 'urenregels'}` : ''}
+        {open.logs.length && open.kosten.length ? ' en ' : ''}
+        {open.kosten.length ? `${open.kosten.length} ${open.kosten.length === 1 ? 'bon' : 'bonnen'}` : ''}{' '}
+        staan nog niet op een meerwerkbon. We maken een conceptbon van {euro(voorstel.bedrag)} (incl. btw). Je stuurt hem zelf naar de klant.
+      </p>
+      <Button className="mt-3 w-full" icon={<ClipboardPlus className="h-4 w-4" />} onClick={maak} data-testid="maak-meerwerk-van-planning">
+        Maak meerwerkbon
+      </Button>
     </Card>
   )
 }

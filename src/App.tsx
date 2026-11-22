@@ -24,6 +24,7 @@ const KlantTekenen = laadLater(() => import('./screens/KlantOfferte').then((m) =
 const Voorwaarden = laadLater(() => import('./screens/Voorwaarden').then((m) => m.Voorwaarden))
 const Facturen = laadLater(() => import('./screens/Facturen').then((m) => m.Facturen))
 const FactuurScherm = laadLater(() => import('./screens/Facturen').then((m) => m.FactuurScherm))
+const KlantFactuur = laadLater(() => import('./screens/Facturen').then((m) => m.KlantFactuur))
 const Instellingen = laadLater(() => import('./screens/Instellingen').then((m) => m.Instellingen))
 const Account = laadLater(() => import('./screens/Account').then((m) => m.Account))
 const Privacy = laadLater(() => import('./screens/Privacy').then((m) => m.Privacy))
@@ -45,7 +46,7 @@ export default function App() {
   }, [pad])
   // Offerte-opvolging: bij openen en bij terugkeren naar de app de status van gedeelde offertes ophalen
   useEffect(() => {
-    if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen') return
+    if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen' || route.naam === 'factuur-bekijken') return
     let laatst = 0
     const kijk = () => {
       if (document.hidden || Date.now() - laatst < 60_000) return
@@ -74,13 +75,13 @@ export default function App() {
       document.removeEventListener('visibilitychange', fotos)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen'])
-  if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen')
+  }, [route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen' || route.naam === 'factuur-bekijken'])
+  if (route.naam === 'offerte-bekijken' || route.naam === 'offerte-tekenen' || route.naam === 'factuur-bekijken')
     return (
       <Foutgrens>
         <InAppBanner />
         <Suspense fallback={<Laden />}>
-          {route.naam === 'offerte-bekijken' ? <KlantOfferte code={route.data} /> : <KlantTekenen token={route.token} />}
+          {route.naam === 'offerte-bekijken' ? <KlantOfferte code={route.data} /> : route.naam === 'factuur-bekijken' ? <KlantFactuur code={route.data} /> : <KlantTekenen token={route.token} />}
         </Suspense>
         <Toaster />
       </Foutgrens>

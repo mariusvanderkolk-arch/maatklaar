@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { berekenArbeid } from './calc'
 import { nieuwProject } from './defaults'
-import { isWeekend, maakBudget, maakDagplanning, planTaken, plusDagen, standaardPlanning, urenNaarDagen, type Taak } from './planning'
+import { isWeekend, maakBudget, maakDagplanning, planTaken, planningTekst, plusDagen, standaardPlanning, urenNaarDagen, type Taak } from './planning'
 
 const taak = (id: string, dagen: number, droog = 0): Taak => ({ id, naam: id, uren: dagen * 8, geschat: dagen, dagen, aangepast: false, droog })
 
@@ -103,5 +103,23 @@ describe('budget', () => {
     const b = maakBudget({ materialen: 0, arbeid: [], uurtarief: 60 }, standaardPlanning())
     expect(b.totaal).toEqual({ begroot: 0, werkelijk: 0 })
     expect(b.verschil).toBe(0)
+  })
+})
+
+describe('planningTekst', () => {
+  it('zet de dag-voor-dagplanning in gewone tekst, zonder bedragen', () => {
+    const dagen = maakDagplanning([taak('sloopwerk', 1), taak('stucwerk', 0.5, 1)], '2026-11-23', false)
+    const t = planningTekst({ naam: 'Badkamer Piet', klant: 'Piet', adres: 'Dorpsweg 2' }, dagen, [taak('sloopwerk', 1), taak('stucwerk', 0.5, 1)])
+    expect(t).toContain('Planning – Badkamer Piet (Piet)')
+    expect(t).toContain('Dorpsweg 2')
+    expect(t).toContain('sloopwerk')
+    expect(t).toContain('stucwerk')
+    expect(t).toContain('droogtijd')
+    expect(t).toContain('schatting')
+    expect(t).not.toMatch(/€/)
+  })
+
+  it('zegt het als er nog geen taken zijn', () => {
+    expect(planningTekst({ naam: 'X', klant: '', adres: '' }, [])).toMatch(/Nog geen taken/)
   })
 })

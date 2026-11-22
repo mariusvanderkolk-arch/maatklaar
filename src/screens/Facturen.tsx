@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ArrowLeft, BadgeCheck, CircleAlert, FileText, Printer, ReceiptText, RotateCcw, Send, Share2, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ArrowLeft, BadgeCheck, CircleAlert, Copy, FileText, MessageCircle, Printer, ReceiptText, RotateCcw, Send, Share2, ShieldCheck, Trash2 } from 'lucide-react'
 import { FactuurDocument } from '../components/FactuurDocument'
 import { Badge, Button, Card, DateField, Dialog, LeegStaat, PageTitle, Stat, Switch, TextField } from '../components/ui'
 import { toast } from '../components/Toast'
@@ -10,7 +10,9 @@ import { euro } from '../lib/format'
 import { datumNl } from '../lib/offerte'
 import { vandaag } from '../lib/planning'
 import { ga } from '../lib/router'
-import { deelOfKopieer } from '../lib/share'
+import { deelOfKopieer, kopieer } from '../lib/share'
+import { betalingsHerinneringTekst, factuurLink, factuurWhatsappTekst, decodeerFactuur } from '../lib/factuurDelen'
+import { openWhatsapp, whatsappUrl } from '../lib/whatsapp'
 
 const TOON: Record<EffectieveStatus, 'sand' | 'gold' | 'sage' | 'ink'> = { concept: 'sand', verzonden: 'gold', betaald: 'sage', 'te-laat': 'ink' }
 
@@ -159,9 +161,23 @@ export function FactuurScherm({ id }: { id: string }) {
           <Card className="p-5">
             <p className="text-[0.98rem] font-semibold">Status</p>
             {s === 'te-laat' && (
-              <p className="mt-2 rounded-xl bg-rust/10 px-3 py-2 text-[0.82rem] text-rust">
-                {dagenTeLaat(f, nu)} dagen over de vervaldatum. Stuur een herinnering.
-              </p>
+              <div className="mt-2 rounded-xl bg-rust/10 px-3 py-2 text-[0.82rem] text-rust">
+                <p>{dagenTeLaat(f, nu)} dagen over de vervaldatum.</p>
+                <Button
+                  className="mt-2 w-full"
+                  size="sm"
+                  icon={<MessageCircle className="h-4 w-4" />}
+                  onClick={() => {
+                    const link = factuurLink(f)
+                    if (link.length > 11500) return toast('De link is te lang. Gebruik Afdrukken / PDF.', 'fout')
+                    openWhatsapp(whatsappUrl(betalingsHerinneringTekst(f, link, nu)))
+                  }}
+                  data-testid="stuur-betaalherinnering"
+                >
+                  Stuur herinnering via WhatsApp
+                </Button>
+                <p className="mt-1.5 text-[0.75rem] text-ink-soft">Er opent een conceptbericht in WhatsApp. Je verstuurt het zelf.</p>
+              </div>
             )}
             <div className="mt-3 grid gap-2">
               {concept && (
@@ -252,17 +268,43 @@ export function FactuurScherm({ id }: { id: string }) {
                 Afdrukken / PDF
               </Button>
               <Button
+                icon={<MessageCircle className="h-4 w-4" />}
+                onClick={() => {
+                  const link = factuurLink(f)
+                  if (link.length > 11500) return toast('De link is te lang. Gebruik Afdrukken / PDF.', 'fout')
+                  openWhatsapp(whatsappUrl(factuurWhatsappTekst(f, link)))
+                }}
+                data-testid="deel-factuur-whatsapp"
+              >
+                WhatsApp naar klant
+              </Button>
+              <Button
+                variant="secondary"
+                icon={<Copy className="h-4 w-4" />}
+                onClick={async () => {
+                  const link = factuurLink(f)
+                  if (link.length > 11500) return toast('De link is te lang. Gebruik Afdrukken / PDF.', 'fout')
+                  const r = await kopieer(link)
+                  toast(r === 'gekopieerd' ? 'Factuurlink gekopieerd' : 'Kopiëren mislukt', r === 'gekopieerd' ? undefined : 'fout')
+                }}
+                data-testid="factuur-link"
+              >
+                Kopieer factuurlink
+              </Button>
+              <Button
                 variant="secondary"
                 icon={<Share2 className="h-4 w-4" />}
                 onClick={async () => {
-                  const r = await deelOfKopieer(`Factuur ${f.nummer}`, factuurTekst(f))
+                  const link = factuurLink(f)
+                  const tekst = link.length > 11500 ? factuurTekst(f) : factuurWhatsappTekst(f, link)
+                  const r = await deelOfKopieer(`Factuur ${f.nummer}`, tekst)
                   if (r === 'gekopieerd') toast('Factuurgegevens gekopieerd')
                   else if (r === 'mislukt') toast('Delen mislukt', 'fout')
                 }}
               >
                 Delen of kopiëren
               </Button>
-              <p className="text-[0.75rem] leading-snug text-ink-muted">Delen stuurt een korte tekst met bedrag, vervaldatum, IBAN en kenmerk. Stuur de PDF (via Afdrukken → Opslaan als PDF) als bijlage mee.</p>
+              <p className="text-[0.75rem] leading-snug text-ink-muted">WhatsApp opent een conceptbericht met een link die de klant in de browser opent. Je verstuurt het zelf. Afdrukken / PDF blijft beschikbaar als bijlage.</p>
               {f.projectId && (
                 <Button variant="ghost" icon={<FileText className="h-4 w-4" />} onClick={() => ga(`/project/${f.projectId}/offerte`)}>
                   Naar offerte {f.offerteNummer !== '—' ? f.offerteNummer : ''}
@@ -303,6 +345,48 @@ export function FactuurScherm({ id }: { id: string }) {
       >
         <p className="text-sm text-ink-soft">Het nummer {f.nummer} wordt niet opnieuw gebruikt, zodat er nooit twee facturen met hetzelfde nummer bestaan.</p>
       </Dialog>
+    </div>
+  )
+}
+
+
+/** Alleen-lezen factuur voor de klant, via een link in de URL-hash. */
+export function KlantFactuur({ code }: { code: string }) {
+  const resultaat = useMemo(() => {
+    try {
+      return { f: decodeerFactuur(code) }
+    } catch (e) {
+      return { fout: (e as Error).message }
+    }
+  }, [code])
+  if (!resultaat.f) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-grain">
+        <div className="mx-auto max-w-md px-6 py-20 text-center">
+          <h1 className="text-3xl font-semibold">Factuur niet te openen</h1>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{resultaat.fout}</p>
+        </div>
+      </div>
+    )
+  }
+  const f = resultaat.f
+  const vandaagIso = vandaag()
+  return (
+    <div className="flex min-h-dvh flex-col bg-grain">
+      <header className="no-print border-b border-sand-300/60 bg-sand-100/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+          <p className="truncate font-display text-[1.35rem] font-semibold">{f.bedrijf.naam || 'Factuur'}</p>
+          <span className="inline-flex items-center gap-1.5 text-[0.78rem] text-ink-muted">
+            <ShieldCheck className="h-4 w-4 text-gold-600" /> Alleen-lezen
+          </span>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-3xl space-y-4 px-4 pt-6 pb-16 sm:px-6 sm:pt-8">
+        <FactuurDocument f={f} vandaag={vandaagIso} />
+        <Button variant="secondary" className="no-print w-full" icon={<Printer className="h-4 w-4" />} onClick={() => window.print()}>
+          Afdrukken / PDF
+        </Button>
+      </main>
     </div>
   )
 }
