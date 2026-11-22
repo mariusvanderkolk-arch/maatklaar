@@ -11,6 +11,7 @@ export type Route =
   | { naam: 'instellingen'; sectie?: string }
   | { naam: 'offerte-bekijken'; data: string }
   | { naam: 'offerte-tekenen'; token: string }
+  | { naam: 'factuur-bekijken'; data: string }
   | { naam: 'voorwaarden' }
   | { naam: 'bewerken'; id: string }
   | { naam: 'project'; id: string; stap: Stap }
@@ -36,6 +37,7 @@ export function parse(hash: string): Route {
   if (delen[0] === 'privacy') return { naam: 'privacy' }
   if (delen[0] === 'voorwaarden') return { naam: 'voorwaarden' }
   if (delen[0] === 'offerte-tekenen' && delen[1]) return { naam: 'offerte-tekenen', token: delen[1] }
+  if (delen[0] === 'factuur-bekijken') return { naam: 'factuur-bekijken', data: delen.slice(1).join('/') }
   if (delen[0] === 'factuur' && delen[1]) return { naam: 'factuur', id: delen[1] }
   if (delen[0] === 'prijzen') return { naam: 'prijzen', terugNaar: delen[1] }
   if (delen[0] === 'instellingen') return { naam: 'instellingen', sectie: delen[1] }

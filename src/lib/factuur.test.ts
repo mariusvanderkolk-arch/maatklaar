@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { btwOverzicht, dagenTeLaat, effectieveStatus, factuurTekst, factuurTotalen, maakFactuur, normaliseerFactuur, volgendFactuurnummer, vervaldatumVoor, type FactuurRegel } from './factuur'
+import { betalingsHerinneringTekst, codeerFactuur, decodeerFactuur, factuurLink, factuurWhatsappTekst } from './factuurDelen'
 import type { OfferteData } from './offerte'
 
 const regel = (excl: number, btw: 21 | 9 = 21, soort: 'materiaal' | 'arbeid' = 'materiaal'): FactuurRegel => ({ id: String(Math.random()), soort, omschrijving: 'x', detail: '', excl, btw })
@@ -138,4 +139,42 @@ describe('termijnen', () => {
     expect(maakTermijnen(basis, [100], ['F-1'], () => 'x')[0].regels).toEqual(basis.regels)
   })
   it('fout bij ongeldige invoer', () => expect(() => maakTermijnen(basis, [50, 40], ['a', 'b'], () => 'x')).toThrow())
+})
+
+
+describe('factuur delen', () => {
+  const d = { v: 1, nr: 'OF-1', klant: 'Fam. de Vries', adres: 'Kerkstraat 1', project: 'Badkamer', tarief: 50, bedrijf: { naam: 'Timmer BV', iban: 'NL00TEST0123456789' }, mat: [['Tegels', '3 doz', 121, 0]], arb: [['Tegelwerk', 2]], matTotaal: 121, arbTotaal: 100, totaal: 221, notities: '', betaaltermijn: '', prijsTekst: '', datum: '2026-11-01', geldigTot: '2026-12-01', ruimte: '', maten: '', werk: [], opp: [] } as unknown as OfferteData
+  it('rondt een factuur heen en weer door een link, zonder de inhoud te verliezen', () => {
+    let n = 0
+    const f = maakFactuur(d, { id: 'f1', nummer: 'F-2026-001', projectId: 'p1', datum: '2026-11-01', betaalDagen: 14, nu: 0, uid: () => `r${n++}` })
+    const terug = decodeerFactuur(codeerFactuur(f))
+    expect(terug.nummer).toBe('F-2026-001')
+    expect(terug.klant).toBe('Fam. de Vries')
+    expect(terug.vervaldatum).toBe('2026-11-15')
+    expect(btwOverzicht(terug.regels).totaalIncl).toBe(btwOverzicht(f.regels).totaalIncl)
+  })
+  it('maakt een hash-link en weigert rommel', () => {
+    let n = 0
+    const f = maakFactuur(d, { id: 'f1', nummer: 'F-2026-001', projectId: 'p1', datum: '2026-11-01', betaalDagen: 14, nu: 0, uid: () => `r${n++}` })
+    const link = factuurLink(f, 'https://maatklaar.nl/')
+    expect(link).toMatch(/^https:\/\/maatklaar\.nl\/#\/factuur-bekijken\//)
+    expect(() => decodeerFactuur('geen-zin')).toThrow(/niet worden gelezen/)
+    expect(() => decodeerFactuur('')).toThrow(/onvolledig/)
+  })
+  it('whatsapp-tekst en herinnering noemen bedrag, iban en link, zonder zelf te versturen', () => {
+    let n = 0
+    const f = maakFactuur(d, { id: 'f1', nummer: 'F-2026-001', projectId: 'p1', datum: '2026-11-01', betaalDagen: 14, nu: 0, uid: () => `r${n++}` })
+    const link = 'https://maatklaar.nl/#/factuur-bekijken/abc'
+    const w = factuurWhatsappTekst(f, link)
+    expect(w).toContain('Hoi Fam. de Vries')
+    expect(w).toContain('F-2026-001')
+    expect(w).toContain(link)
+    expect(w).toContain('NL00TEST0123456789')
+    expect(w).toContain('15 november')
+    const h = betalingsHerinneringTekst(f, link, '2026-11-20')
+    expect(h).toMatch(/herinnering/)
+    expect(h).toMatch(/5 dagen geleden/)
+    expect(h).toContain(link)
+    expect(h).toContain('F-2026-001')
+  })
 })

@@ -1,5 +1,6 @@
 import { SchilderPlan } from '../components/SchilderPlan'
 import { ArrowLeft, ArrowRight, Calculator, CalendarDays, Camera, FileText, MapPin, Pencil, ShoppingCart, SquareDashedMousePointer } from 'lucide-react'
+import { KopieerProjectKnop } from '../components/KopieerProject'
 import { Badge, Button } from '../components/ui'
 import { OpslagIndicator } from '../components/Opslag'
 import { ga, type Stap } from '../lib/router'
@@ -40,8 +41,9 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
             <a href="#/" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink">
               <ArrowLeft className="h-4 w-4" /> Projecten
             </a>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <OpslagIndicator sinds={p.updatedAt} />
+              <KopieerProjectKnop bron={p} />
               <Button variant="secondary" size="sm" icon={<Pencil className="h-3.5 w-3.5" />} onClick={() => ga(`/project/${p.id}/bewerken`)}>
                 Bewerken
               </Button>

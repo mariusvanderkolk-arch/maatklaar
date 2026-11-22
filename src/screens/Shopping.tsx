@@ -5,12 +5,13 @@ import { ArrowRight, Copy, ExternalLink, RotateCcw, Share2, Truck, ListChecks, S
 import { Badge, Button, Card, Checkbox, Notice, LeegStaat } from '../components/ui'
 import { GROEP_ICONS } from '../components/groepIcons'
 import { toast } from '../components/Toast'
-import { datum, euro } from '../lib/format'
+import { datum, euro, leesGetal } from '../lib/format'
 import { prijsEenheid } from '../lib/prices'
 import { deelOfKopieer, inkoopTekst, kopieer } from '../lib/share'
 import { projectStore } from '../lib/store'
 import { useBerekening } from '../lib/useCalc'
-import type { PrijsStatus } from '../lib/shopping'
+import type { InkoopRegel, PrijsStatus } from '../lib/shopping'
+import { prijsDoel, zetInkoopPrijs } from '../lib/prijsInkoop'
 import { VOORBEELD_PEILDATUM } from '../lib/prices'
 import { ga } from '../lib/router'
 import type { Project } from '../lib/types'
@@ -98,13 +99,13 @@ export function Shopping({ p }: { p: Project }) {
                         {g.regels.map((r) => {
                           const aan = !!p.afgevinkt[r.sleutel]
                           return (
-                            <li key={r.sleutel}>
+                            <li key={r.sleutel} className="flex items-start gap-2 px-5 py-3 transition hover:bg-sand-50 sm:gap-3.5 sm:px-6">
                               <button
                                 type="button"
                                 role="checkbox"
                                 aria-checked={aan}
                                 onClick={() => wissel(r.sleutel)}
-                                className="flex w-full items-start gap-3.5 px-5 py-3 text-left transition hover:bg-sand-50 sm:px-6"
+                                className="flex min-w-0 flex-1 items-start gap-3.5 text-left"
                               >
                                 <Checkbox checked={aan} className="mt-0.5" />
                                 <span className="min-w-0 flex-1">
@@ -148,28 +149,8 @@ export function Shopping({ p }: { p: Project }) {
                                       .join(' · ') || r.verpakking}
                                   </span>
                                 </span>
-                                <span className={`shrink-0 text-right ${aan ? '[&_.text-ink]:text-ink-muted' : ''}`}>
-                                  {r.bron !== 'geen' ? (
-                                    <>
-                                      <span className="tabnum block text-[0.92rem] font-semibold text-ink">{euro(r.totaal)}</span>
-                                      <span className="mt-0.5 inline-flex flex-col items-end gap-0.5">
-                                        <span className="text-[0.75rem] text-ink-muted">
-                                          {euro(r.prijs ?? 0)}/{prijsEenheid(r.id)}
-                                          {r.bron !== 'eigen' && !(inkoop.prijsStatus.eigen > 0 && inkoop.prijsStatus.voorbeeld > 0) ? ' · fictief' : ''}
-                                        </span>
-                                        {toonLev && r.leverancier && <Badge tone="sand">{r.leverancier}</Badge>}
-                                        {inkoop.prijsStatus.eigen > 0 && inkoop.prijsStatus.voorbeeld > 0 && (
-                                          <span className={`text-[0.75rem] ${r.bron === 'eigen' ? 'font-semibold text-gold-700' : 'text-ink-muted'}`}>
-                                            {r.bron === 'eigen' ? 'eigen prijs' : 'voorbeeldprijs (fictief)'}
-                                          </span>
-                                        )}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-[0.75rem] text-ink-muted">Geen prijs</span>
-                                  )}
-                                </span>
                               </button>
+                              <PrijsVeld r={r} aan={aan} toonLev={toonLev} gemengd={inkoop.prijsStatus.eigen > 0 && inkoop.prijsStatus.voorbeeld > 0} />
                             </li>
                           )
                         })}
@@ -269,5 +250,81 @@ function PrijsMelding({ status, projectId }: { status: PrijsStatus; projectId: s
       De prijzen komen uit een voorbeeldtabel (peildatum {datum(Date.parse(VOORBEELD_PEILDATUM))}) en zijn alleen bedoeld om de werking te tonen.
       Vul je eigen inkoopprijzen in voor een betrouwbare offerte.
     </Notice>
+  )
+}
+
+
+function PrijsVeld({ r, aan, toonLev, gemengd }: { r: InkoopRegel; aan: boolean; toonLev: boolean; gemengd: boolean }) {
+  const [open, setOpen] = useState(false)
+  const start = r.prijs != null ? String(r.prijs).replace('.', ',') : ''
+  const [waarde, setWaarde] = useState(start)
+  const doel = prijsDoel(r.id)
+  const opslaan = () => {
+    const ruw = waarde.trim()
+    if (!ruw) return toast('Vul een prijs in', 'fout')
+    const n = leesGetal(ruw)
+    if (!Number.isFinite(n) || n < 0 || /[a-z]/i.test(ruw)) return toast('Vul een geldige prijs in', 'fout')
+    if (zetInkoopPrijs(r.id, n) === 'onbekend') return toast('Deze prijs kun je hier niet aanpassen.', 'fout')
+    toast('Prijs opgeslagen in je prijslijst — geldt ook voor andere projecten.')
+    setOpen(false)
+  }
+  if (open && doel !== 'onbekend') {
+    return (
+      <div className="flex w-[9.5rem] shrink-0 flex-col items-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <label className="w-full">
+          <span className="sr-only">Prijs per {prijsEenheid(r.id)} incl. btw</span>
+          <input
+            inputMode="decimal"
+            value={waarde}
+            onChange={(e) => setWaarde(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && opslaan()}
+            data-testid={`prijs-invoer-${r.sleutel}`}
+            className="h-12 w-full rounded-xl border border-sand-300 bg-white px-2.5 text-[16px] text-ink tabular-nums focus:border-gold-400 focus:ring-4 focus:ring-gold-200/50 focus:outline-none"
+          />
+        </label>
+        <div className="flex gap-1">
+          <Button size="sm" onClick={opslaan} data-testid={`prijs-opslaan-${r.sleutel}`}>
+            Opslaan
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+            Annuleer
+          </Button>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className={`flex w-[7.5rem] shrink-0 flex-col items-end text-right ${aan ? '[&_.text-ink]:text-ink-muted' : ''}`}>
+      {r.bron !== 'geen' ? (
+        <>
+          <span className="tabnum block text-[0.92rem] font-semibold text-ink">{euro(r.totaal)}</span>
+          <span className="mt-0.5 text-[0.75rem] text-ink-muted">
+            {euro(r.prijs ?? 0)}/{prijsEenheid(r.id)}
+            {r.bron !== 'eigen' && !gemengd ? ' · fictief' : ''}
+          </span>
+        </>
+      ) : (
+        <span className="text-[0.75rem] text-ink-muted">Geen prijs</span>
+      )}
+      {toonLev && r.leverancier && <Badge tone="sand">{r.leverancier}</Badge>}
+      {gemengd && r.bron !== 'geen' && (
+        <span className={`text-[0.75rem] ${r.bron === 'eigen' ? 'font-semibold text-gold-700' : 'text-ink-muted'}`}>
+          {r.bron === 'eigen' ? 'eigen prijs' : 'voorbeeldprijs (fictief)'}
+        </span>
+      )}
+      {doel !== 'onbekend' && (
+        <button
+          type="button"
+          className="mt-1 min-h-11 text-[0.78rem] font-semibold text-gold-700 hover:text-gold-800"
+          onClick={() => {
+            setWaarde(r.prijs != null ? String(r.prijs).replace('.', ',') : '')
+            setOpen(true)
+          }}
+          data-testid={`prijs-wijzig-${r.sleutel}`}
+        >
+          Wijzig prijs
+        </button>
+      )}
+    </div>
   )
 }

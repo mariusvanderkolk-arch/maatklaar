@@ -7,7 +7,7 @@
 import type { OfferteData } from './offerte'
 import type { Bedrijf } from './bedrijf'
 import type { FactuurRegel } from './factuur'
-import type { OfferteStatus, Project } from './types'
+import type { ExtraKost, OfferteStatus, Project, UrenLog } from './types'
 import { projectMarge } from './marge'
 
 export type MeerwerkSoort = 'meer' | 'minder'
@@ -30,6 +30,8 @@ export interface MeerwerkItem {
   /** kleine foto als data-URL (optioneel) */
   foto?: string
   teken?: Teken
+  /** ids van urenlogs of bonnen waaruit deze bon is opgebouwd (niet opnieuw omzetten) */
+  bronIds?: string[]
 }
 
 /** Info op de meerwerkbon (in de gedeelde snapshot). */
@@ -155,4 +157,54 @@ export function meerwerkFactuurRegels(p: Project, uid: () => string): FactuurReg
     excl: cent(metTeken(m, p) / 1.21),
     btw: 21 as const,
   }))
+}
+
+const nlGetal = (n: number) => new Intl.NumberFormat('nl-NL', { maximumFractionDigits: 2 }).format(n)
+const eurKort = (n: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n)
+
+export function verwerkteBronIds(meerwerk: MeerwerkItem[] | undefined): Set<string> {
+  return new Set((meerwerk ?? []).flatMap((m) => m.bronIds ?? []))
+}
+
+/** Uren en bonnen uit de planning die nog niet in een meerwerkbon zitten. */
+export function openstaandePlanning(p: Pick<Project, 'planning' | 'meerwerk'>): { logs: UrenLog[]; kosten: ExtraKost[] } {
+  const weg = verwerkteBronIds(p.meerwerk)
+  return {
+    logs: (p.planning?.logs ?? []).filter((l) => l.uren > 0 && !weg.has(l.id)),
+    kosten: (p.planning?.kosten ?? []).filter((k) => k.bedrag > 0 && !weg.has(k.id)),
+  }
+}
+
+/**
+ * Maakt een concept-meerwerkbon van openstaande uren en bonnen.
+ * Gebruikt een vast bedrag (uren × uurtarief + bonnen incl. btw), zonder extra materiaalmarge:
+ * de bonnen zijn al werkelijke uitgaven.
+ */
+export function voorstelVanPlanning(p: Project, o: { id: string; datum: string }): MeerwerkItem | null {
+  const { logs, kosten } = openstaandePlanning(p)
+  if (!logs.length && !kosten.length) return null
+  const uren = cent(logs.reduce((s, l) => s + pos(l.uren), 0))
+  const materiaalkosten = cent(kosten.reduce((s, k) => s + pos(k.bedrag), 0))
+  const urenBedrag = cent(uren * pos(p.uurtarief))
+  const bedrag = cent(materiaalkosten + urenBedrag)
+  const stukken: string[] = []
+  if (uren) stukken.push(`Extra uren (${nlGetal(uren)} uur)`)
+  if (materiaalkosten) stukken.push('extra materiaalkosten')
+  const redenDelen: string[] = []
+  if (logs.length) redenDelen.push(logs.map((l) => `${l.datum}${l.omschrijving ? ` ${l.omschrijving}` : ''}: ${nlGetal(l.uren)} uur`).join('; '))
+  if (kosten.length) redenDelen.push(kosten.map((k) => `${k.omschrijving}: ${eurKort(k.bedrag)}`).join('; '))
+  if (uren) redenDelen.push(`${nlGetal(uren)} uur × ${eurKort(pos(p.uurtarief))}`)
+  return {
+    id: o.id,
+    nr: volgendNr(p),
+    datum: o.datum,
+    soort: 'meer',
+    omschrijving: stukken.join(' en ') || 'Extra werk',
+    reden: redenDelen.join('. '),
+    modus: 'bedrag',
+    bedrag,
+    materiaal: 0,
+    uren: 0,
+    bronIds: [...logs.map((l) => l.id), ...kosten.map((k) => k.id)],
+  }
 }

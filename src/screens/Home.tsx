@@ -10,6 +10,7 @@ import { ReviewsBlok } from '../components/Beoordeel'
 import { reviewDialoog, reviewStatus } from '../lib/reviews'
 import { Verhuiskaart } from '../components/Verhuiskaart'
 import { ArrowRight, Calculator, Camera, ChevronRight, ClipboardList, FileText, MapPin, PenLine, Ruler, PlayCircle, Plus, ShoppingCart, ShieldCheck, Sparkles } from 'lucide-react'
+import { KopieerProjectKnop } from '../components/KopieerProject'
 import { Badge, Button, Eyebrow, Notice } from '../components/ui'
 import { APP_VERSIE_KORT } from '../lib/versie'
 import { backupHerinnering } from '../lib/backup'
@@ -384,14 +385,11 @@ export function Home() {
 function ProjectKaart({ p }: { p: Project }) {
   const { oppervlakken: o, inkoop } = useBerekening(p)
   const aantal = actieveScope(p.type, p.scope).length
+  const open = () => ga(`/project/${p.id}/opmeten`)
   return (
-    <button
-      type="button"
-      onClick={() => ga(`/project/${p.id}/opmeten`)}
-      className="card group flex min-w-0 flex-col p-5 text-left transition hover:-translate-y-0.5 hover:border-gold-300 hover:shadow-lift sm:p-6"
-    >
+    <article className="card group flex min-w-0 flex-col p-5 transition hover:-translate-y-0.5 hover:border-gold-300 hover:shadow-lift sm:p-6">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <button type="button" onClick={open} className="min-w-0 flex-1 text-left">
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
             <Badge tone="gold">{ruimteLabel(p.type)}</Badge>
             {p.voorbeeld && <Badge>Voorbeeld</Badge>}
@@ -408,12 +406,13 @@ function ProjectKaart({ p }: { p: Project }) {
               </>
             )}
           </p>
-        </div>
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sand-100 text-ink-soft transition group-hover:bg-ink group-hover:text-sand-50">
+        </button>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-sand-100 text-ink-soft transition group-hover:bg-ink group-hover:text-sand-50">
           <ChevronRight className="h-4.5 w-4.5" />
         </span>
       </div>
-      <dl className="mt-5 grid grid-cols-3 gap-3 rounded-xl bg-sand-50 px-4 py-3.5 ring-1 ring-sand-200">
+      <button type="button" onClick={open} className="mt-5 w-full text-left">
+      <dl className="grid grid-cols-3 gap-3 rounded-xl bg-sand-50 px-4 py-3.5 ring-1 ring-sand-200">
         <div>
           <dt className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">Vloer</dt>
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{getal(o.vloer, 1)} m²</dd>
@@ -427,13 +426,17 @@ function ProjectKaart({ p }: { p: Project }) {
           <dd className="tabnum mt-0.5 text-[0.95rem] font-semibold">{euro(Math.round(inkoop.totaal))}</dd>
         </div>
       </dl>
-      <div className="mt-4 flex items-center justify-between text-xs text-ink-muted">
+      </button>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
         <span>
           {aantal} werkzaamheden · {p.fotos.length} foto{p.fotos.length === 1 ? '' : "'s"}
         </span>
         <span>Bijgewerkt {kortDatum(p.updatedAt)}</span>
       </div>
-    </button>
+      <div className="mt-3">
+        <KopieerProjectKnop bron={p} className="w-full sm:w-auto" />
+      </div>
+    </article>
   )
 }
 

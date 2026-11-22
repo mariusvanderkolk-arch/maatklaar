@@ -4,7 +4,8 @@
  * Alle functies zijn puur, datums zijn 'YYYY-MM-DD' (zonder tijdzone-gedoe).
  */
 import type { ArbeidRegel } from './calc'
-import type { ExtraKost, Planning, UrenLog } from './types'
+import type { ExtraKost, Planning, Project, UrenLog } from './types'
+import { formatDatum, isoDatum } from './format'
 
 export const standaardPlanning = (): Planning => ({ dagUren: 8, weekend: false, dagen: {}, droogdagen: {}, logs: [], kosten: [] })
 
@@ -202,4 +203,42 @@ export function maakBudget(
     })),
     overigeUren: Math.round(somUren(pl.logs.filter((l) => !l.taak || !bekend.has(l.taak))) * 10) / 10,
   }
+}
+
+/** Platte tekst van de dag-voor-dagplanning, om te kopiëren, te delen of via WhatsApp te sturen (de app verstuurt niets zelf). */
+export function planningTekst(p: Pick<Project, 'naam' | 'klant' | 'adres'>, dagen: Dag[], taken: Taak[] = []): string {
+  const titel = `Planning – ${p.naam.trim() || 'project'}${p.klant.trim() ? ` (${p.klant.trim()})` : ''}`
+  const regels: string[] = [titel]
+  if (p.adres.trim()) regels.push(p.adres.trim())
+  regels.push('')
+  if (!dagen.length) {
+    regels.push('Nog geen taken om te plannen.')
+    return regels.join('\n')
+  }
+  const start = dagen[0]!.datum
+  const eind = dagen[dagen.length - 1]!.datum
+  regels.push(`Van ${datumLang(start)} tot ${datumLang(eind)}.`)
+  regels.push('')
+  for (const d of dagen) {
+    const items = d.items
+      .map((it) => {
+        const duur = it.soort === 'droog' ? 'droogtijd' : it.deel >= 1 ? 'hele dag' : '½ dag'
+        return `${it.naam} (${duur})`
+      })
+      .join(', ')
+    regels.push(`${datumLang(d.datum)}: ${items}`)
+  }
+  if (taken.length) {
+    regels.push('', 'Taken:')
+    for (const t of taken) {
+      const droog = t.droog > 0 ? `, ${t.droog} ${t.droog === 1 ? 'dag' : 'dagen'} droogtijd` : ''
+      regels.push(`- ${t.naam}: ${t.dagen === 0.5 ? '½ dag' : `${String(t.dagen).replace('.', ',')} ${t.dagen === 1 ? 'dag' : 'dagen'}`}${droog}`)
+    }
+  }
+  regels.push('', 'Dit is een schatting en kan wijzigen.')
+  return regels.join('\n')
+}
+
+function datumLang(iso: string) {
+  return formatDatum({ weekday: 'short', day: 'numeric', month: 'long', timeZone: 'UTC' }, isoDatum(iso))
 }
