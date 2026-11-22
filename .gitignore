@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 dist-test
 dist-overzetten
+
+# Omgevingsvariabelen en geheimen nooit committen
+.env*
+!.env.example

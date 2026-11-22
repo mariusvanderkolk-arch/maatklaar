@@ -9,7 +9,7 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
   {
     titel: 'Met een account (optioneel)',
     tekst:
-      'Log je in, dan bewaren we je e-mailadres (om in te loggen) en de gegevens die je laat synchroniseren: projecten (met planning en uren), facturen, eigen prijzen en bedrijfsgegevens. Dat kan klantgegevens bevatten die jij invult, zoals naam en adres van je klant. Foto’s en je AI-sleutel worden niet naar de cloud gestuurd.',
+      'Log je in, dan bewaren we je e-mailadres (om in te loggen) en de gegevens die je laat synchroniseren: projecten (met planning en uren), facturen, eigen prijzen en bedrijfsgegevens. Dat kan klantgegevens bevatten die jij invult, zoals naam en adres van je klant. Foto’s van je projecten worden als back-up opgeslagen in een afgeschermde map die alleen jouw account kan openen. Je AI-sleutel wordt niet naar de cloud gestuurd.',
   },
   {
     titel: 'Waar staat het?',
@@ -24,7 +24,7 @@ const BLOKKEN: { titel: string; tekst: string }[] = [
   {
     titel: 'Andere diensten',
     tekst:
-      'De app staat op GitHub Pages. Kies je zelf voor AI-fotoanalyse, dan gaan alleen de foto’s die jij laat analyseren naar de AI-dienst die je instelt, met je eigen sleutel. Wie een offerte-link heeft, kan die offerte zien. Offerte-links verlopen: niet getekend na 90 dagen, getekend na 365 dagen; daarna worden ze gewist.',
+      'De app staat op GitHub Pages. Kies je zelf voor AI-fotoanalyse, dan gaan alleen de foto’s die jij laat analyseren naar de AI-dienst die je instelt, met je eigen sleutel. Gebruik je ingelogd ‘inspreken’, dan gaat de tekst die je inspreekt of typt via onze server naar Google Gemini om er projectvelden van te maken; die tekst bewaren wij niet. Wie een offerte-link heeft, kan die offerte zien. Tekent een klant, dan leggen we als bewijs naam, handtekening, tijdstip, het type browser en een onleesbaar gemaakte (gehashte) code van het IP-adres vast. Offerte-links verlopen: niet getekend na 90 dagen, getekend na 365 dagen; daarna worden ze gewist.',
   },
   {
     titel: 'Verwijderen en meenemen',

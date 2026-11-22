@@ -5,7 +5,7 @@
 // Secrets e-mail: RESEND_API_KEY + MELDING_EMAIL (ontvanger), MELDING_VAN (optioneel, bv. "Maatklaar <hulp@maatklaar.nl>"),
 // Secrets WhatsApp: WHATSAPP_TO (eigen nummer, internationaal zonder +) + CALLMEBOT_APIKEY.
 //          APP_ORIGIN (optioneel, komma-gescheiden). Zonder secrets: 503 en de app gaat gewoon door.
-// Simpele limiet: max 30 mails per uur per instantie (tegen spam).
+// Simpele limiet: max 10 meldingen per uur per instantie (tegen spam). Links worden weggefilterd (geen phishing-links naar je telefoon).
 
 const toegestaan = () => (Deno.env.get('APP_ORIGIN') ?? 'https://maatklaar.nl,https://mariusvanderkolk-arch.github.io').split(',').map((x) => x.trim().replace(/\/$/, '')).filter(Boolean)
 const corsVoor = (origin: string) => ({
@@ -14,7 +14,7 @@ const corsVoor = (origin: string) => ({
   'access-control-allow-methods': 'POST, OPTIONS',
   vary: 'Origin',
 })
-const anoniem = (t: string) => String(t ?? '').replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '[mail]').replace(/(\+?\d[\d\s-]{7,}\d)/g, '[nummer]').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 300)
+const anoniem = (t: string) => String(t ?? '').replace(/https?:\/\/\S+|www\.\S+/gi, '[link]').replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, '[mail]').replace(/(\+?\d[\d\s-]{7,}\d)/g, '[nummer]').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 300)
 let venster = { start: Date.now(), aantal: 0 }
 
 Deno.serve(async (req) => {
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   const mail = Boolean(key && naar), wa = Boolean(waNr && waKey)
   if (!mail && !wa) return new Response('niet ingesteld', { status: 503, headers: cors })
   if (Date.now() - venster.start > 3600_000) venster = { start: Date.now(), aantal: 0 }
-  if (++venster.aantal > 30) return new Response('limiet', { status: 429, headers: cors })
+  if (++venster.aantal > 10) return new Response('limiet', { status: 429, headers: cors })
   let b: { vraag?: string; beantwoord?: boolean; scherm?: string; site?: string }
   try { b = await req.json() } catch { return new Response('json', { status: 400, headers: cors }) }
   const vraag = anoniem(b.vraag ?? '')

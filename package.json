@@ -39,7 +39,7 @@
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0",
+    "vite": "^8.3.8",
     "vitest": "^5.0.3"
   },
   "description": "Maatklaar (opgemeten, ontworpen, offerte klaar): opmeten, materialen berekenen en inkooplijsten voor badkamerrenovaties."

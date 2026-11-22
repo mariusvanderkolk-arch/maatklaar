@@ -490,7 +490,7 @@ export const NL_FOUT = (e: unknown): string => {
   if (/invalid login credentials/i.test(m)) return 'E-mailadres of wachtwoord klopt niet.'
   if (/email not confirmed/i.test(m)) return 'Bevestig eerst je e-mailadres via de link in je mail.'
   if (/user already registered/i.test(m)) return 'Er bestaat al een account met dit e-mailadres. Log in of vraag een inloglink aan.'
-  if (/password should be at least/i.test(m)) return 'Kies een wachtwoord van minstens 6 tekens.'
+  if (/password should be at least/i.test(m)) return 'Kies een wachtwoord van minstens 10 tekens, met letters én cijfers.'
   if (/rate limit|too many|security purposes/i.test(m)) return 'Te veel pogingen of e-mails kort na elkaar. Wacht even en probeer het opnieuw.'
   if (/invalid email|unable to validate email/i.test(m)) return 'Dit e-mailadres lijkt niet te kloppen.'
   if (/signups not allowed/i.test(m)) return 'Nieuwe accounts zijn op dit moment uitgeschakeld.'
