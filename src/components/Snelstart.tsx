@@ -92,7 +92,10 @@ function SnelstartDialoog({ onClose, autoSpraak = false }: { onClose: () => void
       setTekst(plakVast(plakVast(vast.current, definitief), tussen).slice(0, 600))
     }
     r.onerror = (e) => {
-      if (e.error !== 'no-speech' && e.error !== 'aborted') setFout('Spraak lukte niet. Typ je klus hieronder.')
+      if (e.error === 'aborted') return
+      if (e.error === 'no-speech') setFout('Ik hoorde niets. Tik nog een keer op de microfoon, of typ je klus hieronder.')
+      else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') setFout('Geen toegang tot de microfoon. Sta de microfoon toe in je browser, of typ je klus hieronder.')
+      else setFout('Spraak lukte niet. Typ je klus hieronder.')
     }
     r.onend = () => setLuistert(false)
     sr.current = r
