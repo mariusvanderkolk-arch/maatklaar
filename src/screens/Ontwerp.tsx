@@ -96,7 +96,7 @@ export function OntwerpScherm({ p }: { p: Project }) {
   const [vb, setVb] = useState<VB | null>(null)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const modus = useRef<Modus>(null)
-  const [groep, setGroep] = useState<Groep>(p.type === 'keuken' ? 'keuken' : p.type === 'vloer' ? 'meubel' : p.type === 'aanbouw' ? 'openingen' : 'sanitair')
+  const [groep, setGroep] = useState<Groep>(p.type === 'keuken' ? 'keuken' : p.type === 'vloer' || p.type === 'stucwerk' ? 'meubel' : p.type === 'aanbouw' ? 'openingen' : 'sanitair')
   const [sleep, setSleep] = useState<{ type: ItemType; x: number; y: number; actief: boolean } | null>(null)
   const beeld3d = use3dBeeld(p.id)
   // ——— onderlegger (eigen tekening; afbeelding alleen op dit apparaat) ———
