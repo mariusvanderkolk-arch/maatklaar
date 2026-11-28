@@ -34,7 +34,7 @@ export function OpleverKaart({ p }: { p: Project }) {
       <p className="mt-1 text-[0.82rem] leading-snug text-ink-muted">
         {o
           ? open
-            ? `${open} ${open === 1 ? 'restpunt staat' : 'restpunten staan'} nog open. Vink ze af zodra ze klaar zijn.`
+            ? `${open} ${open === 1 ? 'restpunt staat nog open. Vink het af zodra het klaar is.' : 'restpunten staan nog open. Vink ze af zodra ze klaar zijn.'}`
             : 'Loop de klus samen met de klant na en laat het rapport op je telefoon tekenen.'
           : 'Loop de klus samen met de klant na. De checklist staat al klaar met de werkzaamheden uit dit project. Restpunten met foto, allebei tekenen, PDF erbij.'}
       </p>
