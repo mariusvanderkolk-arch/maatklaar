@@ -229,6 +229,10 @@ export interface Project {
   voorbeeldId?: string
   planning?: Planning
   offerte?: OfferteStatus
+  /** opleverrapport (checklist, restpunten, handtekeningen); ontbreekt = nog niet gestart */
+  oplevering?: import('./oplevering').Oplevering
+  /** klantaanvraag via de aanvraaglink (alleen voor de aannemer, niet op de offerte) */
+  aanvraag?: { tekst: string; datum: number }
   /** laatste AI-fotoanalyse (suggesties) */
   aiAnalyse?: AiResultaat
 }

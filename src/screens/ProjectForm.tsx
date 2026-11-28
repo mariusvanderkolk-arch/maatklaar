@@ -6,8 +6,9 @@ import type { Afmetingen } from '../lib/types'
 import { AFVAL_SOORTEN, CONTAINER_MATEN, MAX_ZWAAR_M3 } from '../lib/calc'
 import type { AfvalSoort, ContainerKeuze, ContainerMaat } from '../lib/types'
 import { useState } from 'react'
+import { aanvraagUitHash, projectVelden } from '../lib/aanvraag'
 import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'
-import { Button, Card, CardHeader, PageTitle, TextField } from '../components/ui'
+import { Button, Card, CardHeader, Notice, PageTitle, TextField } from '../components/ui'
 import { SCOPE_ICONS } from '../components/scopeIcons'
 import { RUIMTE_ICONS } from '../components/ruimteIcons'
 import { track } from '../lib/analytics'
@@ -21,7 +22,15 @@ import type { ProjectType, Scope, ScopeKey } from '../lib/types'
 
 export function ProjectForm({ id }: { id?: string }) {
   const bestaand = useProject(id)
-  const [concept] = useState(() => bestaand ?? nieuwProject())
+  const [concept] = useState(() => {
+    if (bestaand) return bestaand
+    // nieuw project vanuit een klantaanvraag (#/nieuw?aanvraag=…): gegevens staan al klaar
+    const a = aanvraagUitHash(location.hash)
+    if (!a) return nieuwProject()
+    const v = projectVelden(a)
+    return nieuwProject({ ...v, scope: scopeVoor(v.type) })
+  })
+  const vanAanvraag = !bestaand && /[?&]aanvraag=/.test(location.hash)
   const [naam, setNaam] = useState(concept.naam)
   const [klant, setKlant] = useState(concept.klant)
   const [adres, setAdres] = useState(concept.adres)
@@ -102,6 +111,11 @@ export function ProjectForm({ id }: { id?: string }) {
       />
 
       <div className="mt-8 space-y-5">
+        {vanAanvraag && (
+          <Notice tone="sage" title="Aanvraag overgenomen">
+            Klant, adres en soort klus staan al ingevuld. De toelichting en het telefoonnummer van de klant staan straks bovenaan bij Opmeten. Controleer de werkzaamheden en sla op.
+          </Notice>
+        )}
         <Card>
           <CardHeader title="Projectgegevens" sub="Wordt gebruikt op de inkooplijst en de offerte." action={<InsprekenKnop type={type} onToepassen={toepassen} />} />
           <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">

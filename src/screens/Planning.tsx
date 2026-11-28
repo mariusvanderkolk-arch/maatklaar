@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { CalendarDays, Clock, ClipboardPlus, Hourglass, MessageCircle, Minus, Plus, Printer, Receipt, RotateCcw, Share2, Trash2, Gauge, TrendingUp, Wallet, ListChecks } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, DateField, NumberField, SelectField, Switch, TextField, LeegStaat } from '../components/ui'
 import { ga } from '../lib/router'
+import { OpleverKaart } from '../components/Oplevering'
 import { toast } from '../components/Toast'
 import { uid } from '../lib/defaults'
 import { euro, formatDatum, getal, isoDatum } from '../lib/format'
@@ -159,6 +160,7 @@ export function PlanningScherm({ p }: { p: Project }) {
           <UrenKaart p={p} pl={pl} upd={upd} taken={taken.map((t) => ({ value: t.id, label: t.naam }))} perTaak={budget.perTaak} overigeUren={budget.overigeUren} />
           <KostenKaart pl={pl} upd={upd} />
           <MeerwerkUitPlanning p={p} />
+          <OpleverKaart p={p} />
         </div>
       </div>
     </div>

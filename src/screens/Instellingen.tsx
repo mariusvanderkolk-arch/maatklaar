@@ -1,4 +1,5 @@
 import { Verhuiskaart } from '../components/Verhuiskaart'
+import { AanvraagLinkSectie } from '../components/AanvraagLink'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Building2, Check, ChevronRight, Cloud, DatabaseBackup, Download, Upload, ExternalLink, Eye, EyeOff, FileText, ImagePlus, KeyRound, Loader2, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
 import { Badge, Button, Card, CardHeader, Dialog, NumberField, PageTitle, TextField } from '../components/ui'
@@ -16,6 +17,7 @@ import { useCloud } from '../lib/cloud/sync'
 const SECTIES = [
   { id: 'bedrijf', label: 'Bedrijf' },
   { id: 'offerte', label: 'Offerte' },
+  { id: 'aanvraag', label: 'Aanvraaglink' },
   { id: 'ai', label: 'AI' },
   { id: 'backup', label: 'Back-up' },
 ]
@@ -56,6 +58,7 @@ export function Instellingen({ sectie }: { sectie?: string }) {
       <div className="mt-4 space-y-5">
         <BedrijfSectie />
         <OfferteSectie />
+        <AanvraagLinkSectie />
         <AiSectie />
         <BackupSectie />
       </div>
