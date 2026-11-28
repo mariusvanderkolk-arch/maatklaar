@@ -101,12 +101,18 @@ export function Home() {
                 ))}
               </ol>
               <div className="mt-6 flex flex-wrap gap-2.5">
-                <SnelstartKnop className="w-full sm:w-auto" />
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
+                <SnelstartKnop className="w-full sm:w-auto" label="Probeer gratis je eerste offerte" />
+              </div>
+              <p className="mt-2.5 text-[0.85rem] text-ink-muted" data-testid="hero-gerust">Gratis · geen account nodig</p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-0">
+                <Button size="md" variant="ghost" className="lg:hidden -ml-3" icon={<Ruler className="h-4.5 w-4.5" />} onClick={() => document.getElementById('probeer-plattegrond')?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })} data-testid="naar-demo">
+                  Probeer de plattegrond
+                </Button>
+                <Button size="md" variant="ghost" className="max-lg:-ml-3 lg:-ml-3" icon={<PlayCircle className="h-4.5 w-4.5" />} onClick={() => ga('/demo')} data-testid="demo-knop">
                   Bekijk hoe het werkt
                 </Button>
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>
-                  Start gratis
+                <Button size="md" variant="ghost" className="max-sm:hidden" icon={<Plus className="h-4.5 w-4.5" />} onClick={() => ga('/nieuw')}>
+                  Nieuw project starten
                 </Button>
               </div>
               {gesorteerd[0] && (
@@ -166,7 +172,7 @@ export function Home() {
           </ol>
         </section>
         {!groot && (
-          <section className="card mt-6 bg-[#f7f0de] p-5 lg:hidden" aria-label="Probeer de plattegrond">
+          <section id="probeer-plattegrond" className="card mt-6 scroll-mt-20 bg-[#f7f0de] p-5 lg:hidden" aria-label="Probeer de plattegrond">
             <HeroDemo compact />
           </section>
         )}
