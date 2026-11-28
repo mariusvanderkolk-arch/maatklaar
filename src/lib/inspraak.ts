@@ -34,7 +34,7 @@ export const SCOPE_KEYS: ScopeKey[] = [
   'sloopwerk', 'container', 'dekvloer', 'egaliseren', 'leidingwerk', 'elektra', 'waterdicht', 'vloerverwarming', 'radiator', 'wandtegels', 'vloertegels',
   'spatwand', 'legvloer', 'ondervloer', 'plinten', 'inloopdouche', 'bad', 'toilet', 'wastafelmeubel', 'fontein', 'ventilatie', 'kitwerk', 'stucwerk', 'plafond', 'deur',
 ]
-const TYPES: ProjectType[] = ['badkamer', 'toilet', 'keuken', 'vloer']
+const TYPES: ProjectType[] = ['badkamer', 'toilet', 'keuken', 'vloer', 'aanbouw', 'stucwerk', 'schilderwerk']
 const MATEN: ContainerMaat[] = [3, 6, 10, 15]
 const SOORTEN: AfvalSoort[] = ['gemengd', 'puin', 'hout', 'grond']
 
@@ -78,7 +78,7 @@ export function schoon(r: unknown): Inspraak {
 
 const WOORDGETAL: Record<string, string> = {
   een: '1', één: '1', twee: '2', drie: '3', vier: '4', vijf: '5', zes: '6', zeven: '7', acht: '8', negen: '9', tien: '10',
-  elf: '11', twaalf: '12', vijftien: '15', twintig: '20', anderhalf: '1,5', anderhalve: '1,5', tweeënhalf: '2,5', drieënhalf: '3,5', vierenhalf: '4,5',
+  elf: '11', twaalf: '12', vijftien: '15', twintig: '20', dertig: '30', veertig: '40', vijftig: '50', zestig: '60', zeventig: '70', tachtig: '80', negentig: '90', anderhalf: '1,5', anderhalve: '1,5', tweeënhalf: '2,5', drieënhalf: '3,5', vierenhalf: '4,5',
 }
 const getal = (s: string) => Number(s.replace(',', '.'))
 const N = String.raw`(\d+(?:[.,]\d+)?)`
@@ -141,10 +141,10 @@ export function normaliseerSpraak(invoer: string): string {
 export function regelParser(invoer: string): Inspraak {
   let t = ` ${normaliseerSpraak(invoer).toLowerCase().replace(/[“”"]/g, ' ').replace(/\s+/g, ' ')} `
   for (const [w, c] of Object.entries(WOORDGETAL)) t = t.replace(new RegExp(`(?<=\\s)${w}(?=\\s|$|[,.])`, 'g'), c)
-  t = t.replace(/(\d+)\s+komma\s+(\d+)/g, '$1,$2').replace(/(\d+)\s*(?:meter|m)\s*(\d{1,2})\b(?!\s*(?:bij|x|kuub|m3|m³))/g, (_, a, b) => `${a},${b.padStart(2, '0')}`)
+  t = t.replace(/(\d+)\s+komma\s+(\d+)/g, '$1,$2').replace(/(\d+)\s*(?:meter|m)\s*(\d{1,2})\b(?:\s*(?:cm|centimeter)\b)?(?!\s*(?:kuub|m3|m³|graden|procent|%))/g, (_, a, b) => `${a},${b.padStart(2, '0')}`)
   const r: Inspraak = { aan: [], uit: [] }
 
-  const typeHit = /\b(badkamer|douche ?ruimte)\b/.test(t) ? 'badkamer' : /\b(toilet ?ruimte|wc ?ruimte)\b/.test(t) || /^\s*(toilet|wc)\b/.test(t) ? 'toilet' : /\bkeuken\b/.test(t) ? 'keuken' : /\b(woonkamer|slaapkamer|vloer leggen|laminaat|pvc[- ]?vloer|vloer)\b/.test(t) && !/\bbadkamer|toilet|keuken\b/.test(t) ? 'vloer' : undefined
+  const typeHit = /\b(aanbouw|uitbouw)\b/.test(t) ? 'aanbouw' : /\b(badkamer|douche ?ruimte)\b/.test(t) ? 'badkamer' : /\b(toilet ?ruimte|wc ?ruimte)\b/.test(t) || /^\s*(toilet|wc)\b/.test(t) ? 'toilet' : /\bkeuken\b/.test(t) ? 'keuken' : /\b(schilderwerk|schilderen|schilder|verven|sauzen|sausen)\b/.test(t) && !/\b(badkamer|toilet|keuken|vloer|laminaat)\b/.test(t) ? 'schilderwerk' : /\b(stucwerk|stucen|stukadoor|stukadoren)\b/.test(t) && !/\b(badkamer|toilet|keuken|vloer|laminaat)\b/.test(t) ? 'stucwerk' : /\b(woonkamer|slaapkamer|vloer leggen|laminaat|pvc[- ]?vloer|vloer)\b/.test(t) && !/\bbadkamer|toilet|keuken\b/.test(t) ? 'vloer' : undefined
   if (typeHit) r.type = typeHit as ProjectType
 
   // alle "a bij b"-paren; tegelmaten herkennen aan de woorden eromheen, de rest is de ruimte
@@ -173,9 +173,14 @@ export function regelParser(invoer: string): Inspraak {
     }
   }
   if (m) {
-    const cm = /^c/.test(m[2] ?? m[4] ?? '')
+    const cmA = /^c/.test(m[2] ?? ''), cmB = /^c/.test(m[4] ?? '')
     let a = getal(m[1]), b = getal(m[3])
-    if (cm || (a > 30 && b > 30)) (a /= 100), (b /= 100)
+    // één kant met 'cm' ("1,20 bij 90 cm"): een kant zonder eenheid is meters als hij klein is of decimalen heeft
+    if (cmA || cmB) {
+      const alsMeter = (v: number, eenheid?: string) => (eenheid ? !/^c/.test(eenheid) : v < 10)
+      if (!(alsMeter(a, m[2]) && cmB)) a /= 100
+      if (!(alsMeter(b, m[4]) && cmA)) b /= 100
+    } else if (a > 30 && b > 30) (a /= 100), (b /= 100)
     r.lengte = Math.max(a, b)
     r.breedte = Math.min(a, b)
   }

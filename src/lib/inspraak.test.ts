@@ -107,3 +107,41 @@ describe('AI-uitslag aanvullen', () => {
     expect(r.notitie).toBeUndefined()
   })
 })
+
+describe('regelParser: gesproken maten (werkingstest 28 nov)', () => {
+  it('"2 meter 40 bij 1 meter 80" levert 2,4 × 1,8 m', () => {
+    const r = regelParser('badkamer van 2 meter 40 bij 1 meter 80 met inloopdouche toilet en wastafel')
+    expect(r.type).toBe('badkamer')
+    expect(r.lengte).toBe(2.4)
+    expect(r.breedte).toBe(1.8)
+    expect(r.aan).toEqual(expect.arrayContaining(['inloopdouche', 'toilet', 'wastafelmeubel']))
+  })
+  it('begrijpt uitgeschreven tientallen ("twee meter veertig bij een meter tachtig")', () => {
+    const r = regelParser('badkamer twee meter veertig bij een meter tachtig met inloopdouche')
+    expect(r.lengte).toBe(2.4)
+    expect(r.breedte).toBe(1.8)
+  })
+  it('combineert meters en centimeters ("1 meter 20 bij 90 centimeter")', () => {
+    const r = regelParser('toilet 1 meter 20 bij 90 centimeter')
+    expect(r.lengte).toBe(1.2)
+    expect(r.breedte).toBe(0.9)
+    const r2 = regelParser('toilet 2 meter bij 90 cm')
+    expect(r2.lengte).toBe(2)
+    expect(r2.breedte).toBe(0.9)
+    const r3 = regelParser('badkamer 2 meter 40 centimeter bij 1 meter 80 centimeter')
+    expect(r3.lengte).toBe(2.4)
+  })
+  it('tegelmaten blijven centimeters', () => {
+    const r = regelParser('badkamer 2 meter 40 bij 1 meter 80, wandtegels 30 bij 60')
+    expect(r.lengte).toBe(2.4)
+    expect(r.wandtegel).toEqual({ lengte: 60, breedte: 30 })
+  })
+  it('herkent aanbouw, stucwerk en schilderwerk als projecttype', () => {
+    expect(regelParser('aanbouw van 4 bij 6 meter').type).toBe('aanbouw')
+    expect(regelParser('aanbouw met nieuwe keuken 4 bij 6').type).toBe('aanbouw')
+    expect(regelParser('stucwerk woonkamer 5 bij 4 meter').type).toBe('stucwerk')
+    expect(regelParser('schilderwerk slaapkamer 3 bij 4').type).toBe('schilderwerk')
+    expect(regelParser('woonkamer 5 bij 4 laminaat').type).toBe('vloer')
+    expect(regelParser('badkamer stucwerk op het plafond').type).toBe('badkamer')
+  })
+})
