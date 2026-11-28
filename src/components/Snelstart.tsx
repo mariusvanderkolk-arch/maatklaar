@@ -32,7 +32,7 @@ export function snelstartProject(r: Inspraak, nu = Date.now()): Project {
   return { ...p, naam: p.naam || `Snelle offerte ${ruimte(p.type).label.toLowerCase()}${maat}`, createdAt: nu, updatedAt: nu }
 }
 
-export function SnelstartKnop({ className = '' }: { className?: string }) {
+export function SnelstartKnop({ className = '', label = 'Eerste offerte in 1 minuut' }: { className?: string; label?: string }) {
   const [open, setOpen] = useState<false | 'typen' | 'spraak'>(false)
   return (
     <>
@@ -46,7 +46,7 @@ export function SnelstartKnop({ className = '' }: { className?: string }) {
           setOpen('typen')
         }}
       >
-        Eerste offerte in 1 minuut
+        {label}
       </Button>
       <Button
         size="lg"

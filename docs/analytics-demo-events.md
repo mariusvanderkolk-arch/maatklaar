@@ -4,7 +4,7 @@
 |---|---|---|
 | demo_bekeken | – | homepage-demo ≥50% in beeld (1×/sessie) |
 | demo_interactie | maat / onderdeel | eerste tik in de demo (1×/sessie) |
-| demo_cta | – | "Maak dit van jouw klus" |
+| demo_cta | – | "Start je eerste project – gratis" (was "Maak dit van jouw klus") |
 | spraak_gestart | snelstart / geen_support | "Vertel de klus" |
 
 supabase/analytics.sql in de repo is bijgewerkt, maar de LIVE database-policy nog NIET → inserts worden geweigerd en analytics stopt stil voor die sessie

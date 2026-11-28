@@ -50,11 +50,11 @@ export function Welkom() {
             ga('/nieuw')
           }}
         >
-          Start direct
+          Start je eerste project – gratis
         </Button>
         <Button
           size="lg"
-          variant="gold"
+          variant="secondary"
           className="w-full sm:w-auto"
           icon={<PlayCircle className="h-4.5 w-4.5" />}
           onClick={() => {
@@ -66,7 +66,7 @@ export function Welkom() {
         </Button>
         <Button
           size="lg"
-          variant="secondary"
+          variant="ghost"
           className="w-full sm:w-auto"
           icon={<Route className="h-4.5 w-4.5" />}
           onClick={() => {
