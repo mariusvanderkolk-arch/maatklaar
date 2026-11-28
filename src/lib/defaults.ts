@@ -1,3 +1,4 @@
+import { leesOplevering } from './oplevering'
 /** Standaardtekst voor het blok "Aannames en niet inbegrepen"; de vakman past dit per offerte aan. */
 export const STANDAARD_AANNAMES = [
   'De werkplek is goed bereikbaar; materiaal kan zonder kraan of lift naar binnen.',
@@ -151,5 +152,6 @@ export function normaliseerProject(ruw: Partial<Project> & { id: string }): Proj
     ...(ruw.voorbeeld && OUDE_VOORBEELD_ADRESSEN.includes(String(ruw.adres ?? '').trim()) ? { adres: '' } : {}),
     afgevinkt: ruw.afgevinkt ?? {},
     notities: ruw.notities ?? '',
+    oplevering: leesOplevering(ruw.oplevering),
   }
 }

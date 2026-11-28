@@ -10,12 +10,16 @@ import { NietGevonden } from './ProjectForm'
 import { Suspense } from 'react'
 import { Measure } from './Measure'
 import { laadLater } from '../lib/lazy'
+import { projectStore } from '../lib/store'
+import type { Project } from '../lib/types'
+import { Inbox, X } from 'lucide-react'
 
 const Calculation = laadLater(() => import('./Calculation').then((m) => m.Calculation))
 const Shopping = laadLater(() => import('./Shopping').then((m) => m.Shopping))
 const Quote = laadLater(() => import('./Quote').then((m) => m.Quote))
 const OntwerpScherm = laadLater(() => import('./Ontwerp').then((m) => m.OntwerpScherm))
 const PlanningScherm = laadLater(() => import('./Planning').then((m) => m.PlanningScherm))
+const OpleverScherm = laadLater(() => import('../components/Oplevering').then((m) => m.OpleverScherm))
 
 export const STAPPEN: { id: Stap; label: string; kort: string; icon: typeof Camera }[] = [
   { id: 'opmeten', label: 'Opmeten', kort: 'Opmeten', icon: Camera },
@@ -29,9 +33,11 @@ export const STAPPEN: { id: Stap; label: string; kort: string; icon: typeof Came
 export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
   const p = useProject(id)
   if (!p) return <NietGevonden />
-  const index = STAPPEN.findIndex((s) => s.id === stap)
-  const vorige = STAPPEN[index - 1]
-  const volgende = STAPPEN[index + 1]
+  // oplevering hoort bij de laatste tab (planning), met planning als 'vorige'
+  const navStap: Stap = stap === 'oplevering' ? 'planning' : stap
+  const index = STAPPEN.findIndex((s) => s.id === navStap)
+  const vorige = stap === 'oplevering' ? STAPPEN[index] : STAPPEN[index - 1]
+  const volgende = stap === 'oplevering' ? undefined : STAPPEN[index + 1]
 
   return (
     <div className="pb-28">
@@ -69,7 +75,7 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
           <nav className="-mx-2 mt-6 sm:mx-0" aria-label="Stappen">
             <ol className="grid grid-cols-6 sm:flex sm:gap-2">
               {STAPPEN.map((s, i) => {
-                const actief = s.id === stap
+                const actief = s.id === navStap
                 const klaar = i < index
                 return (
                   <li key={s.id}>
@@ -105,12 +111,14 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
 
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
         <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-sand-200/70" aria-busy="true" aria-label="Laden" />}>
+        {stap === 'opmeten' && p.aanvraag && <AanvraagNotitie p={p} />}
         {stap === 'opmeten' && <Measure p={p} />}
         {stap === 'ontwerp' && (p.type === 'schilderwerk' ? <SchilderPlan p={p} /> : <OntwerpScherm p={p} />)}
         {stap === 'berekening' && <Calculation p={p} />}
         {stap === 'inkoop' && <Shopping p={p} />}
         {stap === 'offerte' && <Quote p={p} />}
         {stap === 'planning' && <PlanningScherm p={p} />}
+        {stap === 'oplevering' && <OpleverScherm p={p} />}
         </Suspense>
       </div>
 
@@ -128,6 +136,10 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
             <Button className={vorige ? '' : 'w-full sm:w-auto'} onClick={() => ga(`/project/${p.id}/${volgende.id}`)}>
               Naar {volgende.label.toLowerCase()} <ArrowRight className="h-4 w-4" />
             </Button>
+          ) : stap === 'planning' ? (
+            <Button onClick={() => ga(`/project/${p.id}/oplevering`)} data-testid="naar-oplevering">
+              Naar oplevering <ArrowRight className="h-4 w-4" />
+            </Button>
           ) : (
             <Button icon={<FileText className="h-4 w-4" />} onClick={() => window.print()}>
               Afdrukken / PDF
@@ -135,6 +147,22 @@ export function ProjectScreen({ id, stap }: { id: string; stap: Stap }) {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+/** Klantaanvraag (via de aanvraaglink) bovenaan Opmeten; alleen voor de aannemer. */
+function AanvraagNotitie({ p }: { p: Project }) {
+  return (
+    <div className="no-print mb-5 flex gap-3 rounded-2xl border border-[#d3dfcd] bg-[#eef3ea] px-4 py-3.5 text-[0.85rem] leading-relaxed text-ink-soft">
+      <Inbox className="mt-0.5 h-4.5 w-4.5 shrink-0 text-sage" />
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-ink">Aanvraag van de klant</p>
+        <p className="whitespace-pre-line break-words">{p.aanvraag!.tekst}</p>
+      </div>
+      <button type="button" aria-label="Aanvraag verbergen" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-ink-muted hover:bg-white/60 hover:text-ink" onClick={() => projectStore.werkBij(p.id, (x) => ({ ...x, aanvraag: undefined }))}>
+        <X className="h-4 w-4" />
+      </button>
     </div>
   )
 }

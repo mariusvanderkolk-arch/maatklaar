@@ -1,7 +1,7 @@
 /** Eenvoudige hash-router (werkt zonder serverconfiguratie, ook op GitHub Pages). */
 import { useEffect, useState } from 'react'
 
-export type Stap = 'opmeten' | 'ontwerp' | 'berekening' | 'inkoop' | 'offerte' | 'planning'
+export type Stap = 'opmeten' | 'ontwerp' | 'berekening' | 'inkoop' | 'offerte' | 'planning' | 'oplevering'
 
 export type Route =
   | { naam: 'home' }
@@ -12,6 +12,7 @@ export type Route =
   | { naam: 'offerte-bekijken'; data: string }
   | { naam: 'offerte-tekenen'; token: string }
   | { naam: 'factuur-bekijken'; data: string }
+  | { naam: 'aanvraag'; code: string }
   | { naam: 'voorwaarden' }
   | { naam: 'bewerken'; id: string }
   | { naam: 'project'; id: string; stap: Stap }
@@ -21,7 +22,8 @@ export type Route =
   | { naam: 'privacy' }
   | { naam: 'demo'; stap: 'maten' | 'offerte' | 'klant' | 'klaar' }
 
-const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning']
+// 'oplevering' is een vervolg op planning (geen eigen tab in de stappenbalk)
+const STAPPEN: Stap[] = ['opmeten', 'ontwerp', 'berekening', 'inkoop', 'offerte', 'planning', 'oplevering']
 
 export function parse(hash: string): Route {
   const [pad] = hash.replace(/^#\/?/, '').split('?')
@@ -37,6 +39,7 @@ export function parse(hash: string): Route {
   if (delen[0] === 'privacy') return { naam: 'privacy' }
   if (delen[0] === 'voorwaarden') return { naam: 'voorwaarden' }
   if (delen[0] === 'offerte-tekenen' && delen[1]) return { naam: 'offerte-tekenen', token: delen[1] }
+  if (delen[0] === 'aanvraag' && delen[1]) return { naam: 'aanvraag', code: delen[1] }
   if (delen[0] === 'factuur-bekijken') return { naam: 'factuur-bekijken', data: delen.slice(1).join('/') }
   if (delen[0] === 'factuur' && delen[1]) return { naam: 'factuur', id: delen[1] }
   if (delen[0] === 'prijzen') return { naam: 'prijzen', terugNaar: delen[1] }
