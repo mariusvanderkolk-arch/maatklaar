@@ -35,21 +35,33 @@ Deno.serve(async (req) => {
   if (!vraag) return new Response('leeg', { status: 400, headers: cors })
   const status = b.beantwoord ? 'beantwoord door de hulp' : 'NIET beantwoord – mogelijk even reageren'
   const site = b.site === 'test' ? 'testsite' : 'maatklaar.nl'
-  const taken: Promise<boolean>[] = []
-  if (mail) taken.push(
-    fetch('https://api.resend.com/emails', {
+  // Kanalen parallel, elk met een eigen time-out. Een trage CallMeBot (die berichten in een wachtrij zet) mag nooit een 502 geven:
+  // bij time-out geldt de melding als "aangenomen". 502 alleen als alle kanalen echt zijn mislukt (met logregel, zonder geheimen).
+  type Uitslag = 'ok' | 'trage' | 'fout'
+  const metTimeout = (naam: string, p: Promise<Response>): Promise<Uitslag> =>
+    p.then(async (r) => {
+      if (r.ok) return 'ok' as Uitslag
+      console.error(`${naam}: HTTP ${r.status} ${(await r.text().catch(() => '')).slice(0, 200)}`)
+      return 'fout' as Uitslag
+    }).catch((e) => {
+      const trage = e instanceof DOMException && (e.name === 'TimeoutError' || e.name === 'AbortError')
+      console.error(`${naam}: ${trage ? 'time-out' : 'netwerkfout'}`)
+      return (trage ? 'trage' : 'fout') as Uitslag
+    })
+  const taken: Promise<Uitslag>[] = []
+  if (mail) taken.push(metTimeout('resend', fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+    signal: AbortSignal.timeout(8000),
     body: JSON.stringify({
       from: Deno.env.get('MELDING_VAN') ?? 'Maatklaar <onboarding@resend.dev>',
       to: [naar],
       subject: `Hulpchat (${site}): ${vraag.slice(0, 60)}`,
       text: `Nieuwe vraag in de hulpchat\n\nVraag: ${vraag}\nStatus: ${status}\nScherm: ${anoniem(b.scherm ?? '-').slice(0, 60)}\nSite: ${site}\n\nDe vrager is anoniem; reageren kan alleen als die zelf via WhatsApp/e-mail contact opneemt.`,
     }),
-    }).then((r) => r.ok))
-  if (wa) taken.push(
-    fetch(`https://api.callmebot.com/whatsapp.php?phone=${waNr}&apikey=${encodeURIComponent(waKey!)}&text=${encodeURIComponent(`Maatklaar hulpchat (${site}): ${vraag}\n${status}`)}`).then((r) => r.ok),
-  )
-  const ok = (await Promise.all(taken.map((t) => t.catch(() => false)))).some(Boolean)
+  })))
+  if (wa) taken.push(metTimeout('callmebot', fetch(`https://api.callmebot.com/whatsapp.php?phone=${waNr}&apikey=${encodeURIComponent(waKey!)}&text=${encodeURIComponent(`Maatklaar hulpchat (${site}): ${vraag}\n${status}`)}`, { signal: AbortSignal.timeout(6000) })))
+  const uitslagen = await Promise.all(taken)
+  const ok = uitslagen.some((u) => u === 'ok' || u === 'trage')
   return new Response(null, { status: ok ? 204 : 502, headers: cors })
 })
